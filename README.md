@@ -19,7 +19,7 @@
 
 Implementing a **conditioned Denoising Diffsuion Probabilistic Model** (DDPM) on Tensorflow from Scratch for **Pokémon generation** and understanding the theory behind it. In order to achieve it, the Pokemon sprite images dataset from Kaggle will be used: [Pokémon sprite images](https://www.kaggle.com/datasets/yehongjiang/pokemon-sprites-images) with license: <img src='https://licensebuttons.net/l/zero/1.0/80x15.png'>.
 
-This project has been developed for my **Bachelor's Final Project** in **Data Science and Artificial Intelligence** at Universidad Politécnica de Madrid (UPM).
+This project has been developed for my **Bachelor's Thesis** in **Data Science and Artificial Intelligence** at Universidad Politécnica de Madrid (UPM).
 
 <div style=\"text-align:center\">
 <img src='./figures/notebook_figures/poke_red_diffusion_portada.webp'>
