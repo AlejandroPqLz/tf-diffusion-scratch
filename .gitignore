@@ -1,0 +1,20 @@
+# data files
+Diffsuion study.pdf
+config.ini
+*.json
+
+# dataset tf
+*.snapshot
+dataset_spec.pb
+snapshot.metadata
+
+#python files
+*.egg-info
+__pycache__
+
+# dags
+*_dag_params.py
+
+# others
+test
+temp
