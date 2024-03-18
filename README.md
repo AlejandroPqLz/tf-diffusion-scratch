@@ -120,92 +120,26 @@ In order to use the environment in a Jupyter Notebook, you need to install the k
 After clicking on the `Install` button, the kernel will be installed and you will be able to use the environment in the notebook. Now you are ready to go!
 
 ## :card_file_box: Data
+
 As mentioned before, the dataset used in this project is the [Pokémon sprite images](https://www.kaggle.com/datasets/yehongjiang/pokemon-sprites-images) from Kaggle. 
 
 The dataset contains +10,000 Pokémon sprites in PNG format (half of them are shiny variants) in 96x96 resolution from 898 Pokemon in different games, and their corresponding labels that may relate to their design in a CSV file. These aspects will be analyzed deeper in the [00-Intro-and-Analysis.ipynb](./notebooks/00-Intro-and-Analysis.ipynb) notebook.
 
 ## Usage
+
 After following the steps described in the [Prerequisites](https://github.com/AlejandroPqLz/DiffusionScratch#rocket-prerequisites) section, TODO
 
-## Extra
 
-### 1. Git LFS to upload large files into the repository
+# :books: Resources
+Resources and tutorials that have been found useful for this project are located in the [/docs](./docs) folder.
 
-   Git Large File Storage (LFS) replaces large files such as audio samples, videos, datasets, and graphics with text pointers inside Git, while storing the file contents on a remote server like GitHub.com or GitHub Enterprise. This tool is used in order to be able to upload the **weights** and **trained diffsuion models**.
-
-For more info, visit: [Git LFS repository](https://github.com/git-lfs/git-lfs/tree/main).
-
- > **WARNING:** Every account using Git Large File Storage receives 1 GiB of free storage and 1 GiB a month of free bandwidth, so in order to avoid any issues uploading heavy files, it is recommended to only upload the heavy files one at a time and do not commit other changes additionally.
-
-<p align="center">
-  <img src="./figures/readme_figures/git_lfs.gif" width="350">
-</p>
-
-  **1.1.** Download and install the Git command line extension:
-
-<table>
-<thead>
-  <tr>
-    <th><a href="https://git-lfs.com/">Windows</a></th>
-    <th><a href="https://github.com/git-lfs/git-lfs/blob/main/INSTALLING.md">Linux</span></a></th>
-    <th><a href="https://formulae.brew.sh/formula/git-lfs">MacOS</span></a></th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td>Download and install the git-lfs installer</td>
-    <td><ul><li><code>sudo apt-get install software-properties-common</code></li><li><code>sudo curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash</code></li><li><code>sudo apt-get install git lfs</code></li></ul>
-    <td><code>$brew install git-lfs</code></td>
-  </tr>
-</tbody>
-</table>
-
-  Once downloaded and installed, set up Git LFS for your user account by running:
-
-  ```bash
-  git lfs install
-  ```
-
-   > **NOTE:** You only need to run this once per user account.
-
-  **1.2.** Navigate to your local repository:
-
-  ```bash
-  cd /path/to/your/repo
-  ```
-
-  **1.3** In each Git repository where you want to use Git LFS, select the file types you'd like Git LFS to manage (or directly edit your .gitattributes). This is done by using the ``git lfs track`` command:
-
-  ```bash
-  git lfs track "*.<ext>"
-  ```
-
-You can configure additional file extensions anytime. For example, if you want to track files with a ``.h5`` and ``.csv`` extension using Git LFS, you would run: ``git lfs track "*.h5" "*.csv"``. After running that command, .gitattributes file will be created where you can add more files to be tracked by editing it using the `git lfs track`` command again or editing .gitattributes directly.
-
-Now make sure .gitattributes is tracked:
-
-  ```bash
-  git add .gitattributes
-  ```
-
- > **NOTE:** You only have to run **1.3** commands the first time using Git LFS and when you want to add more extensions to track.
-
-**1.4** There is no step four. Just add the rest of the files upload and commit and push them to GitHub as you normally would; for instance, if your current branch is named main:
-
-```bash
-git add <file>.<ext>
-git commit -m "upload heavy file"
-git push origin main
-```
-
----
 ## Contributing
 
 If you wish to make contributions to this project, please initiate the process by opening an issue or submitting a pull request that encapsulates your proposed modifications.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
 
 ## Contact
 
