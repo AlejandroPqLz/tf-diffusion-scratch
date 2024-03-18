@@ -22,7 +22,7 @@ Implementing a **conditioned Denoising Diffsuion Probabilistic Model** (DDPM) on
 This project has been developed for my **Bachelor's Thesis** in **Data Science and Artificial Intelligence** at Universidad Politécnica de Madrid (UPM).
 
 <div style=\"text-align:center\">
-<img src='./figures/notebook_figures/poke_red_diffusion_portada.webp'>
+<img src='./figures/readme_figures/poke_red_diffusion_portada.webp'>
 </div>
 
 ## Structure
@@ -108,6 +108,19 @@ pip install -e.
 ```
 
 ### Config.ini
+After installing the external dependencies, you need to create a `config.ini` file in the root of the project. This file will contain the absolute paths to the data and the model checkpoints. The structure of the file can be found in the `config.ini.example` file.
+
+### Jupyter Notebook Kernel
+In order to use the environment in a Jupyter Notebook, you need to install the kernel. You can do it by running any notebook in the `diffusion_env` environment and the following pop-up will appear and click on `Install`.
+
+<p align="center">
+  <img src="./figures/readme_figures/install_ipykernel_package_ubuntu.png" width="350">
+</p>
+
+After that, you are ready to go!
+
+## Usage
+
 TODO
 
 ## Extra
