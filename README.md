@@ -101,7 +101,7 @@ conda activate diffusion_env
 ```
 
 ### External Dependencies
-Once the environment is activated, you can install the external dependencies by running the following command:
+Once the environment is activated, you can install the [external dependencies](./setup.py) by running the following command:
 
 ```bash
 pip install -e.
@@ -117,7 +117,7 @@ In order to use the environment in a Jupyter Notebook, you need to install the k
   <img src="./figures/readme_figures/install_ipykernel_package_ubuntu.png" width="350">
 </p>
 
-After that, you are ready to go!
+After all these steps, you are ready to go!
 
 ## Usage
 
