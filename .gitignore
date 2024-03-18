@@ -4,9 +4,9 @@ config.ini
 *.json
 
 # dataset tf
-*.snapshot
-dataset_spec.pb
-snapshot.metadata
+# *.snapshot
+# dataset_spec.pb
+# snapshot.metadata
 
 #python files
 *.egg-info
