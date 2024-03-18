@@ -15,7 +15,7 @@
  `------'  `--'      `--'       `--'     `-----'    `-----'  `--'      `-----' `--'  `--'      `-----'    `-----'`--' '--' `--' `--'   `--'     `-----'`--' `--'
 </pre>
 
-## :memo: Project Overview
+## :mag: Project Overview
 
 Implementing a **conditioned Denoising Diffsuion Probabilistic Model** (DDPM) on Tensorflow from Scratch for **Pokémon generation** and understanding the theory behind it. In order to achieve it, the Pokemon sprite images dataset from Kaggle will be used: [Pokémon sprite images](https://www.kaggle.com/datasets/yehongjiang/pokemon-sprites-images) with license: <img src='https://licensebuttons.net/l/zero/1.0/80x15.png'>.
 
@@ -25,7 +25,7 @@ This project has been developed for my **Bachelor's Thesis** in **Data Science a
 <img src='./figures/readme_figures/poke_red_diffusion_portada.webp'>
 </div>
 
-## :package: Structure
+## :open_file_folder: Structure
 
 The **structure** of the repository is as follows:
 
@@ -84,64 +84,63 @@ The **structure** of the repository is as follows:
 
 This project contains dependencies outside of the scope of python. Therefore you need to perform additional steps.
 
-### Conda Environment
+- ### Conda Environment
+    We will use conda to manage the python environment. You can install it following the [documentation](https://docs.anaconda.com/free/miniconda/miniconda-install/).
+    
+    Create the environment:
+    
+    ```bash
+    conda create -n diffusion_env python=3.11.8 -y
+    ```
+    
+    Activate the environment:
+    
+    ```bash
+    conda activate diffusion_env
+    ```
 
-We will use conda to manage the python environment. You can install it following the [documentation](https://docs.anaconda.com/free/miniconda/miniconda-install/).
+- ### External Dependencies
+    Once the environment is activated, you can install the [external dependencies](./setup.py) by running the following command:
+    
+    ```bash
+    pip install -e.
+    ```
 
-Create the environment:
+- ### Config.ini
+    After installing the external dependencies, you need to create a `config.ini` file in the root of the project. This file will contain the absolute paths to the data and the model checkpoints. The structure of the file can be found in the [config.template.ini](./config.template.ini) file.
 
-```bash
-conda create -n diffusion_env python=3.11.8 -y
-```
+- ### Jupyter Notebook Kernel
+    In order to use the environment in a Jupyter Notebook, you need to install the kernel. You can do it by running any notebook in the repository with `diffusion_env` environment activated and the following pop-up will appear:
+    
+    <p align="center">
+      <img src="./figures/readme_figures/install_ipykernel_package_ubuntu.png" width="350">
+    </p>
+    
+    After clicking on the `Install` button, the kernel will be installed and you will be able to use the environment in the notebook. Now you are ready to go!
 
-Activate the environment:
-
-```bash
-conda activate diffusion_env
-```
-
-### External Dependencies
-Once the environment is activated, you can install the [external dependencies](./setup.py) by running the following command:
-
-```bash
-pip install -e.
-```
-
-### Config.ini
-After installing the external dependencies, you need to create a `config.ini` file in the root of the project. This file will contain the absolute paths to the data and the model checkpoints. The structure of the file can be found in the [config.template.ini](./config.template.ini) file.
-
-### Jupyter Notebook Kernel
-In order to use the environment in a Jupyter Notebook, you need to install the kernel. You can do it by running any notebook in the repository with `diffusion_env` environment activated and the following pop-up will appear:
-
-<p align="center">
-  <img src="./figures/readme_figures/install_ipykernel_package_ubuntu.png" width="350">
-</p>
-
-After clicking on the `Install` button, the kernel will be installed and you will be able to use the environment in the notebook. Now you are ready to go!
-
-## :card_file_box: Data
+## :bar_chart: Data
 
 As mentioned before, the dataset used in this project is the [Pokémon sprite images](https://www.kaggle.com/datasets/yehongjiang/pokemon-sprites-images) from Kaggle. 
 
 The dataset contains +10,000 Pokémon sprites in PNG format (half of them are shiny variants) in 96x96 resolution from 898 Pokemon in different games, and their corresponding labels that may relate to their design in a CSV file. These aspects will be analyzed deeper in the [00-Intro-and-Analysis.ipynb](./notebooks/00-Intro-and-Analysis.ipynb) notebook.
 
-## Usage
+## :hammer_and_wrench: Usage
 
 After following the steps described in the [Prerequisites](https://github.com/AlejandroPqLz/DiffusionScratch#rocket-prerequisites) section, TODO
 
 
-# :books: Resources
+## :books: Resources
 Resources and tutorials that have been found useful for this project are located in the [/docs](./docs) folder.
 
-## Contributing
+## :seedling: Contributing
 
 If you wish to make contributions to this project, please initiate the process by opening an issue or submitting a pull request that encapsulates your proposed modifications.
 
-## License
+## :newspaper_roll: License
 
 This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
 
-## Contact
+## :busts_in_silhouette: Contact
 
 Should you have any inquiries or require assistance, please do not hesitate to contact [Alejandro Pequeño Lizcano](pq.lz.alejandro@gmail.com).
 
