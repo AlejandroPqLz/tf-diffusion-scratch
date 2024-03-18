@@ -131,7 +131,13 @@ After following the steps described in the [Prerequisites](https://github.com/Al
 
 
 ## :books: Resources
-Resources and tutorials that have been found useful for this project are located in the [/docs](./docs) folder.
+- Resources and tutorials that have been found useful for this project are located in the [/docs](./docs) folder.
+- Git LFS to upload large files into the repository:
+
+    Git Large File Storage (LFS) replaces large files such as datasets, models or weights with text pointers inside Git, while storing the file contents on a remote server like GitHub.com or GitHub Enterprise. 
+    For more info, visit: [Git LFS repository](https://github.com/git-lfs/git-lfs/tree/main).
+    
+    > **WARNING:** Every account using Git Large File Storage receives 1 GiB of free storage and 1 GiB a month of free bandwidth, so in order to avoid any issues uploading heavy files, it is recommended to only upload the heavy files one at a time and do not commit other changes additionally.
 
 ## :seedling: Contributing
 
