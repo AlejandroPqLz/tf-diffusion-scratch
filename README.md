@@ -111,16 +111,18 @@ pip install -e.
 After installing the external dependencies, you need to create a `config.ini` file in the root of the project. This file will contain the absolute paths to the data and the model checkpoints. The structure of the file can be found in the [config.template.ini](./config.template.ini) file.
 
 ### Jupyter Notebook Kernel
-In order to use the environment in a Jupyter Notebook, you need to install the kernel. You can do it by running any notebook in the `diffusion_env` environment and the following pop-up will appear and click on `Install`.
+In order to use the environment in a Jupyter Notebook, you need to install the kernel. You can do it by running any notebook in the repository with `diffusion_env` environment activated and the following pop-up will appear:
 
 <p align="center">
   <img src="./figures/readme_figures/install_ipykernel_package_ubuntu.png" width="350">
 </p>
 
-After all these steps, you are ready to go!
+After clicking on the `Install` button, the kernel will be installed and you will be able to use the environment in the notebook. Now you are ready to go!
 
 ## Data
-As mentioned before, the dataset used in this project is the [Pokémon sprite images](https://www.kaggle.com/datasets/yehongjiang/pokemon-sprites-images) with license: <img src='https://licensebuttons.net/l/zero/1.0/80x15.png'> from Kaggle. The dataset contains +10,000 Pokémon sprites in PNG format (half of them are shiny variants) in 96x96 resolution from 898 Pokemon in different games, and their corresponding labels that may relate to their design in a CSV file. These aspects will be analyzed deeper in the [00-Intro-and-Analysis.ipynb](./notebooks/00-Intro-and-Analysis.ipynb) notebook.
+As mentioned before, the dataset used in this project is the [Pokémon sprite images](https://www.kaggle.com/datasets/yehongjiang/pokemon-sprites-images) from Kaggle. 
+
+The dataset contains +10,000 Pokémon sprites in PNG format (half of them are shiny variants) in 96x96 resolution from 898 Pokemon in different games, and their corresponding labels that may relate to their design in a CSV file. These aspects will be analyzed deeper in the [00-Intro-and-Analysis.ipynb](./notebooks/00-Intro-and-Analysis.ipynb) notebook.
 
 ## Usage
 
