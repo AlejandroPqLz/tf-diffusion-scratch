@@ -31,53 +31,54 @@ The **structure** of the repository is as follows:
 
 ```tree
  📦DiffusionScratch
- ┣━ 📂data
- ┃ ┣━ 📂interim
- ┃ ┃ ┣━ 📜image_paths.json
- ┃ ┃ ┣━ 📜pokedex_cleaned.csv
- ┃ ┃ ┗━ 📜pokemon_dict_dataset.json
- ┃ ┣━ 📂processed
- ┃ ┃ ┗━ 📂pokemon_tf_dataset
- ┃ ┗━ 📂raw
- ┃ ┃ ┣━ 📂sprites
- ┃ ┃ ┗━ 📜pokedex.csv
- ┣━ 📂docs
- ┃ ┣━ 📂papers
- ┃ ┗━ 📂study
- ┣━ 📂figures
- ┃ ┣━ 📂model_results_figures
- ┃ ┣━ 📂notebook_figures
- ┃ ┗━ 📂readme_figures
- ┣━ 📂models
- ┃ ┗━ 📜.gitkeep
- ┣━ 📂notebooks
- ┃ ┣━ 📜00-Intro-and-Analysis.ipynb
- ┃ ┣━ 📜01-Dataset-Creation.ipynb
- ┃ ┣━ 📜02-Diffsuion-Model.ipynb
- ┃ ┣━ 📜03-Training-Diffusion-Model.ipynb
- ┃ ┗━ 📜04-Conclusions-and-Results.ipynb
- ┣━ 📂src
- ┃ ┣━ 📂data
- ┃ ┃ ┣━ 📜path_loader.py
- ┃ ┃ ┣━ 📜preprocess.py
- ┃ ┃ ┣━ 📜create_dataset.py
- ┃ ┃ ┣━ 📜temp.py
- ┃ ┃ ┗━ 📜__init__.py
- ┃ ┣━ 📂models
- ┃ ┃ ┣━ 📜build_model.py
- ┃ ┃ ┣━ 📜forward_diffsuion.py
- ┃ ┃ ┣━ 📜sampling_model.py
- ┃ ┃ ┣━ 📜training_model.py
- ┃ ┃ ┗━ 📜__init__.py
- ┃ ┣━ 📂visualization
- ┃ ┃ ┣━ 📜vizualize.py
- ┃ ┃ ┗━ 📜__init__.py
- ┃ ┗━ 📜__init__.py
- ┣━ 📜.gitattributes
- ┣━ 📜.gitignore
- ┣━ 📜LICENSE
- ┣━ 📜README.md
- ┗━ 📜setup.py
+ ┣ 📂data
+ ┃ ┣ 📂interim
+ ┃ ┃ ┣ 📜image_paths.json
+ ┃ ┃ ┗ 📜pokemon_dict_dataset.json
+ ┃ ┣ 📂processed
+ ┃ ┃ ┣ 📂pokemon_tf_dataset
+ ┃ ┃ ┗ 📜pokedex_cleaned.csv
+ ┃ ┗ 📂raw
+ ┃ ┃ ┣ 📂sprites
+ ┃ ┃ ┗ 📜pokedex.csv
+ ┣ 📂docs
+ ┃ ┣ 📂papers
+ ┃ ┗ 📂study
+ ┣ 📂figures
+ ┃ ┣ 📂model_results_figures
+ ┃ ┣ 📂notebook_figures
+ ┃ ┗ 📂readme_figures
+ ┣ 📂models
+ ┃ ┗ 📜.gitkeep
+ ┣ 📂notebooks
+ ┃ ┣ 📜00-Intro-and-Analysis.ipynb
+ ┃ ┣ 📜01-Dataset-Creation.ipynb
+ ┃ ┣ 📜02-Diffusion-Model.ipynb
+ ┃ ┣ 📜03-Training-Diffusion-Model.ipynb
+ ┃ ┗ 📜04-Conclusions-and-Results.ipynb
+ ┣ 📂src
+ ┃ ┣ 📂data
+ ┃ ┃ ┣ 📜create_dataset.py
+ ┃ ┃ ┣ 📜path_loader.py
+ ┃ ┃ ┣ 📜preprocess.py
+ ┃ ┃ ┗ 📜__init__.py
+ ┃ ┣ 📂models
+ ┃ ┃ ┣ 📜build_model.py
+ ┃ ┃ ┣ 📜forward_diffusion.py
+ ┃ ┃ ┣ 📜sampling_model.py
+ ┃ ┃ ┣ 📜training_model.py
+ ┃ ┃ ┗ 📜__init__.py
+ ┃ ┣ 📂visualization
+ ┃ ┃ ┣ 📜visualize.py
+ ┃ ┃ ┗ 📜__init__.py
+ ┃ ┗ 📜__init__.py
+ ┣ 📜.gitattributes
+ ┣ 📜.gitignore
+ ┣ 📜config.template.ini
+ ┣ 📜LICENSE
+ ┣ 📜README.md
+ ┗ 📜setup.py
+
 ```
 
 ## :rocket: Prerequisites
