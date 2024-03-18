@@ -15,7 +15,7 @@
  `------'  `--'      `--'       `--'     `-----'    `-----'  `--'      `-----' `--'  `--'      `-----'    `-----'`--' '--' `--' `--'   `--'     `-----'`--' `--'
 </pre>
 
-## Project Overview
+## :memo: Project Overview
 
 Implementing a **conditioned Denoising Diffsuion Probabilistic Model** (DDPM) on Tensorflow from Scratch for **Pokémon generation** and understanding the theory behind it. In order to achieve it, the Pokemon sprite images dataset from Kaggle will be used: [Pokémon sprite images](https://www.kaggle.com/datasets/yehongjiang/pokemon-sprites-images) with license: <img src='https://licensebuttons.net/l/zero/1.0/80x15.png'>.
 
@@ -25,7 +25,7 @@ This project has been developed for my **Bachelor's Thesis** in **Data Science a
 <img src='./figures/readme_figures/poke_red_diffusion_portada.webp'>
 </div>
 
-## Structure
+## :package: Structure
 
 The **structure** of the repository is as follows:
 
@@ -80,7 +80,7 @@ The **structure** of the repository is as follows:
  ┗━ 📜setup.py
 ```
 
-## Prerequisites
+## :rocket: Prerequisites
 
 This project contains dependencies outside of the scope of python. Therefore you need to perform additional steps.
 
@@ -119,13 +119,13 @@ In order to use the environment in a Jupyter Notebook, you need to install the k
 
 After clicking on the `Install` button, the kernel will be installed and you will be able to use the environment in the notebook. Now you are ready to go!
 
-## Data
+## :card_file_box: Data
 As mentioned before, the dataset used in this project is the [Pokémon sprite images](https://www.kaggle.com/datasets/yehongjiang/pokemon-sprites-images) from Kaggle. 
 
 The dataset contains +10,000 Pokémon sprites in PNG format (half of them are shiny variants) in 96x96 resolution from 898 Pokemon in different games, and their corresponding labels that may relate to their design in a CSV file. These aspects will be analyzed deeper in the [00-Intro-and-Analysis.ipynb](./notebooks/00-Intro-and-Analysis.ipynb) notebook.
 
 ## Usage
-
+After following the steps described in the [Prerequisites](https://github.com/AlejandroPqLz/DiffusionScratch#rocket-prerequisites) section, we can run the web application by executing the following command:
 TODO
 
 ## Extra
