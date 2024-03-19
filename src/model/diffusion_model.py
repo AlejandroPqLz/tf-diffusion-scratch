@@ -9,6 +9,9 @@ Functionality: This file contains the code to build the diffusion model architec
 # =====================================================================
 import configparser
 import tensorflow as tf
+from tensorflow.keras.utils import plot_model
+from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras import layers
 from tqdm import trange, tqdm
 import numpy as np
 import matplotlib.pyplot as plt
@@ -127,20 +130,20 @@ class DiffusionModel(BuildModel):
             axs[i].imshow(sample[0])
             axs[i].title.set_text(self.onehot_to_string(y_label[0]))
             axs[i].axis("off")
-            
+
         plt.show()
-        
-    def save(self, model_name: str = "diffusion_model.h5"):
-        '''Save the model'''
-        
-        self.diffusion_model.save(model_name)
-        
-        return f"Model saved as {model_name} sa
-        
-    def load(self):
-        '''Load the model'''
-        
-        self.diffusion_model = tf.keras.models.load_model("diffusion_model.h5")
+
+    def save(self, model_name: str, path: str):
+        """Save the model"""
+
+        self.diffusion_model.save(f"{path}/{model_name}.h5")
+
+        return f"Model saved as {model_name} in {path}."
+
+    def load(self, model_name: str, path: str):
+        """Load the model"""
+
+        self.diffusion_model = tf.keras.models.load_model(f"{path}/{model_name}.h5")
 
     def plot_samples(self):
         pass
