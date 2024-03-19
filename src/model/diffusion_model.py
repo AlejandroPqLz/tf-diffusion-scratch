@@ -117,7 +117,7 @@ class DiffusionModel(BuildModel):
             beta_end (float): Ending value of beta.
         """
 
-        fig, axs = plt.subplots(1, num_samples, figsize=(num_samples * 2, 2))
+        _, axs = plt.subplots(1, num_samples, figsize=(num_samples * 2, 2))
 
         for i in trange(num_samples, desc="Sample plot", leave=True):
 
