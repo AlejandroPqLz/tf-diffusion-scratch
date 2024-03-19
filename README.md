@@ -54,8 +54,9 @@ The **structure** of the repository is as follows:
  ┃ ┣ 📜00-Intro-and-Analysis.ipynb
  ┃ ┣ 📜01-Dataset-Creation.ipynb
  ┃ ┣ 📜02-Diffusion-Model.ipynb
- ┃ ┣ 📜03-Training-Diffusion-Model.ipynb
- ┃ ┗ 📜04-Conclusions-and-Results.ipynb
+ ┃ ┣ 📜03-Forward-and-Inverse-Diffusion.ipynb
+ ┃ ┣ 📜04-Training-Diffusion-Model.ipynb
+ ┃ ┗ 📜05-Conclusions-and-Results.ipynb
  ┣ 📂src
  ┃ ┣ 📂data
  ┃ ┃ ┣ 📜create_dataset.py
