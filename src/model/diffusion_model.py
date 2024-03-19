@@ -127,6 +127,20 @@ class DiffusionModel(BuildModel):
             axs[i].imshow(sample[0])
             axs[i].title.set_text(self.onehot_to_string(y_label[0]))
             axs[i].axis("off")
+            
+        plt.show()
+        
+    def save(self, model_name: str = "diffusion_model.h5"):
+        '''Save the model'''
+        
+        self.diffusion_model.save(model_name)
+        
+        return f"Model saved as {model_name} sa
+        
+    def load(self):
+        '''Load the model'''
+        
+        self.diffusion_model = tf.keras.models.load_model("diffusion_model.h5")
 
     def plot_samples(self):
         pass
