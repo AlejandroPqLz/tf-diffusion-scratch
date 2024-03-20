@@ -37,15 +37,15 @@ class PathLoader:
     @staticmethod
     def get_image_paths(json_path: str) -> list:
         """Loads the image paths from a JSON file.
-    
+
         :param json_path: The path to the JSON file.
         :return: A list of image paths.
-    
+
         """
-    
+
         with open(json_path, "r", encoding="utf-8") as file:
             image_paths = json.load(file)
-    
+
         return image_paths
 
     def load_paths(self) -> list:

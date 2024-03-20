@@ -30,6 +30,134 @@ IMG_SIZE = int(config["hyperparameters"]["img_size"])
 NUM_CLASSES = int(config["hyperparameters"]["num_classes"])
 
 
+# BuildModel
+# =====================================================================
+class BuildModel(tf.keras.models.Model):
+
+    def __init__(self, img_size: int, num_classes: int) -> None:
+        super().__init__()
+        self.img_size = img_size
+        self.num_classes = num_classes
+        self.diffusion_model = self.get_diffusion_model(self.img_size, self.num_classes)
+
+    def get_diffusion_model(
+        self, img_size: int = IMG_SIZE, num_classes: int = NUM_CLASSES
+    ) -> tf.keras.models.Model:
+        """Creates the diffusion model.
+
+        Args:
+            img_size (int, optional): The size of the image. Defaults to IMG_SIZE.
+            num_classes (int, optional): The number of classes. Defaults to NUM_CLASSES.
+
+        Returns:
+            tf.keras.models.Model: The diffusion model.
+
+        """
+
+        x_input = layers.Input(shape=(img_size, img_size, 3), name="x_input")
+        x_ts_input = layers.Input(shape=(1,), name="x_ts_input")
+        x_label_input = layers.Input(shape=(num_classes), name="x_label_input")
+
+        x = x_input
+
+        x_ts = layers.Dense(192)(x_ts_input)
+        x_ts = layers.LayerNormalization()(x_ts)
+        x_ts = layers.Activation("relu")(x_ts)
+
+        x_label = layers.Dense(192)(x_label_input)
+        x_label = layers.LayerNormalization()(x_label)
+        x_label = layers.Activation("relu")(x_label)
+
+        # ----- left ( down ) -----
+        x = x64 = self.block(x, x_ts, x_label)
+        x = layers.MaxPool2D(2)(x)
+
+        x = x32 = self.block(x, x_ts, x_label)
+        x = layers.MaxPool2D(2)(x)
+
+        x = x16 = self.block(x, x_ts, x_label)
+        x = layers.MaxPool2D(2)(x)
+
+        x = x8 = self.block(x, x_ts, x_label)
+
+        # ----- MLP -----
+        x = layers.Flatten()(x)
+        x = layers.Concatenate()([x, x_ts, x_label])
+        x = layers.Dense(128)(x)
+        x = layers.LayerNormalization()(x)
+        x = layers.Activation("relu")(x)
+
+        x = layers.Dense(8 * 8 * 32)(x)
+        x = layers.LayerNormalization()(x)
+        x = layers.Activation("relu")(x)
+        x = layers.Reshape((8, 8, 32))(x)
+
+        # ----- right ( up ) -----
+        x = layers.Concatenate()([x, x8])
+        x = self.block(x, x_ts, x_label)
+        x = layers.UpSampling2D(2)(x)
+
+        x = layers.Concatenate()([x, x16])
+        x = self.block(x, x_ts, x_label)
+        x = layers.UpSampling2D(2)(x)
+
+        x = layers.Concatenate()([x, x32])
+        x = self.block(x, x_ts, x_label)
+        x = layers.UpSampling2D(2)(x)
+
+        x = layers.Concatenate()([x, x64])
+        x = self.block(x, x_ts, x_label)
+
+        # ----- output -----
+        x = layers.Conv2D(3, kernel_size=1, padding="same")(x)
+        model = tf.keras.models.Model([x_input, x_ts_input, x_label_input], x)
+        return model
+
+    def block(self, x_img: tf.Tensor, x_ts: tf.Tensor, x_label: tf.Tensor) -> tf.Tensor:
+        """Creates a block of the diffusion model.
+
+        Args:
+            x_img (tf.Tensor): The input image tensor.
+            x_ts (tf.Tensor): The input time tensor.
+            x_label (tf.Tensor): The input label tensor.
+
+        Returns:
+            tf.Tensor: The output tensor.
+        """
+
+        x_parameter = layers.Conv2D(128, kernel_size=3, padding="same")(x_img)
+        x_parameter = layers.Activation("relu")(x_parameter)
+
+        time_parameter = layers.Dense(128)(x_ts)
+        time_parameter = layers.Activation("relu")(time_parameter)
+        time_parameter = layers.Reshape((1, 1, 128))(time_parameter)
+
+        label_parameter = layers.Dense(128)(x_label)
+        label_parameter = layers.Activation("relu")(label_parameter)
+        label_parameter = layers.Reshape((1, 1, 128))(label_parameter)
+
+        x_parameter = x_parameter * label_parameter + time_parameter
+
+        # -----
+        x_out = layers.Conv2D(128, kernel_size=3, padding="same")(x_img)
+        x_out = x_out + x_parameter
+        x_out = layers.LayerNormalization()(x_out)
+        x_out = layers.Activation("relu")(x_out)
+
+        return x_out
+
+    def call(self, x: tf.Tensor) -> tf.Tensor:
+        """Calls the diffusion model.
+
+        Args:
+            x (tf.Tensor): The input tensor.
+
+        Returns:
+            tf.Tensor: The output tensor.
+        """
+        return self.diffusion_model(x)
+
+
 # Diffusion model
 # =====================================================================
 class DiffusionModel(BuildModel):
@@ -112,7 +240,7 @@ class DiffusionModel(BuildModel):
                 print("\tSampling images...")
                 plot_samples(model, num_samples=3, scheduler=scheduler, T=T)
 
-    def sampling(
+    def samlping(
         self,
         start_noise: np.ndarray,
         T: int,
@@ -231,3 +359,119 @@ class DiffusionModel(BuildModel):
         em[np.random.randint(0, num_classes - 1)] = 1
 
         return em
+
+
+# Forward diffusion
+# =====================================================================
+def forward_diffusion(
+    x_0: tf.Tensor,
+    t: int,
+    T: int,
+    scheduler: str,
+    beta_start: float,
+    beta_end: float,
+    s: float,
+) -> tf.Tensor:
+    """Forward diffusion function
+
+    :param x_0: The image to diffuse (x_0)
+    :param T: The total number of timesteps
+    :param t: The time_step
+    :param scheduler: The beta scheduler
+    :param beta_start: The starting value of beta
+    :param beta_end: The ending value of beta
+    :param s: scale factor for the variance curve
+    :return: The diffused image
+    """
+    # Get schedulers
+    beta = beta_scheduler(scheduler, T, beta_start, beta_end, s)
+    alpha = 1.0 - beta
+    alpha_cumprod = np.cumprod(alpha)
+
+    # Get the diffused image
+    noise = tf.random.normal(shape=tf.shape(x_0))
+    x_t = np.sqrt(alpha_cumprod[t]) * x_0 + np.sqrt(1 - alpha_cumprod[t]) * noise
+
+    return x_t
+
+
+def beta_scheduler(
+    scheduler: str,
+    T: int,
+    beta_start: float,
+    beta_end: float,
+    s: float,
+) -> np.array:
+    """
+    Generates a linear, quadratic or a cosine noise schedule for the given number of timesteps.
+
+    :param scheduler: The type of schedule to use. Options are "linear" or "cosine".
+    :param T: Total number of timesteps
+    :param beta_start: Starting value of beta
+    :param beta_end: Ending value of beta
+    :param s: scale factor for the variance curve
+    :return: An array of beta values according to the selected schedule.
+    """
+
+    if scheduler == "linear":
+        beta = np.linspace(beta_start, beta_end, T)
+
+    elif scheduler == "cosine":
+
+        def f(t):
+            return np.cos((t / T + s) / (1 + s) * np.pi * 0.5) ** 2
+
+        t = np.linspace(0, T, T + 1)
+        alphas_cumprod = f(t) / f(0)
+        beta = 1 - alphas_cumprod[1:] / alphas_cumprod[:-1]
+        beta = tf.clip_by_value(beta, 0.0001, 0.999)
+
+    return beta
+
+
+# =====================================================================
+
+
+class DiffusionModel(tf.keras.Model):
+    """
+    DiffusionModel class
+
+    """
+
+    def __init__(self, img_size: int = IMG_SIZE, num_classes: int = NUM_CLASSES):
+        super().__init__()
+        self.img_size = img_size
+        self.num_classes = num_classes
+
+    def train_step(self, data):
+        # Unpack the data
+        input_data, label = data
+
+        # Compute the scheduler values
+        beta = beta_scheduler(scheduler, T, beta_start, beta_end)
+        alpha = 1.0 - beta
+        alpha_cumprod = np.cumprod(alpha)
+
+        # 1: repeat (iterations through the epochs)
+
+        # 3: t ~ U(0, T)
+        t = np.random.randint(0, T)
+        normalized_t = np.full((input_data.shape[0], 1), t / T, dtype=np.float32)
+
+        # 2: x_0 ~ q(x_0)
+        noised_data = forward_diffusion(input_data, t, scheduler)
+
+        # 4: eps_t ~ N(0, I)
+        target_noise = noised_data - input_data * np.sqrt(alpha_cumprod[t])
+
+        # 5: Take a gradient descent step on
+        with tf.GradientTape() as tape:
+            predicted_noise = self(
+                [noised_data, normalized_t], training=True
+            )  # # eps_theta -> model(x_t, t/T)
+            loss = loss_fn(target_noise, predicted_noise)
+
+        grads = tape.gradient(loss, self.trainable_variables)
+        optimizer.apply_gradients(zip(grads, self.trainable_variables))
+
+        return {"loss": loss}
