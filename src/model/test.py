@@ -8,10 +8,11 @@ diffusion functionality to the defined model.
 
 # Imports
 # =====================================================================
+import configparser
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
-import configparser
+import tqdm
 from src.model.build_model import BuildModel
 
 # Set up
@@ -19,101 +20,164 @@ from src.model.build_model import BuildModel
 config = configparser.ConfigParser()
 config.read("config.ini")
 
+dir_path = config["data"]["dir_path"]
+
 IMG_SIZE = int(config["hyperparameters"]["img_size"])
 NUM_CLASSES = int(config["hyperparameters"]["num_classes"])
 BATCH_SIZE = int(config["hyperparameters"]["batch_size"])
 EPOCHS = int(config["hyperparameters"]["epochs"])
 T = int(config["hyperparameters"]["T"])  # Number of diffusion steps
+SCHEDULER = config["hyperparameters"]["scheduler"]
 BETA_START = float(config["hyperparameters"]["beta_start"])
 BETA_END = float(config["hyperparameters"]["beta_end"])
 S = float(config["hyperparameters"]["s"])  # Scale factor for the variance curve
-SCHEDULER = config["hyperparameters"]["scheduler"]
 
 
 class DiffusionModel(tf.keras.Model):
-    def __init__(self, img_size: int, num_classes: int):
-        super(DiffusionModel, self).__init__()
+    """
+    DiffusionModel class
+    """
+
+    def __init__(
+        self,
+        img_size: int,
+        num_classes: int,
+        T: int,
+        beta_start: float,
+        beta_end: float,
+        s: float,
+        scheduler: str,
+    ):
+        super(DiffusionModel, self).__init__()  # TODO: REFACTOR THIS
         self.img_size = img_size
         self.num_classes = num_classes
         self.diffusion_model = BuildModel(img_size, num_classes)
+        self.T = T
+        self.scheduler = scheduler
+        self.beta_start = beta_start
+        self.beta_end = beta_end
+        self.s = s
 
     def train_step(self, data):
-        input_data, _ = data  # Unpacking the data; labels are not used in this context
+        """
+        Algorithm 1: The training step for the diffusion model.
 
-        # Configurations from the config file or as model attributes
+        Args:
+            data (tuple): A tuple containing the input data and labels.
+
+        Returns:
+            dict: A dictionary containing the training loss.
+        """
+
+        # Rename the variables for easier access
         T = self.T  # Total diffusion steps
         scheduler = self.scheduler
         beta_start = self.beta_start
         beta_end = self.beta_end
         s = self.s  # Scale factor for the variance curve
 
+        # Unpack the data
+        input_data, _ = data
+
+        # Get the scheduler values
+        beta = self.beta_scheduler(self.scheduler, T, beta_start, beta_end, s)
+        alpha = 1 - beta
+        alpha_cumprod = np.cumprod(alpha)
+
+        # 1: repeat ------
+
+        # 3: t ~ U(0, T)
+        t = tf.random.uniform(
+            shape=(input_data.shape[0], 1), minval=0, maxval=T, dtype=tf.float32
+        )  # Generate a random timestep for each image in the batch
+
+        # 2: x_0 ~ q(x_0)
+        noised_data = self.forward_diffusion(
+            input_data,
+            t,
+            T,
+            scheduler,
+            beta_start,
+            beta_end,
+            s,
+        )
+
+        # 4: eps_t ~ N(0, I)
+        target_noise = noised_data - input_data * tf.sqrt(alpha_cumprod[t]) / tf.sqrt(
+            1 - alpha_cumprod[t]
+        )
+
+        # 5: Take a gradient descent step on
         with tf.GradientTape() as tape:
-            # Generate a random timestep for each image in the batch
-            t = tf.random.uniform(shape=(), minval=0, maxval=T, dtype=tf.int32)
+            # eps_theta -> model(x_t, t/T)
+            predicted_noise = self.diffusion_model([noised_data, t], training=True)
+            loss = tf.reduce_mean((target_noise - predicted_noise) ** 2)  # MSE loss
 
-            # Perform forward diffusion to get noised images and target noise
-            noised_data = self.forward_diffusion(
-                input_data, t, T, scheduler, beta_start, beta_end, s
-            )
-            beta = self.beta_scheduler(scheduler, T, beta_start, beta_end, s)
-            alpha_cumprod = np.cumprod(1 - beta)
-            target_noise = (
-                noised_data - input_data * tf.sqrt(alpha_cumprod[t])
-            ) / tf.sqrt(1 - alpha_cumprod[t])
-
-            # Predict noise using the model
-            predicted_noise = self.diffusion_model(
-                [
-                    noised_data,
-                    tf.fill([tf.shape(input_data)[0], 1], tf.cast(t, tf.float32) / T),
-                ],
-                training=True,
-            )
-
-            # Compute loss (Mean Squared Error between target and predicted noise)
-            loss = tf.reduce_mean((target_noise - predicted_noise) ** 2)
-
-        # Compute gradients and update model weights
         gradients = tape.gradient(loss, self.trainable_variables)
         self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
+
+        # 6: until convergence ------
+
+        # Save the model every 20 epochs
+        if self.epoch % 20 == 0:
+            self.save(f"{dir_path}/models/inter_models/inter_model_{self.epoch}.h5")
+
+        # Sample and plot a generated image every 10 epochs
+        if self.epoch % 10 == 0:
+            self.plot_samples(1, T, scheduler, beta_start, beta_end, s)
 
         # Update and return training metrics
         return {"loss": loss}
 
     def predict_step(self, data):
-        # Starting from pure noise
-        start_noise = (
-            data  # Assuming data is the starting noise for the reverse process
-        )
+        """
+        Algorithm 2: (sampling) The prediction step for the diffusion model.
+
+        Args:
+            data (tuple): A tuple containing the input data and labels.
+
+        Returns:
+            tf.Tensor: The final denoised image.
+
+        """
+
+        # Rename the variables for easier access
         T = self.T  # Total diffusion steps
         scheduler = self.scheduler
         beta_start = self.beta_start
         beta_end = self.beta_end
         s = self.s  # Scale factor for the variance curve
 
+        # Get the scheduler values
+        beta = self.beta_scheduler(self.scheduler, T, beta_start, beta_end, s)
+        alpha = 1 - beta
+        alpha_cumprod = np.cumprod(alpha)
+
+        # Starting from pure noise
+        x_t = data  # 1: x_T ~ N(0, I)
+
         # Reverse the diffusion process
-        for t in reversed(range(T)):
+        # 2: for t = T − 1, . . . , 1 do
+        for t in tqdm(reversed(range(1, T)), desc="Sampling", total=T - 1, leave=False):
+
             normalized_t = tf.fill(
                 [tf.shape(start_noise)[0], 1], tf.cast(t, tf.float32) / T
             )
 
-            # Update the noise using the model's prediction (this part depends on your model's specific implementation)
-            predicted_noise = self.diffusion_model(
-                [start_noise, normalized_t], training=False
-            )
+            # Sample z_t
+            # 3: z ∼ N(0, I) if t > 1, else z = 0
+            z = tf.random.normal(shape=tf.shape(x_t)) if t > 1 else tf.zeros_like(x_t)
 
-            # Reverse diffusion step to denoise (this equation is illustrative and should be adapted to your model)
-            beta_t = beta_scheduler(scheduler, T, beta_start, beta_end, s)[t]
-            alpha_t = 1 - beta_t
-            alpha_cumprod_t = np.prod(
-                1 - beta_scheduler(scheduler, T, beta_start, beta_end, s)[: t + 1]
-            )
-            start_noise = (
-                start_noise - tf.sqrt(1 - alpha_cumprod_t) * predicted_noise
-            ) / tf.sqrt(alpha_t)
+            # Calculate x_{t-1}
+            # 4: x_{t−1} = (x_t - (1 - alpha_t) / sqrt(1 - alpha_cumprod_t) * eps_theta) / sqrt(alpha_t) + sigma_t * z
+            predicted_noise = self.diffusion_model([x_t, normalized_t], training=False)
+
+            x_t = (
+                x_t - (1 - alpha[t]) / tf.sqrt(1 - alpha_cumprod[t]) * predicted_noise
+            ) / tf.sqrt(alpha[t]) + tf.sqrt(alpha[t]) * z
 
         # Return the final denoised image
-        return start_noise
+        return x_t  # 5: return x_0
 
     def plot_samples(
         self,
@@ -124,13 +188,14 @@ class DiffusionModel(tf.keras.Model):
         beta_end: float = None,
         s: float = None,
     ):
+
         T = T or self.T
         scheduler = scheduler or self.scheduler
         beta_start = beta_start or self.beta_start
         beta_end = beta_end or self.beta_end
         s = s or self.s
 
-        fig, axs = plt.subplots(1, num_samples, figsize=(num_samples * 2, 2))
+        _, axs = plt.subplots(1, num_samples, figsize=(num_samples * 2, 2))
 
         for i in range(num_samples):
             # Start with random noise
