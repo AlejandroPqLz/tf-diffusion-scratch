@@ -162,10 +162,24 @@ class DiffusionModel(tf.keras.Model):
         # 2: for t = T − 1, . . . , 1 do
         for t in tqdm(reversed(range(1, T)), desc="Sampling", total=T - 1, leave=False):
             normalized_t = tf.fill([tf.shape(x_t)[0], 1], tf.cast(t, tf.float32) / T)
-            # Rest of the code...
 
+            # Sample z
+            # 3: z ~ N(0, I) if t > 1, else z = 0
+            z = tf.random.normal(shape=tf.shape(x_t)) if t > 1 else tf.zeros_like(x_t)
+
+            # Calculate the predicted noise
+            predicted_noise = self.diffusion_model([x_t, normalized_t], training=False)
+
+            # Calculate x_{t-1}
+            # 4: x_{t-1} = (x_t - (1 - alpha_t) / sqrt(1 - alpha_cumprod_t) * eps_theta) / sqrt(alpha_t) + sigma_t * z
+            sigma_t = tf.sqrt(1 - alpha_cumprod[t])
+            x_t = (
+                x_t - (1 - alpha[t]) / tf.sqrt(1 - alpha_cumprod[t]) * predicted_noise
+            ) / tf.sqrt(alpha[t]) + sigma_t * z
+
+        # 5: end for
         # Return the final denoised image
-        return x_t  # 5: return x_0
+        return x_t  # 6: return x_0
 
     def plot_samples(
         self,
