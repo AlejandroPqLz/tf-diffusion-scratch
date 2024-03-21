@@ -13,7 +13,7 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from src.model.build_model import BuildModel
+from src.utils.utils import *
 
 # Set up
 # =====================================================================
@@ -41,6 +41,7 @@ class DiffusionModel(tf.keras.Model):
 
     def __init__(
         self,
+        model: tf.keras.Model,
         img_size: int,
         num_classes: int,
         T: int,
@@ -53,7 +54,7 @@ class DiffusionModel(tf.keras.Model):
         super().__init__()
         self.img_size = img_size
         self.num_classes = num_classes
-        self.diffusion_model = BuildModel(img_size, num_classes)
+        self.model = model
         self.T = T
         self.scheduler = scheduler
         self.beta_start = beta_start
@@ -112,7 +113,7 @@ class DiffusionModel(tf.keras.Model):
         # 5: Take a gradient descent step on
         with tf.GradientTape() as tape:
             # eps_theta -> model(x_t, t/T)
-            predicted_noise = self.diffusion_model([noised_data, t], training=True)
+            predicted_noise = self.model([noised_data, t], training=True)
             loss = tf.reduce_mean((target_noise - predicted_noise) ** 2)  # MSE loss
 
         gradients = tape.gradient(loss, self.trainable_variables)
@@ -168,7 +169,7 @@ class DiffusionModel(tf.keras.Model):
             z = tf.random.normal(shape=tf.shape(x_t)) if t > 1 else tf.zeros_like(x_t)
 
             # Calculate the predicted noise
-            predicted_noise = self.diffusion_model([x_t, normalized_t], training=False)
+            predicted_noise = self.model([x_t, normalized_t], training=False)
 
             # Calculate x_{t-1}
             # 4: x_{t-1} = (x_t - (1 - alpha_t) / sqrt(1 - alpha_cumprod_t) * eps_theta) / sqrt(alpha_t) + sigma_t * z
@@ -181,7 +182,7 @@ class DiffusionModel(tf.keras.Model):
         # Return the final denoised image
         return x_t  # 6: return x_0
 
-    def plot_samples(self, num_samples: int = 5):
+    def plot_samples(self, num_samples: int = 5, poke_type: int = None):
         """
         Generate and plot samples from the diffusion model.
 
@@ -189,42 +190,35 @@ class DiffusionModel(tf.keras.Model):
             num_samples (int): The number of samples to generate and plot.
         """
 
-        T = self.T
-        scheduler = self.scheduler
-        beta_start = self.beta_start
-        beta_end = self.beta_end
-        s = self.s
-
         _, axs = plt.subplots(1, num_samples, figsize=(num_samples * 2, 2))
 
-        for i in range(num_samples):
+        # Generate and plot the samples
+        # =====================================================================
+        for i in tqdm(range(num_samples), desc="Generating samples", total=num_samples):
             # Start with random noise
             start_noise = tf.random.normal([1, self.img_size, self.img_size, 3])
 
-            # Reverse the diffusion process to generate an image
-            for t in reversed(range(T)):
-                normalized_t = tf.fill([1, 1], tf.cast(t, tf.float32) / T)
-                predicted_noise = self.diffusion_model(
-                    [start_noise, normalized_t], training=False
-                )
-                beta_t = self.beta_scheduler(scheduler, T, beta_start, beta_end, s)[t]
-                alpha_t = 1 - beta_t
-                alpha_cumprod_t = np.prod(
-                    1
-                    - self.beta_scheduler(scheduler, T, beta_start, beta_end, s)[
-                        : t + 1
-                    ]
-                )
-                start_noise = (
-                    start_noise - tf.sqrt(1 - alpha_cumprod_t) * predicted_noise
-                ) / tf.sqrt(alpha_t)
+            y_label = np.zeros(NUM_CLASSES)
 
-            # Plot the generated image
-            img = start_noise[0].numpy()
-            img = (img - img.min()) / (
-                img.max() - img.min()
-            )  # Normalize to [0, 1] for displaying
-            axs[i].imshow(img)
+            if poke_type is not None:
+                poke_type = utils.string_to_onehot(poke_type)
+                y_label[poke_type] = 1
+            else:
+                y_label[np.random.randint(0, NUM_CLASSES - 1)] = 1
+
+            y_label = y_label.reshape(1, NUM_CLASSES)
+
+            # sample = self.predict_step(start_noise, y_label)
+
+            sample = self.predict_step(start_noise)
+
+            # Scale to [0, 1] for plotting
+            sample = (sample - tf.reduce_min(sample)) / (
+                tf.reduce_max(sample) - tf.reduce_min(sample)
+            )
+
+            axs[i].imshow(sample[0])
+            axs[i].title.set_text(utils.onehot_to_string(y_label))
             axs[i].axis("off")
 
         plt.show()

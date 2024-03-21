@@ -13,8 +13,8 @@ import matplotlib.image as mpimg
 import numpy as np
 import tensorflow as tf
 import pandas as pd
-from src.data.preprocess import label_mapping
-from src.models.forward_diffusion import forward_diffusion, beta_scheduler
+from src.models.diffusion import DiffusionModel
+from src.data.utils.utils import onehot_to_string
 
 
 # =====================================================================
@@ -103,8 +103,8 @@ def plot_noise_levels(T: int, beta_start: float, beta_end: float, s: float) -> N
 
     # Variance scheduler for noise level
     # =====================================================================
-    beta_linear = beta_scheduler("linear", T, beta_start, beta_end, s)
-    beta_cosine = beta_scheduler("cosine", T, beta_start, beta_end, s)
+    beta_linear = DiffusionModel.beta_scheduler("linear", T, beta_start, beta_end, s)
+    beta_cosine = DiffusionModel.beta_scheduler("cosine", T, beta_start, beta_end, s)
 
     alpha_linear = 1.0 - beta_linear
     alpha_cosine = 1.0 - beta_cosine
@@ -157,7 +157,10 @@ def plot_forward_diffusion(
         plt.subplot(1, len(n_timesteps), i + 1)
         plt.imshow(
             np.clip(
-                forward_diffusion(X, t, T, scheduler, beta_start, beta_end, s) * 0.5
+                DiffusionModel.forward_diffusion(
+                    X, t, T, scheduler, beta_start, beta_end, s
+                )
+                * 0.5
                 + 0.5,
                 a_min=0.0,
                 a_max=1.0,
@@ -169,27 +172,3 @@ def plot_forward_diffusion(
             plt.title(f"t:{t}")
         plt.axis("off")
     plt.show()
-
-
-# =====================================================================
-# Auxiliary functions
-# =====================================================================
-
-
-# Transform the one-hot encoded labels to strings
-# TODO: Adapt this to the new dataset with the new types (type1 and type2)
-# =====================================================================
-def onehot_to_string(one_hot_label: np.ndarray, df: pd.DataFrame) -> str:
-    """Converts a one-hot encoded label back to a string
-
-    :param one_hot_label: The one-hot encoded label
-    :param df: The dataframe with the pokemon data
-    :return: The string label
-    """
-
-    dict_df = df.set_index("pokedex_id")["type1"].to_dict()
-
-    label_index = np.argmax(one_hot_label)
-    for label, index in label_mapping(dict_df).items():
-        if index == label_index:
-            return label
