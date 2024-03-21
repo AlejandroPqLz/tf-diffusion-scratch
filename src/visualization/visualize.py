@@ -13,8 +13,8 @@ import matplotlib.image as mpimg
 import numpy as np
 import tensorflow as tf
 import pandas as pd
-from src.models.diffusion import DiffusionModel
-from src.data.utils.utils import onehot_to_string
+from src.model.diffusion import DiffusionModel
+from src.utils.utils import onehot_to_string
 
 
 # =====================================================================

@@ -14,9 +14,9 @@ from src.data.preprocess import label_mapping
 # Set up
 # =====================================================================
 config = configparser.ConfigParser()
-config.read("config.ini")
+config.read("../../config.ini")
 
-DATA_PATH = config["PATHS"]["data_path"]
+DATA_PATH = config["paths"]["data_path"]
 poke_df = pd.read_csv(f"{DATA_PATH}/raw/pokedex.csv")
 
 

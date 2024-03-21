@@ -18,9 +18,9 @@ from src.utils.utils import string_to_onehot, onehot_to_string
 # Set up
 # =====================================================================
 config = configparser.ConfigParser()
-config.read("config.ini")
+config.read("../../config.ini")
 
-DIR_PATH = config["data"]["dir_path"]
+DIR_PATH = config["paths"]["dir_path"]
 
 IMG_SIZE = int(config["hyperparameters"]["img_size"])
 NUM_CLASSES = int(config["hyperparameters"]["num_classes"])
