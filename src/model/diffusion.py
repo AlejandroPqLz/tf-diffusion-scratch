@@ -13,7 +13,7 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from src.utils.utils import *
+from src.utils.utils import string_to_onehot, onehot_to_string
 
 # Set up
 # =====================================================================
@@ -221,7 +221,7 @@ class DiffusionModel(tf.keras.Model):
             y_label = np.zeros(NUM_CLASSES)
 
             if poke_type is not None:
-                poke_type = utils.string_to_onehot(poke_type)
+                poke_type = string_to_onehot(poke_type)
                 y_label[poke_type] = 1
             else:
                 y_label[np.random.randint(0, NUM_CLASSES - 1)] = 1
@@ -238,7 +238,7 @@ class DiffusionModel(tf.keras.Model):
             )
 
             axs[i].imshow(sample[0])
-            axs[i].title.set_text(utils.onehot_to_string(y_label))
+            axs[i].title.set_text(onehot_to_string(y_label))
             axs[i].axis("off")
 
         plt.show()
@@ -268,7 +268,7 @@ class DiffusionModel(tf.keras.Model):
             tf.Tensor: The diffused image tensor at timestep t.
         """
         # Calculate the noise schedule for beta values
-        beta = beta_scheduler(
+        beta = DiffusionModel.beta_scheduler(
             scheduler=scheduler, T=T, beta_start=beta_start, beta_end=beta_end, s=s
         )
 
