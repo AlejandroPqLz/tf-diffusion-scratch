@@ -126,7 +126,7 @@ class DiffusionModel(tf.keras.Model):
 
         # Sample and plot a generated image every 10 epochs
         if self.epoch % 10 == 0:
-            self.plot_samples(1, T, scheduler, beta_start, beta_end, s)
+            self.plot_samples(num_samples=1)
 
         # Update and return training metrics
         return {"loss": loss}
@@ -181,21 +181,19 @@ class DiffusionModel(tf.keras.Model):
         # Return the final denoised image
         return x_t  # 6: return x_0
 
-    def plot_samples(
-        self,
-        num_samples: int = 5,
-        T: int = None,
-        scheduler: str = None,
-        beta_start: float = None,
-        beta_end: float = None,
-        s: float = None,
-    ):
+    def plot_samples(self, num_samples: int = 5):
+        """
+        Generate and plot samples from the diffusion model.
 
-        T = T or self.T
-        scheduler = scheduler or self.scheduler
-        beta_start = beta_start or self.beta_start
-        beta_end = beta_end or self.beta_end
-        s = s or self.s
+        Args:
+            num_samples (int): The number of samples to generate and plot.
+        """
+
+        T = self.T
+        scheduler = self.scheduler
+        beta_start = self.beta_start
+        beta_end = self.beta_end
+        s = self.s
 
         _, axs = plt.subplots(1, num_samples, figsize=(num_samples * 2, 2))
 
