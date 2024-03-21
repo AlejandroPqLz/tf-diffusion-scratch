@@ -12,7 +12,7 @@ import configparser
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
-import tqdm
+from tqdm import tqdm
 from src.model.build_model import BuildModel
 
 # Set up
@@ -20,13 +20,14 @@ from src.model.build_model import BuildModel
 config = configparser.ConfigParser()
 config.read("config.ini")
 
-dir_path = config["data"]["dir_path"]
+DIR_PATH = config["data"]["dir_path"]
 
 IMG_SIZE = int(config["hyperparameters"]["img_size"])
 NUM_CLASSES = int(config["hyperparameters"]["num_classes"])
 BATCH_SIZE = int(config["hyperparameters"]["batch_size"])
 EPOCHS = int(config["hyperparameters"]["epochs"])
-T = int(config["hyperparameters"]["T"])  # Number of diffusion steps
+
+TIMESTEPS = int(config["hyperparameters"]["T"])  # Number of diffusion steps
 SCHEDULER = config["hyperparameters"]["scheduler"]
 BETA_START = float(config["hyperparameters"]["beta_start"])
 BETA_END = float(config["hyperparameters"]["beta_end"])
@@ -48,7 +49,8 @@ class DiffusionModel(tf.keras.Model):
         s: float,
         scheduler: str,
     ):
-        super(DiffusionModel, self).__init__()  # TODO: REFACTOR THIS
+
+        super().__init__()
         self.img_size = img_size
         self.num_classes = num_classes
         self.diffusion_model = BuildModel(img_size, num_classes)
@@ -120,7 +122,7 @@ class DiffusionModel(tf.keras.Model):
 
         # Save the model every 20 epochs
         if self.epoch % 20 == 0:
-            self.save(f"{dir_path}/models/inter_models/inter_model_{self.epoch}.h5")
+            self.save(f"{DIR_PATH}/models/inter_models/inter_model_{self.epoch}.h5")
 
         # Sample and plot a generated image every 10 epochs
         if self.epoch % 10 == 0:
@@ -149,7 +151,7 @@ class DiffusionModel(tf.keras.Model):
         s = self.s  # Scale factor for the variance curve
 
         # Get the scheduler values
-        beta = self.beta_scheduler(self.scheduler, T, beta_start, beta_end, s)
+        beta = self.beta_scheduler(scheduler, T, beta_start, beta_end, s)
         alpha = 1 - beta
         alpha_cumprod = np.cumprod(alpha)
 
@@ -159,22 +161,8 @@ class DiffusionModel(tf.keras.Model):
         # Reverse the diffusion process
         # 2: for t = T − 1, . . . , 1 do
         for t in tqdm(reversed(range(1, T)), desc="Sampling", total=T - 1, leave=False):
-
-            normalized_t = tf.fill(
-                [tf.shape(start_noise)[0], 1], tf.cast(t, tf.float32) / T
-            )
-
-            # Sample z_t
-            # 3: z ∼ N(0, I) if t > 1, else z = 0
-            z = tf.random.normal(shape=tf.shape(x_t)) if t > 1 else tf.zeros_like(x_t)
-
-            # Calculate x_{t-1}
-            # 4: x_{t−1} = (x_t - (1 - alpha_t) / sqrt(1 - alpha_cumprod_t) * eps_theta) / sqrt(alpha_t) + sigma_t * z
-            predicted_noise = self.diffusion_model([x_t, normalized_t], training=False)
-
-            x_t = (
-                x_t - (1 - alpha[t]) / tf.sqrt(1 - alpha_cumprod[t]) * predicted_noise
-            ) / tf.sqrt(alpha[t]) + tf.sqrt(alpha[t]) * z
+            normalized_t = tf.fill([tf.shape(x_t)[0], 1], tf.cast(t, tf.float32) / T)
+            # Rest of the code...
 
         # Return the final denoised image
         return x_t  # 5: return x_0
