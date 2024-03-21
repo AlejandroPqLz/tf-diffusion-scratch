@@ -37,6 +37,26 @@ S = float(config["hyperparameters"]["s"])  # Scale factor for the variance curve
 class DiffusionModel(tf.keras.Model):
     """
     DiffusionModel class
+
+    Attributes:
+
+    - model (tf.keras.Model): The base model to which the diffusion process is added.
+    - img_size (int): The size of the input images.
+    - num_classes (int): The number of classes in the dataset.
+    - T (int): The total number of diffusion steps.
+    - beta_start (float): The starting value of beta (noise level).
+    - beta_end (float): The ending value of beta (noise level).
+    - s (float): The scale factor for the variance curve in the 'cosine' scheduler.
+    - scheduler (str): The type of noise schedule ('cosine' or 'linear').
+
+    Methods:
+
+    - train_step(data): The training step for the diffusion model.
+    - predict_step(data): The prediction step for the diffusion model.
+    - plot_samples(num_samples, poke_type): Generate and plot samples from the diffusion model.
+    - forward_diffusion(x_0, t, T, scheduler, beta_start, beta_end, s): Simulate the forward diffusion process.
+    - beta_scheduler(scheduler, T, beta_start, beta_end, s): Generate a schedule for beta values according to the specified type.
+
     """
 
     def __init__(
