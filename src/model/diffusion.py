@@ -13,12 +13,17 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from src.utils.utils import string_to_onehot, onehot_to_string
+from src.utils.utils import string_to_onehot, onehot_to_string, PROJECT_DIR  # TODO
+from pathlib import Path
+
 
 # Set up
 # =====================================================================
+PROJECT_DIR = Path(__file__).parents[2]
+DATA_PATH = PROJECT_DIR / "data"
+
 config = configparser.ConfigParser()
-config.read("../../config.ini")
+config.read(PROJECT_DIR / "config.ini")
 
 DIR_PATH = config["paths"]["dir_path"]
 
@@ -251,7 +256,7 @@ class DiffusionModel(tf.keras.Model):
         scheduler: str,
         beta_start: float,
         beta_end: float,
-        s: float,
+        s: float,  # **config["training_params"] TODO
     ) -> tf.Tensor:
         """Simulate the forward diffusion process by adding noise to the input image.
 

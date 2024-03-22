@@ -1,0 +1,22 @@
+[paths]
+; dir_path = C:\Users\pqlza\UPM\TFG\DiffusionScratch  
+dir_path = "/mnt/c/Users/pqlza/UPM/TFG/DiffusionScratch"
+; data_path = C:\Users\pqlza\UPM\TFG\DiffusionScratch\data 
+data_path = "/mnt/c/Users/pqlza/UPM/TFG/DiffusionScratch/data" # dsafsdafk
+
+[hyperparameters]
+img_size = 64
+batch_size = 32
+num_classes = 18
+epochs = 100
+; number of diffusion steps
+T = 1000 
+beta_start = 1e-4
+beta_end = 0.02
+; scale factor for the variance curve
+s = 0.008 
+; 'cosine' or 'linear'
+scheduler = 'cosine' 
+training_parms = {"lol": 1}
+# import toml
+# config = toml.load(path_toml)
