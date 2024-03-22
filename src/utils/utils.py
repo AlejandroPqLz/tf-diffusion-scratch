@@ -6,7 +6,6 @@ Functionality: This file contains utility functions for the project.
 
 # Imports
 # =====================================================================
-import configparser
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -14,10 +13,10 @@ from src.data.preprocess import label_mapping
 
 # Set up
 # =====================================================================
-PROJECT_DIR = Path(__file__).cwd()
+# TODO: VIEW THE WAY TO GENERALIZE THIS SO IT WORKS IN ANY FOLDER WITH DIFFERENT DEPTHS
+PROJECT_DIR = Path(__file__).parents[2]
 DATA_PATH = PROJECT_DIR / "data"
 
-# DATA_PATH = config["paths"]["data_path"]
 poke_df = pd.read_csv(f"{DATA_PATH}/raw/pokedex.csv")
 
 

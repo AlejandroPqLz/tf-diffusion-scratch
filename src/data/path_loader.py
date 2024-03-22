@@ -34,20 +34,6 @@ class PathLoader:
         self.save = save
         self.save_file = save_file
 
-    @staticmethod
-    def get_image_paths(json_path: str) -> list:
-        """Loads the image paths from a JSON file.
-
-        :param json_path: The path to the JSON file.
-        :return: A list of image paths.
-
-        """
-
-        with open(json_path, "r", encoding="utf-8") as file:
-            image_paths = json.load(file)
-
-        return image_paths
-
     def load_paths(self) -> list:
         """Loads file paths based on the glob pattern and optionally saves them.
 
@@ -72,16 +58,24 @@ class PathLoader:
 
         """
 
-        try:
+        with open(self.save_file, "w", encoding="utf-8") as file:
+            json.dump(paths, file, indent=4)
 
-            with open(self.save_file, "w", encoding="utf-8") as file:
-                json.dump(paths, file, indent=4)
+        print(f"Paths loaded and saved to {self.save_file}")
 
-            print(f"Paths loaded and saved to {self.save_file}")
+    @staticmethod
+    def get_image_paths(json_path: str) -> list:
+        """Loads the image paths from a JSON file.
 
-        except IOError as e:
+        :param json_path: The path to the JSON file.
+        :return: A list of image paths.
 
-            print(f"Failed to save paths: {e}")
+        """
+
+        with open(json_path, "r", encoding="utf-8") as file:
+            image_paths = json.load(file)
+
+        return image_paths
 
 
 # # Test

@@ -13,19 +13,13 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from src.utils.utils import string_to_onehot, onehot_to_string, PROJECT_DIR  # TODO
-from pathlib import Path
+from src.utils.utils import string_to_onehot, onehot_to_string, PROJECT_DIR
 
 
 # Set up
 # =====================================================================
-PROJECT_DIR = Path(__file__).parents[2]
-DATA_PATH = PROJECT_DIR / "data"
-
 config = configparser.ConfigParser()
 config.read(PROJECT_DIR / "config.ini")
-
-DIR_PATH = config["paths"]["dir_path"]
 
 IMG_SIZE = int(config["hyperparameters"]["img_size"])
 NUM_CLASSES = int(config["hyperparameters"]["num_classes"])
@@ -148,7 +142,8 @@ class DiffusionModel(tf.keras.Model):
 
         # Save the model every 20 epochs
         if self.epoch % 20 == 0:
-            self.save(f"{DIR_PATH}/models/inter_models/inter_model_{self.epoch}.h5")
+            # self.save(f"{PROJECT_DIR}/models/inter_models/inter_model_{self.epoch}.h5") # TODO: investigate other alternatives
+            pass
 
         # Sample and plot a generated image every 10 epochs
         if self.epoch % 10 == 0:
@@ -304,24 +299,20 @@ class DiffusionModel(tf.keras.Model):
         Returns:
             np.array: An array of beta values according to the selected schedule.
         """
-        if scheduler == "linear":
-            # Linear schedule: beta values increase linearly from beta_start to beta_end.
-            beta = np.linspace(beta_start, beta_end, T)
-        elif scheduler == "cosine":
-            # Cosine schedule: beta values follow a cosine curve, which can help in controlling the variance.
-            def cosine_beta(t):
-                return np.cos((t / T + s) / (1 + s) * np.pi / 2) ** 2
 
-            timesteps = np.arange(0, T)
-            alphas = cosine_beta(timesteps)
-            alphas_cumprod = np.cumprod(alphas)
+        if scheduler == "linear":
+            beta = np.linspace(beta_start, beta_end, T)
+
+        elif scheduler == "cosine":
+
+            def f(t):
+                return np.cos((t / T + s) / (1 + s) * np.pi * 0.5) ** 2
+
+            t = np.arange(0, T + 1)
+            alphas_cumprod = f(t) / f(0)
             beta = 1 - alphas_cumprod[1:] / alphas_cumprod[:-1]
-            beta = np.clip(
-                beta, a_min=beta_start, a_max=beta_end
-            )  # Ensure beta values are within specified range.
-            beta = np.concatenate(
-                ([beta_start], beta)
-            )  # Include the initial beta value.
+            beta = tf.clip_by_value(beta, 0.0001, 0.999)
+
         else:
             raise ValueError(f"Unsupported scheduler: {scheduler}")
 

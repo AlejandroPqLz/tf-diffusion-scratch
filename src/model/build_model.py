@@ -8,13 +8,12 @@ Functionality: This file contains the code to build the diffusion model architec
 # Imports
 # =====================================================================
 import configparser
-from pathlib import Path
 import tensorflow as tf
 from tensorflow.keras import layers
+from src.utils.utils import PROJECT_DIR
 
 # Set up
 # =====================================================================
-PROJECT_DIR = Path(__file__).cwd()
 config = configparser.ConfigParser()
 config.read(PROJECT_DIR / "config.ini")
 
