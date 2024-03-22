@@ -8,15 +8,13 @@ Functionality: This file contains the code to build the diffusion model architec
 # Imports
 # =====================================================================
 import configparser
+from pathlib import Path
 import tensorflow as tf
 from tensorflow.keras import layers
-from pathlib import Path
 
 # Set up
 # =====================================================================
-PROJECT_DIR = Path(__file__).parents[2]
-DATA_PATH = PROJECT_DIR / "data"
-
+PROJECT_DIR = Path(__file__).cwd()
 config = configparser.ConfigParser()
 config.read(PROJECT_DIR / "config.ini")
 
@@ -27,6 +25,14 @@ NUM_CLASSES = int(config["hyperparameters"]["num_classes"])
 # BuildModel
 # =====================================================================
 class BuildModel(tf.keras.models.Model):
+    """Builds the diffusion model.
+
+    Attributes:
+        img_size (int): The size of the image.
+        num_classes (int): The number of classes.
+        diffusion_model (tf.keras.models.Model): The diffusion model.
+
+    """
 
     def __init__(self, img_size: int, num_classes: int) -> None:
         super().__init__()

@@ -14,11 +14,8 @@ from src.data.preprocess import label_mapping
 
 # Set up
 # =====================================================================
-PROJECT_DIR = Path(__file__).parents[2]
+PROJECT_DIR = Path(__file__).cwd()
 DATA_PATH = PROJECT_DIR / "data"
-
-config = configparser.ConfigParser()
-config.read(PROJECT_DIR / "config.ini")
 
 # DATA_PATH = config["paths"]["data_path"]
 poke_df = pd.read_csv(f"{DATA_PATH}/raw/pokedex.csv")
