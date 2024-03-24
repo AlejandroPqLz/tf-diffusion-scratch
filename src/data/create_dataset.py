@@ -26,44 +26,6 @@ from src.data.preprocess import img_preprocess, label_preprocess
 # =====================================================================
 
 
-# Datset dictionary TODO: MIRAR NOMBRE Y POSIBLES MEJORAS
-# =====================================================================
-def dataset_dict(
-    image_paths: list, df: pd.DataFrame, save: bool = False, save_path: str = None
-) -> dict:
-    """Returns a dictionary with the image paths as keys and the pokemon type as values
-    so it can be later used to create a dataset
-
-    :param train_paths: The paths to the images
-    :param df: The dataframe with the pokemon data
-    :param save: Whether to save the dictionary to a file
-    :param save_path: The path to save the dictionary to
-    :return: A dictionary with the image paths as keys and the pokemon type as values
-    """
-
-    data_dict = {}
-
-    for path in image_paths:
-        # Associate the image with the pokemon type
-        pokemon_id = int(
-            re.search(r"\d+", path).group()
-        )  # Get the pokemon id from the path
-
-        # Get the pokemon type from the dataframe #
-        # TODO: AÑADIR TYPE2
-        pokemon_type = df.loc[pokemon_id]["type1"]
-        data_dict[path] = pokemon_type
-
-    if save:
-        with open(save_path, "w", encoding="utf-8") as file:
-            json.dump(data_dict, file)
-        print(
-            f"Dataset dictionary saved to file: {save_path} with {len(data_dict)} entries"
-        )
-
-    return data_dict
-
-
 # Create the dataset TF
 # =====================================================================
 def dataset_tf(
@@ -126,3 +88,41 @@ def dataset_tf(
         print(f"Dataset saved to file: {save_path}")
 
     return dataset
+
+
+# Datset dictionary TODO: MIRAR NOMBRE Y POSIBLES MEJORAS
+# =====================================================================
+def dataset_dict(
+    image_paths: list, df: pd.DataFrame, save: bool = False, save_path: str = None
+) -> dict:
+    """Returns a dictionary with the image paths as keys and the pokemon type as values
+    so it can be later used to create a dataset
+
+    :param train_paths: The paths to the images
+    :param df: The dataframe with the pokemon data
+    :param save: Whether to save the dictionary to a file
+    :param save_path: The path to save the dictionary to
+    :return: A dictionary with the image paths as keys and the pokemon type as values
+    """
+
+    data_dict = {}
+
+    for path in image_paths:
+        # Associate the image with the pokemon type
+        pokemon_id = int(
+            re.search(r"\d+", path).group()
+        )  # Get the pokemon id from the path
+
+        # Get the pokemon type from the dataframe #
+        # TODO: AÑADIR TYPE2
+        pokemon_type = df.loc[pokemon_id]["type1"]
+        data_dict[path] = pokemon_type
+
+    if save:
+        with open(save_path, "w", encoding="utf-8") as file:
+            json.dump(data_dict, file)
+        print(
+            f"Dataset dictionary saved to file: {save_path} with {len(data_dict)} entries"
+        )
+
+    return data_dict
