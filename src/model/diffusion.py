@@ -84,6 +84,12 @@ class DiffusionModel(tf.keras.Model):
         self.beta_end = beta_end
         self.s = s
 
+        self.beta = self.beta_scheduler(scheduler, T, beta_start, beta_end, s)
+        self.alpha = 1 - self.beta
+        self.alpha_cumprod = tf.convert_to_tensor(
+            np.cumprod(self.alpha), dtype=tf.float32
+        )
+
     def train_step(self, data):
         """
         Algorithm 1: The training step for the diffusion model.
@@ -103,14 +109,10 @@ class DiffusionModel(tf.keras.Model):
         beta_start = self.beta_start
         beta_end = self.beta_end
         s = self.s  # Scale factor for the variance curve
+        alpha_cumprod = self.alpha_cumprod
 
         # Unpack the data
         input_data, _ = data
-
-        # Get the scheduler values
-        beta = self.beta_scheduler(scheduler, T, beta_start, beta_end, s)
-        alpha = 1 - beta
-        alpha_cumprod = np.cumprod(alpha)
 
         # 1: repeat ------
 
@@ -148,7 +150,8 @@ class DiffusionModel(tf.keras.Model):
 
         # Save the model every 20 epochs
         if self.epoch % 20 == 0:
-            # self.save(f"{PROJECT_DIR}/models/inter_models/inter_model_{self.epoch}.h5") # TODO: investigate other alternatives
+            # TODO: investigate other alternatives
+            # self.save(f"{PROJECT_DIR}/models/inter_models/inter_model_{self.epoch}.h5")
             pass
 
         # Sample and plot a generated image every 10 epochs
@@ -172,15 +175,8 @@ class DiffusionModel(tf.keras.Model):
 
         # Rename the variables for easier access
         T = self.T  # Total diffusion steps
-        scheduler = self.scheduler
-        beta_start = self.beta_start
-        beta_end = self.beta_end
-        s = self.s  # Scale factor for the variance curve
-
-        # Get the scheduler values
-        beta = self.beta_scheduler(scheduler, T, beta_start, beta_end, s)
-        alpha = 1 - beta
-        alpha_cumprod = np.cumprod(alpha)
+        alpha = self.alpha
+        alpha_cumprod = self.alpha_cumprod
 
         # Starting from pure noise
         x_t = data  # 1: x_T ~ N(0, I)
@@ -230,7 +226,7 @@ class DiffusionModel(tf.keras.Model):
                 poke_type = string_to_onehot(poke_type)
                 y_label[poke_type] = 1
             else:
-                y_label[np.random.randint(0, NUM_CLASSES - 1)] = 1
+                y_label[tf.random.randint(0, NUM_CLASSES - 1)] = 1
 
             y_label = y_label.reshape(1, NUM_CLASSES)
 
@@ -277,10 +273,8 @@ class DiffusionModel(tf.keras.Model):
         beta = DiffusionModel.beta_scheduler(
             scheduler=scheduler, T=T, beta_start=beta_start, beta_end=beta_end, s=s
         )
-
-        # Calculate the cumulative product of (1-beta) to simulate the diffusion process
         alpha = 1.0 - beta
-        alpha_cumprod = np.cumprod(alpha)
+        alpha_cumprod = tf.convert_to_tensor(np.cumprod(alpha), dtype=tf.float32)
 
         # Apply the diffusion process: x_t = sqrt(alpha_cumprod_t) * x_0 + sqrt(1-alpha_cumprod_t) * noise
         noise = tf.random.normal(shape=tf.shape(x_0))
@@ -291,7 +285,7 @@ class DiffusionModel(tf.keras.Model):
     @staticmethod
     def beta_scheduler(
         scheduler: str, T: int, beta_start: float, beta_end: float, s: float
-    ) -> np.array:
+    ) -> tf.Tensor:
         """
         Generates a schedule for beta values according to the specified type ('linear' or 'cosine').
 
@@ -303,16 +297,16 @@ class DiffusionModel(tf.keras.Model):
             s (float): Scale factor for the variance curve, used in the 'cosine' scheduler.
 
         Returns:
-            np.array: An array of beta values according to the selected schedule.
+            tf.Tensor: The beta values for each timestep.
         """
 
         if scheduler == "linear":
-            beta = np.linspace(beta_start, beta_end, T)
+            beta = tf.linspace(beta_start, beta_end, T)
 
         elif scheduler == "cosine":
 
             def f(t):
-                return np.cos((t / T + s) / (1 + s) * np.pi * 0.5) ** 2
+                return tf.cos((t / T + s) / (1 + s) * tf.constant(np.pi * 0.5)) ** 2
 
             t = np.arange(0, T + 1)
             alphas_cumprod = f(t) / f(0)
