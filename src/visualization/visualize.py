@@ -14,7 +14,9 @@ import numpy as np
 import tensorflow as tf
 import pandas as pd
 from src.model.diffusion import DiffusionModel
-from src.utils.utils import onehot_to_string
+from src.utils.utils import onehot_to_string, DATA_PATH
+
+poke_df = pd.read_csv(f"{DATA_PATH}/raw/pokedex.csv")
 
 
 # =====================================================================
@@ -57,7 +59,7 @@ def plot_image_paths(image_paths: list, n: int = 6) -> None:
 # Plot a batch of images from a dataset
 # =====================================================================
 def plot_images_batch(
-    dataset_tf: tf.data.Dataset, df: pd.DataFrame = None, n: int = 6
+    dataset_tf: tf.data.Dataset, n: int = 6, df: pd.DataFrame = poke_df
 ) -> None:
     """Plots a batch of images with their labels, if the time_steps are given plot them too
 
@@ -72,13 +74,9 @@ def plot_images_batch(
         for i in range(n):
             plt.subplot(1, n, i + 1)
             plt.imshow(img_batch[i] * 0.5 + 0.5)  # [0, 1] instead of [-1, 1]
-
-            if df is not None:
-                plt.title(
-                    f"{onehot_to_string(label_batch[i], df)}\nShape: {img_batch[i].shape}"
-                )
-            else:
-                plt.title(f"Shape: {img_batch[i].shape}")
+            plt.title(
+                f"{onehot_to_string(label_batch[i], df)}\nShape: {img_batch[i].shape}"
+            )
 
         plt.show()
 

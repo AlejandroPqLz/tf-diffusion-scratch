@@ -61,6 +61,8 @@ class DiffusionModel(tf.keras.Model):
     def __init__(
         self,
         model: tf.keras.Model,
+        optimizer: tf.keras.optimizers.Optimizer,
+        loss_fn: tf.keras.losses.Loss,
         img_size: int,
         num_classes: int,
         T: int,
@@ -71,9 +73,11 @@ class DiffusionModel(tf.keras.Model):
     ):
 
         super().__init__()
+        self.model = model
+        self.optimizer = optimizer
+        self.loss_fn = loss_fn
         self.img_size = img_size
         self.num_classes = num_classes
-        self.model = model
         self.T = T
         self.scheduler = scheduler
         self.beta_start = beta_start
@@ -92,6 +96,8 @@ class DiffusionModel(tf.keras.Model):
         """
 
         # Rename the variables for easier access
+        loss_fn = self.loss_fn
+        optimizer = self.optimizer
         T = self.T  # Total diffusion steps
         scheduler = self.scheduler
         beta_start = self.beta_start
@@ -102,7 +108,7 @@ class DiffusionModel(tf.keras.Model):
         input_data, _ = data
 
         # Get the scheduler values
-        beta = self.beta_scheduler(self.scheduler, T, beta_start, beta_end, s)
+        beta = self.beta_scheduler(scheduler, T, beta_start, beta_end, s)
         alpha = 1 - beta
         alpha_cumprod = np.cumprod(alpha)
 
@@ -111,7 +117,7 @@ class DiffusionModel(tf.keras.Model):
         # 3: t ~ U(0, T)
         t = tf.random.uniform(
             shape=(input_data.shape[0], 1), minval=0, maxval=T, dtype=tf.float32
-        )  # Generate a random timestep for each image in the batch
+        )  # Generate a random timestep for each image in the batch # TODO: check if this is correct
 
         # 2: x_0 ~ q(x_0)
         noised_data = self.forward_diffusion(
@@ -133,10 +139,10 @@ class DiffusionModel(tf.keras.Model):
         with tf.GradientTape() as tape:
             # eps_theta -> model(x_t, t/T)
             predicted_noise = self.model([noised_data, t], training=True)
-            loss = tf.reduce_mean((target_noise - predicted_noise) ** 2)  # MSE loss
+            loss = loss_fn(target_noise, predicted_noise)
 
         gradients = tape.gradient(loss, self.trainable_variables)
-        self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
+        optimizer.apply_gradients(zip(gradients, self.trainable_variables))
 
         # 6: until convergence ------
 
