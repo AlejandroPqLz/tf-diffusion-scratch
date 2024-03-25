@@ -13,7 +13,7 @@ import matplotlib.image as mpimg
 import numpy as np
 import tensorflow as tf
 import pandas as pd
-from src.model.diffusion import DiffusionModel
+from src.model.diffusion_model import DiffusionModel
 from src.utils.utils import onehot_to_string, DATA_PATH
 
 poke_df = pd.read_csv(f"{DATA_PATH}/raw/pokedex.csv")
