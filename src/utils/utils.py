@@ -9,7 +9,7 @@ Functionality: This file contains utility functions for the project.
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from src.data.preprocess import label_mapping
+import tensorflow as tf
 
 # Set up
 # =====================================================================
@@ -22,8 +22,19 @@ poke_df = pd.read_csv(f"{DATA_PATH}/raw/pokedex.csv")
 
 # Functions
 # =====================================================================
+def label_mapping(dict_dataset: dict) -> dict:
+    """Create a mapping from label strings to integer indices
+
+    :param dict_dataset: Dictionary mapping image paths to label strings
+    :return: Dictionary mapping label strings to integer indices
+    """
+
+    types = sorted(list(set(dict_dataset.values())))
+    return {type_: idx for idx, type_ in enumerate(types)}
+
+
 # TODO: Adapt this to the new dataset with the new types (type1 and type2)
-def onehot_to_string(one_hot_label: np.ndarray, df: pd.DataFrame = poke_df) -> str:
+def onehot_to_string(one_hot_label: tf.Tensor, df: pd.DataFrame = poke_df) -> str:
     """Converts a one-hot encoded label back to a string
 
     :param one_hot_label: The one-hot encoded label
@@ -33,13 +44,13 @@ def onehot_to_string(one_hot_label: np.ndarray, df: pd.DataFrame = poke_df) -> s
 
     dict_df = df.set_index("pokedex_id")["type1"].to_dict()
 
-    label_index = np.argmax(one_hot_label)
+    label_index = tf.argmax(one_hot_label)
     for label, index in label_mapping(dict_df).items():
         if index == label_index:
             return label
 
 
-def string_to_onehot(label: str, df: pd.DataFrame = poke_df) -> np.ndarray:
+def string_to_onehot(label: str, df: pd.DataFrame = poke_df) -> tf.Tensor:
     """Converts a string label to a one-hot encoded label
 
     :param label: The string label
@@ -48,9 +59,11 @@ def string_to_onehot(label: str, df: pd.DataFrame = poke_df) -> np.ndarray:
     """
 
     dict_df = df.set_index("pokedex_id")["type1"].to_dict()
+    len_dict = len(set(dict_df.values()))
 
     label_index = label_mapping(dict_df)[label]
-    one_hot = np.zeros(len(dict_df))
+    one_hot = tf.zeros(len_dict)
+
     one_hot[label_index] = 1
 
     return one_hot

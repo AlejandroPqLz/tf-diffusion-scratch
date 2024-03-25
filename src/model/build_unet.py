@@ -34,7 +34,7 @@ def build_unet(img_size: int, num_classes: int) -> tf.keras.Model:
     x_ts = x_ts_input = layers.Input(shape=(1,), name="x_ts_input")
     x_ts = process_block(x_ts)
 
-    x_label = x_label_input = layers.Input(shape=(num_classes,), name="x_label_input")
+    x_label = y_input = layers.Input(shape=(num_classes,), name="y_input")
     x_label = process_block(x_label)
 
     # ----- left ( down ) -----
@@ -70,7 +70,7 @@ def build_unet(img_size: int, num_classes: int) -> tf.keras.Model:
 
     # ----- output -----
     x = layers.Conv2D(3, kernel_size=1, padding="same")(x)
-    model = tf.keras.models.Model([x_input, x_ts_input, x_label_input], x)
+    model = tf.keras.models.Model([x_input, x_ts_input, y_input], x)
 
     return model
 

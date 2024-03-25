@@ -8,6 +8,7 @@ in order to be able to create a dataset for the diffusion model.
 # Imports
 # =====================================================================
 import tensorflow as tf
+from src.utils.utils import label_mapping
 
 
 # Preprocess the images
@@ -81,14 +82,3 @@ def label_preprocess(labels: list, dict_dataset: dict) -> list:
     return [
         tf.one_hot(label_mapper[label], depth=len(label_mapper)) for label in labels
     ]
-
-
-def label_mapping(dict_dataset: dict) -> dict:
-    """Create a mapping from label strings to integer indices
-
-    :param dict_dataset: Dictionary mapping image paths to label strings
-    :return: Dictionary mapping label strings to integer indices
-    """
-
-    types = sorted(list(set(dict_dataset.values())))
-    return {type_: idx for idx, type_ in enumerate(types)}

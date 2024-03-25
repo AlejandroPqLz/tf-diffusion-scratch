@@ -61,8 +61,6 @@ class DiffusionModel(tf.keras.Model):
     def __init__(
         self,
         model: tf.keras.Model,
-        optimizer: tf.keras.optimizers.Optimizer,
-        loss_fn: tf.keras.losses.Loss,
         img_size: int,
         num_classes: int,
         T: int,
@@ -74,8 +72,6 @@ class DiffusionModel(tf.keras.Model):
 
         super().__init__()
         self.model = model
-        self.optimizer = optimizer
-        self.loss_fn = loss_fn
         self.img_size = img_size
         self.num_classes = num_classes
         self.T = T
@@ -86,9 +82,7 @@ class DiffusionModel(tf.keras.Model):
 
         self.beta = self.beta_scheduler(scheduler, T, beta_start, beta_end, s)
         self.alpha = 1 - self.beta
-        self.alpha_cumprod = tf.convert_to_tensor(
-            np.cumprod(self.alpha), dtype=tf.float32
-        )
+        self.alpha_cumprod = tf.math.cumprod(self.alpha)
 
     def train_step(self, data):
         """
@@ -102,7 +96,7 @@ class DiffusionModel(tf.keras.Model):
         """
 
         # Rename the variables for easier access
-        loss_fn = self.loss_fn
+        loss_fn = self.loss
         optimizer = self.optimizer
         T = self.T  # Total diffusion steps
         scheduler = self.scheduler
@@ -226,7 +220,10 @@ class DiffusionModel(tf.keras.Model):
                 poke_type = string_to_onehot(poke_type)
                 y_label[poke_type] = 1
             else:
-                y_label[tf.random.randint(0, NUM_CLASSES - 1)] = 1
+                random_index = tf.random.uniform(
+                    shape=[], minval=0, maxval=NUM_CLASSES - 1, dtype=tf.int32
+                )
+                y_label[random_index] = 1
 
             y_label = y_label.reshape(1, NUM_CLASSES)
 
@@ -274,7 +271,7 @@ class DiffusionModel(tf.keras.Model):
             scheduler=scheduler, T=T, beta_start=beta_start, beta_end=beta_end, s=s
         )
         alpha = 1.0 - beta
-        alpha_cumprod = tf.convert_to_tensor(np.cumprod(alpha), dtype=tf.float32)
+        alpha_cumprod = tf.math.cumprod(alpha)
 
         # Apply the diffusion process: x_t = sqrt(alpha_cumprod_t) * x_0 + sqrt(1-alpha_cumprod_t) * noise
         noise = tf.random.normal(shape=tf.shape(x_0))
