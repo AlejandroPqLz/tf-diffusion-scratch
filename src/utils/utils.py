@@ -43,10 +43,14 @@ def onehot_to_string(one_hot_label: tf.Tensor, df: pd.DataFrame = poke_df) -> st
     """
 
     dict_df = df.set_index("pokedex_id")["type1"].to_dict()
+    label_index = (
+        tf.argmax(one_hot_label, axis=1)
+        if one_hot_label.shape[0] <= 1
+        else tf.argmax(one_hot_label)
+    )
 
-    label_index = tf.argmax(one_hot_label)
     for label, index in label_mapping(dict_df).items():
-        if index == label_index:
+        if tf.reduce_any(index == label_index):
             return label
 
 
@@ -60,10 +64,9 @@ def string_to_onehot(label: str, df: pd.DataFrame = poke_df) -> tf.Tensor:
 
     dict_df = df.set_index("pokedex_id")["type1"].to_dict()
     len_dict = len(set(dict_df.values()))
-
     label_index = label_mapping(dict_df)[label]
-    one_hot = tf.zeros(len_dict)
 
-    one_hot[label_index] = 1
+    one_hot = tf.zeros(len_dict, dtype=tf.int32)
+    one_hot = tf.tensor_scatter_nd_update(one_hot, [[label_index]], [1])
 
     return one_hot
