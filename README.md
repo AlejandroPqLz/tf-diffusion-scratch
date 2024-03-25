@@ -93,7 +93,7 @@ This project contains dependencies outside of the scope of python. Therefore you
     Create the environment:
     
     ```bash
-    conda create -n diffusion_env python=3.11.8 -y
+    conda create -n diffusion_env python=3.12.0 -y
     ```
     
     Activate the environment:

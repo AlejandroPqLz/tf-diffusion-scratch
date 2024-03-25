@@ -357,8 +357,7 @@ class CustomCallback(tf.keras.callbacks.Callback):
         """
         if epoch % 20 == 0:
             # Save the model or do something every 20 epochs
-            pass
+            # self.model.save_weights("diffusion_model_weights.h5")
 
-        if epoch % 10 == 0:
             # Generate and plot samples every 10 epochs
             self.model.plot_samples(num_samples=3)
