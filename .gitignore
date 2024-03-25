@@ -1,7 +1,6 @@
 # data files
 Diffsuion study.pdf
 config.ini
-*.json
 
 # dataset tf
 *.snapshot
