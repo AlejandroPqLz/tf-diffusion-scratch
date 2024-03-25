@@ -30,7 +30,7 @@ This project has been developed for my **Bachelor's Thesis** in **Data Science a
 The **structure** of the repository is as follows:
 
 ```tree
- 📦DiffusionScratch
+📦DiffusionScratch
  ┣ 📂data
  ┃ ┣ 📂interim
  ┃ ┃ ┣ 📜image_paths.json
@@ -53,8 +53,8 @@ The **structure** of the repository is as follows:
  ┣ 📂notebooks
  ┃ ┣ 📜00-Intro-and-Analysis.ipynb
  ┃ ┣ 📜01-Dataset-Creation.ipynb
- ┃ ┣ 📜02-Diffusion-Model.ipynb
- ┃ ┣ 📜03-Forward-and-Inverse-Diffusion.ipynb
+ ┃ ┣ 📜02-Diffusion-Model-Architecture.ipynb
+ ┃ ┣ 📜03-Diffusion-Process.ipynb
  ┃ ┣ 📜04-Training-Diffusion-Model.ipynb
  ┃ ┗ 📜05-Conclusions-and-Results.ipynb
  ┣ 📂src
@@ -63,11 +63,12 @@ The **structure** of the repository is as follows:
  ┃ ┃ ┣ 📜path_loader.py
  ┃ ┃ ┣ 📜preprocess.py
  ┃ ┃ ┗ 📜__init__.py
- ┃ ┣ 📂models
- ┃ ┃ ┣ 📜build_model.py
- ┃ ┃ ┣ 📜forward_diffusion.py
- ┃ ┃ ┣ 📜sampling_model.py
- ┃ ┃ ┣ 📜training_model.py
+ ┃ ┣ 📂model
+ ┃ ┃ ┣ 📜build_unet.py
+ ┃ ┃ ┣ 📜diffusion.py
+ ┃ ┃ ┗ 📜__init__.py
+ ┃ ┣ 📂utils
+ ┃ ┃ ┣ 📜utils.py
  ┃ ┃ ┗ 📜__init__.py
  ┃ ┣ 📂visualization
  ┃ ┃ ┣ 📜visualize.py
@@ -75,11 +76,11 @@ The **structure** of the repository is as follows:
  ┃ ┗ 📜__init__.py
  ┣ 📜.gitattributes
  ┣ 📜.gitignore
+ ┣ 📜config.ini
  ┣ 📜config.template.ini
  ┣ 📜LICENSE
  ┣ 📜README.md
  ┗ 📜setup.py
-
 ```
 
 ## :rocket: Prerequisites
