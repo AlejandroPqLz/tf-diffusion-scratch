@@ -206,7 +206,7 @@ class DiffusionModel(tf.keras.Model):
         # Generate and plot the samples
         # =====================================================================
         for i in tqdm(range(num_samples), desc="Generating samples", total=num_samples):
-            # Start with random noise
+            # Start with random noise as input  TODO: CHECK TQDM
             start_noise = tf.random.normal([1, self.img_size, self.img_size, 3])
 
             # Set the label for the sample(s)
