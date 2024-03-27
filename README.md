@@ -1,6 +1,6 @@
 # Diffusion from scratch
 
-![Python 3.11](https://img.shields.io/badge/python-3.11-3776AB)
+![Python 3.10](https://img.shields.io/badge/python-3.10.12-3776AB)
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -85,7 +85,7 @@ The **structure** of the repository is as follows:
 
 ## :rocket: Prerequisites
 
-This project contains dependencies outside of the scope of python. Therefore you need to perform additional steps.
+This project contains dependencies outside of the scope of python. Therefore you need to perform additional steps. TODO: add nvidia drivers etc.
 
 - ### Conda Environment
     We will use conda to manage the python environment. You can install it following the [documentation](https://docs.anaconda.com/free/miniconda/miniconda-install/).
@@ -93,7 +93,7 @@ This project contains dependencies outside of the scope of python. Therefore you
     Create the environment:
     
     ```bash
-    conda create -n diffusion_env python=3.11.8 -y
+    conda create -n diffusion_env python=3.10.12 -y
     ```
     
     Activate the environment:
