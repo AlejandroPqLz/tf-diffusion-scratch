@@ -13,7 +13,7 @@ requirements = [
     "pandas >= 2.2.1",
     "matplotlib >= 3.8.3",
     "tqdm >= 4.66.2",
-    "tensorflow >= 2.15.0.post1",
+    "tensorflow",
     "keras >= 2.15.0",
     "scikit-learn >= 1.4.1.post1",
     "scipy >= 1.12.0",
@@ -35,5 +35,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.11",
+    python_requires=">=3.10",
 )
