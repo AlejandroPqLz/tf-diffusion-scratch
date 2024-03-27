@@ -9,6 +9,7 @@ diffusion functionality to the defined model.
 # Imports
 # =====================================================================
 import configparser
+import time
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -168,7 +169,8 @@ class DiffusionModel(tf.keras.Model):
 
         # Reverse the diffusion process
         # 2: for t = T − 1, . . . , 1 do
-        for t in tqdm(reversed(range(1, T)), desc="Sampling", total=T - 1, leave=False):
+        time.sleep(0.4)
+        for t in tqdm(reversed(range(1, T)), desc="Sampling sprite", total=T - 1):
             normalized_t = tf.fill([tf.shape(x_t)[0], 1], tf.cast(t, tf.float32) / T)
 
             # Sample z
@@ -200,45 +202,44 @@ class DiffusionModel(tf.keras.Model):
 
         _, axs = plt.subplots(1, num_samples, figsize=(num_samples * 2, 3))
 
+        # TODO: TRATAR LOS TIPOS CUANDO VENGAN VARIOS Y NO SOLO UNO
         if num_samples == 1:
             axs = [axs]  # Make axs iterable when plotting only one sample
 
         # Generate and plot the samples
         # =====================================================================
-        for i in tqdm(range(num_samples), desc="Generating samples", total=num_samples):
-            # Start with random noise as input  TODO: CHECK TQDM
+        for i in range(num_samples):
+            tqdm.write(f"Generating sample {i + 1}/{num_samples}")
+
+            # Start with random noise as input
             start_noise = tf.random.normal([1, self.img_size, self.img_size, 3])
 
             # Set the label for the sample(s)
             if poke_type is not None:
-                y_label = string_to_onehot(
-                    poke_type
-                )  # Ensure this function returns a tensor
+                y_label = string_to_onehot(poke_type)
             else:
                 random_index = tf.random.uniform(
                     shape=[], minval=0, maxval=NUM_CLASSES, dtype=tf.int32
                 )
-                y_label = tf.one_hot(
-                    random_index, NUM_CLASSES
-                )  # Use tf.one_hot for simplicity
+                y_label = tf.one_hot(random_index, NUM_CLASSES)
 
             y_label = tf.reshape(y_label, [1, NUM_CLASSES])
 
-            # Replace 'predict_step' with your model's prediction/inference method
+            # Generate the sample
             sample = self.predict_step((start_noise, y_label))
+            sample = tf.squeeze(sample)  # remove the batch dimension
 
             # Scale to [0, 1] for plotting
             sample = (sample - tf.reduce_min(sample)) / (
                 tf.reduce_max(sample) - tf.reduce_min(sample)
             )
 
-            axs[i].imshow(sample[0].numpy())  # Convert to numpy array for plotting
-            axs[i].title.set_text(
-                onehot_to_string(y_label)
-            )  # Ensure this function can handle tensor input
+            # Plot the sample
+            axs[i].imshow(sample)
+            axs[i].title.set_text(onehot_to_string(y_label))
             axs[i].axis("off")
 
-        plt.show()
+        return plt.show()
 
     @staticmethod
     def forward_diffusion(
