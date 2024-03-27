@@ -1,6 +1,6 @@
 # Diffusion from scratch
 
-![Python 3.11](https://img.shields.io/badge/python-3.12-3776AB)
+![Python 3.11](https://img.shields.io/badge/python-3.11-3776AB)
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
