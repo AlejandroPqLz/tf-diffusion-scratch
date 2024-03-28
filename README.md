@@ -112,9 +112,9 @@ This project contains dependencies outside of the scope of python. Therefore you
 - ### Config.ini
     After installing the external dependencies, you need to create a `config.ini` file in the root of the project. This file will contain all the hyperparameters for the model training. The structure of the file can be found in the [config.template.ini](./config.template.ini) file.
 
-- ### Jupyter Notebook Kernel
-    In order to use the environment in a Jupyter Notebook, you need to install the kernel. You can do it by running any notebook in the repository with `diffusion_env` environment activated and the following pop-up will appear:
-    
+- ### Jupyter Notebook Kernel (Optional)
+    If an error occurs when trying to run a Jupyter Notebook, you may need to install the kernel. You can do it by running any notebook in the repository with `diffusion_env` environment activated and the following pop-up will appear:
+
     <p align="center">
       <img src="./figures/readme_figures/install_ipykernel_package_ubuntu.png" width="350">
     </p>

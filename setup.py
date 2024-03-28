@@ -13,11 +13,12 @@ requirements = [
     "pandas >= 2.2.1",
     "matplotlib >= 3.8.3",
     "tqdm >= 4.66.2",
-    "tensorflow",
+    "tensorflow >= 2.15.0.post1",
     "keras >= 2.15.0",
     "scikit-learn >= 1.4.1.post1",
     "scipy >= 1.12.0",
     "mlflow",
+    "pexpect",
 ]
 
 setuptools.setup(
@@ -31,8 +32,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=requirements,
     classifiers=[
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.10",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
