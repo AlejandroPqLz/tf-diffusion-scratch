@@ -19,6 +19,7 @@ requirements = [
     "scipy >= 1.12.0",
     "mlflow",
     "pexpect",
+    "ipykernel",
 ]
 
 setuptools.setup(
