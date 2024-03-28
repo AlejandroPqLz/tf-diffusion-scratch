@@ -88,7 +88,7 @@ The **structure** of the repository is as follows:
 This project contains dependencies outside of the scope of python. Therefore you need to perform additional steps. TODO: add nvidia drivers etc.
 
 - ### Conda Environment
-    We will use conda to manage the python environment. You can install it following the [documentation](https://docs.anaconda.com/free/miniconda/miniconda-install/).
+    We will use conda to manage the python environment. You can install it following the [documentation](https://docs.anaconda.com/free/miniconda/#quick-command-line-install).
     
     Create the environment:
     
