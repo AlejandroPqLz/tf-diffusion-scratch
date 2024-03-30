@@ -1,10 +1,10 @@
 # Diffusion from scratch
 
 [![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB)](https://www.python.org/downloads/release/python-312/)
-[![Tensorflow 2.16.1](https://img.shields.io/badge/tensorflow-2.16-FF6F00)](https://www.tensorflow.org/)
+[![Tensorflow 2.16.1](https://img.shields.io/badge/tensorflow-2.16.1-FF6F00)](https://www.tensorflow.org/)
 [![Keras 3.1](https://img.shields.io/badge/keras-3.1-D00000)](https://keras.io/)
-[![CUDA 12.4](https://img.shields.io/badge/cuda-12.4-76B900)](https://developer.nvidia.com/cuda-zone)
-[![cuDNN 9.0.0](https://img.shields.io/badge/cudnn-9.0.0-76B900)](https://developer.nvidia.com/cudnn)
+[![CUDA 12.3](https://img.shields.io/badge/cuda-12.3-76B900)](https://developer.nvidia.com/cuda-zone)
+[![cuDNN 8.9](https://img.shields.io/badge/cudnn-8.9-76B900)](https://developer.nvidia.com/cudnn)
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -97,7 +97,7 @@ This project contains dependencies outside of the scope of python. Therefore you
     Create the environment:
     
     ```bash
-    conda create -n diffusion_env python=3.12.1 -y
+    conda create -n diffusion_env python=3.12 -y
     ```
     
     Activate the environment:
