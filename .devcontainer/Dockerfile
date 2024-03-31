@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y git
 # RUN git config --global user.email "youremail@example.com"
 
 # Install system dependencies for OpenCV and other packages
-RUN apt-get update && apt-get install -y \
+RUN apt-get install -y \
     libgl1-mesa-glx wget \
  && rm -rf /var/lib/apt/lists/*
 
