@@ -7,6 +7,11 @@ ARG USER_UID
 ENV USER_NAME=$USER_NAME
 ENV USER_UID=$USER_UID
 
+# Install Git and set its configuration
+RUN apt-get update && apt-get install -y git
+# RUN git config --global user.name "Your Name"
+# RUN git config --global user.email "youremail@example.com"
+
 # Install system dependencies for OpenCV and other packages
 RUN apt-get update && apt-get install -y \
     libgl1-mesa-glx wget \
