@@ -14,6 +14,7 @@ requirements = [
     "matplotlib >= 3.8.3",
     "tqdm >= 4.66.2",
     "tensorflow[and-cuda] >= 2.16",
+    # "tensorflow >= 2.16",
     "keras >= 3.1",
     "scikit-learn >= 1.4.1.post1",
     "scipy >= 1.12.0",
