@@ -23,13 +23,14 @@ RUN useradd -m -u $USER_UID $USER_NAME
 # Set the user as the default user for the container
 USER $USER_NAME
 
-# Create a working directory (you can change this to match your needs)
+# Create a working directory (change this to match your needs)
 WORKDIR /home/$USER_NAME
 
 # Install Python packages using pip
 RUN pip install --upgrade pip && \
-    pip install opencv-python tqdm matplotlib scikit-learn scikit-image numba ipykernel pandas np_utils tensorflow-addons tensorflow-datasets tensorflow-hub tensorflow-text keras_nlp --no-cache-dir --no-warn-script-location
-
+    pip install tqdm matplotlib scikit-learn scikit-image numba ipykernel pandas \
+    np_utils tensorflow-addons tensorflow-hub numpy tensorflow keras scipy mlflow \
+    pexpect gradio --no-cache-dir --no-warn-script-location
 
 # Entry point or command to run when the container starts
-CMD bash 
+CMD bash

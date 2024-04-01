@@ -7,7 +7,32 @@
 	"runArgs": ["--gpus", "all"], // Enable GPU support in the container
 	"customizations": {"vscode": {"extensions": ["ms-python.python", "ms-toolsai.jupyter", "github.copilot"],
 								  "settings": {"python.pythonPath": "/usr/local/bin/python",
-											   "python.terminal.activateEnvironment": true}}
+											   "python.terminal.activateEnvironment": true,
+												"security.workspace.trust.untrustedFiles": "open",
+												"jupyter.askForKernelRestart": false,
+												"redhat.telemetry.enabled": true,
+												"github.copilot.enable": {
+												  "plaintext": "true",
+												  "markdown": "true"
+												},
+												"workbench.productIconTheme": "fluent-icons",
+												"workbench.iconTheme": "eq-material-theme-icons-palenight",
+												"notebook.lineNumbers": "on",
+												"zenMode.hideLineNumbers": false,
+												"remote.autoForwardPortsSource": "hybrid",
+												"editor.fontFamily": "JetBrains Mono",
+												"editor.fontLigatures": true,
+												"git.enableSmartCommit": true,
+												"git.confirmSync": false,
+												"editor.defaultFormatter": "ms-python.black-formatter",
+												"editor.formatOnSave": true,
+												"notebook.formatOnCellExecution": true,
+												"notebook.formatOnSave.enabled": true,
+												"files.autoSave": "onWindowChange",
+												"terminal.integrated.fontFamily": "monospace"
+											  }
+									}
+
   }
 }
   
