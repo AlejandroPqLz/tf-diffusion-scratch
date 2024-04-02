@@ -89,7 +89,7 @@ The **structure** of the repository is as follows:
 
 ## :rocket: Prerequisites
 
-This project contains dependencies outside of the scope of python. Therefore you need to perform additional steps. TODO: add nvidia drivers etc.
+This project contains dependencies outside of the scope of python. Therefore you need to perform additional steps. TODO: add nvidia drivers etc. and add Ubuntu and Windows ways to preprare the enviroment for developing ans using the gpu
 
 - ### Conda Environment
     We will use conda to manage the python environment. You can install it following the [documentation](https://docs.anaconda.com/free/miniconda/#quick-command-line-install).
