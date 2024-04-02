@@ -110,7 +110,7 @@ It is recommended to use a **Linux** distribution for this project, since it is 
                 <ul>
                     <li>Windows 11</li>
                     <li>NVIDIA GPU with CUDA support</li>
-                    <li><a href="https://learn.microsoft.com/en-us/windows/wsl/install">Download and set-up WSL2.</a>
+                    <li><a href="https://learn.microsoft.com/en-us/windows/wsl/install">Download and set up WSL2.</a>
                     <li>Install Ubuntu from the Microsoft Store</li>
                 </ul>
             </td>
@@ -137,7 +137,7 @@ It is recommended to use a **Linux** distribution for this project, since it is 
 
 In order to use the GPU for training the model, you need to install the NVIDIA drivers, CUDA and cuDNN. Eventhough the project is developed in Tensorflow and therefore not all CUDA and cuDNN versions are compatible with the version of Tensorflow used, for the GPU to work properly, the versions of CUDA and cuDNN and the NVIDIA drivers must be the most recent ones.
 
-#### 1. Install NVIDIA drivers:
+#### 2.1 Install NVIDIA drivers:
 
 <table>
     <thead>
@@ -192,36 +192,52 @@ user@user:~$ nvidia-smi
 |                               |                      |                  N/A |
 +-------------------------------+----------------------+----------------------+
 ```
-#### 2. Install CUDA toolkit:
+#### 2.2 Install CUDA toolkit:
 
 **- Windows:** [Install CUDA toolkit on Windows](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64&target_version=11&target_type=exe_local) </br>
 **- WSL2:** [Install CUDA toolkit on WSL2](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=WSL-Ubuntu&target_version=2.0&target_type=deb_local) </br>
 **- Ubuntu:** [Install CUDA toolkit on Ubuntu](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_local)
 
-#### 3. Install cuDNN:
+#### 2.3 Install cuDNN:
 
-**- WSL2 and Ubuntu:** [Install cuDNN](https://developer.nvidia.com/cudnn) </br>
+**- WSL2:** [Install cuDNN](https://developer.nvidia.com/cudnn) </br>
+**- Ubuntu:** [Install cuDNN](https://developer.nvidia.com/cudnn)
 
+### 3. Windows Subsystem for Linux (WSL2) Set up
+---
 
+After installing the NVIDIA drivers, CUDA and cuDNN, you need to set up WSL2 to use the GPU for training the model. To do this, follow the steps below:
 
-TODO: add nvidia drivers etc., explain the why behind the versions of CUDA and cudnn, and add Ubuntu and Windows ways to preprare the enviroment for developing ans using the gpu
+#### 3.1  Conda Environment
 
-- ### Conda Environment
-    Since the model is implemented in Tensorflow, you need to install the versions of CUDA and cuDNN that are compatible with the version of Tensorflow you are using. For more information, visit the [Tensorflow versions compatibility](https://www.tensorflow.org/install/source?hl=es#gpu). For this project, since we are using Tensorflow 2.16.1, we need to install CUDA 12.3 and cuDNN 8.9, todo do so, follow the steps below:
-
-    We will use conda to manage the python environment. You can install it following the [documentation](https://docs.anaconda.com/free/miniconda/#quick-command-line-install).
+We will use conda to manage the python environment. You can install it following the [Miniconda instalation guide](https://docs.anaconda.com/free/miniconda/#quick-command-line-install). After installing miniconda, create a new environment with the following command:
     
-    Create the environment:
+```bash
+    # Create the environment
+    conda create -n diffusion_env python=3.12 -y
     
-    ```bash
-    conda create -n diffusion_env python=3.12.1 -y
-    ```
-    
-    Activate the environment:
-    
-    ```bash
+    # Activate the environment
     conda activate diffusion_env
-    ```
+```
+
+#### 3.2  CUDA and cuDNN compatible versions
+
+Since the model is implemented in Tensorflow, you need to install the versions of CUDA and cuDNN that are compatible with the version of Tensorflow you are using. For more information, visit the [Tensorflow versions compatibility](https://www.tensorflow.org/install/source?hl=es#gpu). For this project, since we are using Tensorflow 2.16.1, we need to install CUDA 12.3 and cuDNN 8.9, todo do so, just execute the following commands:
+
+```bash
+    # Install CUDA 12.3
+    conda install nvidia/label/cuda-12.3.2::cuda-toolkit
+    
+    # Install cuDNN 8.9
+    conda install -c conda-forge cudnn=8.9
+```
+
+And make the following changes in the environment variables for using CUDA and cuDNN after activating the environment:
+
+```bash
+    mkdir -p $CONDA_PREFIX/etc/conda/activate.d
+    echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/' > $CONDA_PREFIX/etc/conda/activate.d/env_vars.sh
+```
 
 - ### External Dependencies
     Once the environment is activated, you can install the [external dependencies](./setup.py) by running the following command:
@@ -248,6 +264,7 @@ After following the steps described in the [Prerequisites](https://github.com/Al
 
 ## :books: Resources
 - Resources and tutorials that have been found useful for this project are located in the [/docs](./docs) folder.
+- Conda environment installation and management: [Conda documentation](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html).
 - Git LFS to upload large files into the repository:
 
     Git Large File Storage (LFS) replaces large files such as datasets, models or weights with text pointers inside Git, while storing the file contents on a remote server like GitHub.com or GitHub Enterprise. 
