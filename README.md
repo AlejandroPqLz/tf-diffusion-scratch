@@ -277,7 +277,35 @@ After installing the NVIDIA drivers, CUDA and cuDNN, you can follow the same ste
 
 
 
-### Config.ini
+### 5. MacOS Set up
+---
+
+#### 5.1 Conda Environment
+
+We will follow the same first steps as in the [Windows Subsystem for Linux (WSL2) Set up](#3-windows-subsystem-for-linux-wsl2-set-up) section, since we are goint to use a coda environment to manage the dependencies. Therefore, install miniconda following the [Miniconda instalation guide](https://docs.anaconda.com/free/miniconda/#quick-command-line-install). After installing miniconda, create a new environment with the following command:
+    
+```bash
+    # Create the environment
+    conda create -n diffusion_env python=3.12 -y
+    
+    # Activate the environment
+    conda activate diffusion_env
+
+    # Install external dependencies
+    pip install -e.
+```
+
+#### 5.2 TensorFlow for MacOS
+
+TensorFlow does not support GPU acceleration on MacOS with CUDA and cuDNN, so you need to install the its specific version for MacOS. To do so, just run the following command:
+
+```bash
+    pip uninstall tensorflow
+    pip install tensorflow==2.12 tensorflow-macos tensorflow-metal
+```
+
+
+### 6. Config.ini
     After installing the external dependencies, take a look to the [config.ini](./config.ini) file in the root of the project. This file will contain all the hyperparameters for the model training.
 
 Now you are ready to go!
