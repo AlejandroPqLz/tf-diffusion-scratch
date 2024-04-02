@@ -97,7 +97,7 @@ It is recommended to use a **Linux** distribution for this project, since it is 
     <thead>
         <tr>
             <th>Windows (WSL2)</th>
-            <th>Linux</span></a></th>
+            <th>Linux (Ubuntu)</span></a></th>
             <th>MacOS</th>
         </tr>
     </thead>
@@ -107,7 +107,9 @@ It is recommended to use a **Linux** distribution for this project, since it is 
                 <ul>
                     <li>Windows 11</li>
                     <li>NVIDIA GPU with CUDA support</li>
-                    <li><a href="https://learn.microsoft.com/en-us/windows/wsl/install">Download and set-up WSL2.</a> Then, install the Ubuntu distribution from the Microsoft Store.
+                    <li><a href="https://learn.microsoft.com/en-us/windows/wsl/install">Download and set-up WSL2.</a>
+                    <li>Install Ubuntu from the Microsoft Store</li>
+                </ul>
             </td>
             <td>
                 <ul>
@@ -127,18 +129,104 @@ It is recommended to use a **Linux** distribution for this project, since it is 
     </tbody>
 </table>
 
-### NVIDIA GPU Configuration (Linux and Windows)
+### NVIDIA GPU Configuration (Windows and Linux)
 ---
 
-In order to use the GPU for training the model, you need to install the NVIDIA drivers, CUDA and cuDNN. Since the model is implemented in Tensorflow, you need to install the versions of CUDA and cuDNN that are compatible with the version of Tensorflow you are using. For more information, visit the [Tensorflow versions compatibility](https://www.tensorflow.org/install/source?hl=es#gpu). For this project, since we are using Tensorflow 2.16.1, we need to install CUDA 12.3 and cuDNN 8.9, todo do so, follow the steps below:
+In order to use the GPU for training the model, you need to install the NVIDIA drivers, CUDA and cuDNN. Eventhough the project is developed in Tensorflow and therefore not all CUDA and cuDNN versions are compatible with the version of Tensorflow used, for the GPU to work properly, the versions of CUDA and cuDNN and the NVIDIA drivers must be the most recent ones.
 
-- NVIDIA Drivers
-    To install the NVIDIA drivers, you can follow the instructions in the [NVIDIA website](https://www.nvidia.com/Download/index.aspx).
+#### 1. Install the NVIDIA drivers:
 
+<table>
+    <thead>
+        <tr>
+            <th>Windows (WSL2)</th>
+            <th>Linux (Ubuntu)</span></a></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                <ul>
+                    <li>Download the latest NVIDIA drivers </br> for your GPU from the <a href="https://www.nvidia.com/download/index.aspx?lang=en-us">NVIDIA website</a></li>
+                    <li>Install the <code>.exe</code> file</li> and follow the instructions
+                    <li>Chech the driver installation: </br>
+                    <code>nvidia-smi</code></li>
+                </ul>
+            </td>
+            <td>
+                <ul>
+                    <li> Update and upgrade the system: </br>
+                    <code>sudo apt update && sudo apt upgrade</code></li>
+                    <li> Remove previous NVIDIA installations: </br>
+                    <code>sudo apt autoremove nvidia* --purge</code></li>
+                    <li> Check Ubuntu devices: </br>
+                    <code>ubuntu-drivers devices</code></li>
+                    <li> Install the recommended NVIDIA driver (its version is tagged with recommended): </br>
+                    <code>sudo apt-get install nvidia-driver-&ltdriver_number&gt</code></li>
+                    <li> Reboot the system: </br>
+                    <code>reboot</code></li>
+                    <li>Chech the driver installation: </br>
+                    <code>nvidia-smi</code></li>
+                </ul>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+After these steps, when executing the `nvidia-smi` command, you should see the following output:
+
+```bash
+user@user:~$ nvidia-smi
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 510.39.01    Driver Version: 510.39.01    CUDA Version: 12.3     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|                               |                      |               MIG M. |
+|===============================+======================+======================|
+|   0  NVIDIA GeForce ...  Off  | 00000000:01:00.0 Off |                  N/A |
+| N/A   45C    P8    10W /  N/A |      0MiB /  5944MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+```
+#### 2. Install CUDA toolkit:
+
+<table>
+    <thead>
+        <tr>
+            <th>Windows (WSL2)</th>
+            <th>Linux (Ubuntu)</span></a></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                <ul>
+                    <li>Download the latest CUDA toolkit </br> for your GPU from the <a href="https://developer.nvidia.com/cuda-downloads">NVIDIA website</a></li>
+                    <li>Install the <code>.exe</code> file</li> and follow the instructions
+                    <li>Set the environment variables: </br>
+                    <code>export PATH=/usr/local/cuda-12.3/bin${PATH:+:${PATH}}</code> </br>
+                    <code>export LD_LIBRARY_PATH=/usr/local/cuda-12.3/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}</code></li>
+                </ul>
+            </td>
+            <td>
+                <ul>
+                    <li>Download the latest CUDA toolkit </br> for your GPU from the <a href="https://developer.nvidia.com/cuda-downloads">NVIDIA website</a></li>
+                    <li>Install the <code>.deb</code> file</li> and follow the instructions
+                    <li>Set the environment variables: </br>
+                    <code>export PATH=/usr/local/cuda-12.3/bin${PATH:+:${PATH}}</code> </br>
+                    <code>export LD_LIBRARY_PATH=/usr/local/cuda-12.3/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}</code></li>
+                </ul>
+            </td>
+        </tr>
+    </tbody>
+</table>
 
 TODO: add nvidia drivers etc., explain the why behind the versions of CUDA and cudnn, and add Ubuntu and Windows ways to preprare the enviroment for developing ans using the gpu
 
 - ### Conda Environment
+    Since the model is implemented in Tensorflow, you need to install the versions of CUDA and cuDNN that are compatible with the version of Tensorflow you are using. For more information, visit the [Tensorflow versions compatibility](https://www.tensorflow.org/install/source?hl=es#gpu). For this project, since we are using Tensorflow 2.16.1, we need to install CUDA 12.3 and cuDNN 8.9, todo do so, follow the steps below:
+
     We will use conda to manage the python environment. You can install it following the [documentation](https://docs.anaconda.com/free/miniconda/#quick-command-line-install).
     
     Create the environment:
