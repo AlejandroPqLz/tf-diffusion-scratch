@@ -13,11 +13,9 @@ requirements = [
     "pandas",
     "matplotlib",
     "tqdm",
-    # "tensorflow[and-cuda] >= 2.16",
-    "tensorflow >= 2.16",
-    "keras >= 3.1",
-    "scikit-learn",
-    "scipy",
+    "tensorflow[and-cuda] == 2.16", # comment if not using GPU or not a NVIDIA GPU
+    # "tensorflow == 2.16", # uncomment if not using GPU or not a NVIDIA GPU
+    "keras == 3.1",
     "mlflow",
     "pexpect",
     "ipykernel",

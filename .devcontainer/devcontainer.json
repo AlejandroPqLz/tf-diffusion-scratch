@@ -1,38 +1,60 @@
 {
-	"name": "TensorFlow GPU Dev Container",
-	"build": {
-		"dockerfile": "Dockerfile",
-		"args": {"USER_NAME": "pqlza", "USER_UID": "1000"}
-	},
-	"runArgs": ["--gpus", "all"], // Enable GPU support in the container
-	"customizations": {"vscode": {"extensions": ["ms-python.python", "ms-toolsai.jupyter", "github.copilot"],
-								  "settings": {"python.pythonPath": "/usr/local/bin/python",
-											   "python.terminal.activateEnvironment": true,
-												"security.workspace.trust.untrustedFiles": "open",
-												"jupyter.askForKernelRestart": false,
-												"redhat.telemetry.enabled": true,
-												"github.copilot.enable": {
-												  "plaintext": "true",
-												  "markdown": "true"
-												},
-												"workbench.productIconTheme": "fluent-icons",
-												"workbench.iconTheme": "eq-material-theme-icons-palenight",
-												"notebook.lineNumbers": "on",
-												"zenMode.hideLineNumbers": false,
-												"remote.autoForwardPortsSource": "hybrid",
-												"editor.fontFamily": "JetBrains Mono",
-												"editor.fontLigatures": true,
-												"git.enableSmartCommit": true,
-												"git.confirmSync": false,
-												"editor.defaultFormatter": "ms-python.black-formatter",
-												"editor.formatOnSave": true,
-												"notebook.formatOnCellExecution": true,
-												"notebook.formatOnSave.enabled": true,
-												"files.autoSave": "onWindowChange",
-												"terminal.integrated.fontFamily": "monospace"
-											  }
-									}
-
-  }
+    "name": "TensorFlow GPU Dev Container",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {
+            "USER_NAME": "pqlza",
+            "USER_UID": "1000"
+        }
+    },
+    "runArgs": ["--gpus", "all"], // Enable GPU support in the container
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "donjayamanne.python-extension-pack",
+                "ms-python.black-formatter",
+                "ms-python.isort",
+                "ms-python.pylint",
+                "ms-toolsai.jupyter",
+                "github.copilot",
+                "github.copilot-chat",
+                "ms-azuretools.vscode-docker",
+                "tomoki1207.pdf",
+                "higurashi-kagome.dir-tree",
+                "yzhang.markdown-all-in-one",
+                "bierner.markdown-preview-github-styles",
+                "davidanson.vscode-markdownlint",
+                "mechatroner.rainbow-csv",
+                "gruntfuggly.todo-tree",
+				"equinusocio.vsc-material-theme-icons"
+            ],
+            "settings": {
+                "python.pythonPath": "/usr/local/bin/python",
+                "python.terminal.activateEnvironment": true,
+                "security.workspace.trust.untrustedFiles": "open",
+                "jupyter.askForKernelRestart": false,
+                "redhat.telemetry.enabled": true,
+                "github.copilot.enable": {
+                    "plaintext": "true",
+                    "markdown": "true"
+                },
+                "workbench.productIconTheme": "Default",
+                "workbench.iconTheme": "eq-material-theme-icons-palenight",
+                "notebook.lineNumbers": "on",
+                "zenMode.hideLineNumbers": false,
+                "remote.autoForwardPortsSource": "hybrid",
+                "editor.fontFamily": "JetBrains Mono",
+                "editor.fontLigatures": true,
+                "git.enableSmartCommit": true,
+                "git.confirmSync": false,
+                "editor.defaultFormatter": "ms-python.black-formatter",
+                "editor.formatOnSave": true,
+                "notebook.formatOnCellExecution": true,
+                "notebook.formatOnSave.enabled": true,
+                "files.autoSave": "onWindowChange",
+                "terminal.integrated.fontFamily": "monospace"
+            }
+        }
+    }
 }
-  
