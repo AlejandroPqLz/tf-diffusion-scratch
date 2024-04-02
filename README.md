@@ -274,8 +274,39 @@ After installing the NVIDIA drivers, CUDA and cuDNN, you can follow the same ste
 
 > <span style="color: red; font-size: 1.5em;">&#9888;</span> **NOTE:** The Doccker set up approach is not recommended for WSL nor Windows, since the there are many issues regarding the CPU usage ([more info](https://github.com/docker/for-win/issues)).
 
+After installing Docker in [OS Requirements](#1-os-requirements) section just follow the steps below:
 
+4.1 Install the NVIDIA Container Toolkit: [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#configuring-docker)
 
+4.2 Check the installation:
+
+```bash
+sudo docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
+```
+> If you get an error when checking the installation, just follow the next steps:
+> 
+>```bash
+># Restart the Docker service
+>sudo systemctl restart docker
+>
+># Open the Docker configuration file of nvidia-container-runtime
+>sudo nano /etc/nvidia-container-runtime/config.toml
+>
+># Set no-cgroups = true
+>...
+>no-cgroups = true
+>...
+>
+># Save and close the file and check the installation again
+>sudo docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
+>
+>```
+
+After that, in VSCode, open the project folder and click on the ```Reopen in Container``` button that appears in the bottom right corner of the window. This will create a container with all the dependencies installed and you will be able to run the code in the container:
+
+<div style=\"text-align:center\">
+<img src='./figures/readme_figures/reopen_in_container.png'>
+</div>
 
 ### 5. MacOS Set up
 ---
@@ -306,7 +337,8 @@ TensorFlow does not support GPU acceleration on MacOS with CUDA and cuDNN, so yo
 
 
 ### 6. Config.ini
-    After installing the external dependencies, take a look to the [config.ini](./config.ini) file in the root of the project. This file will contain all the hyperparameters for the model training.
+
+    After installing the external dependencies, take a look to the [config.ini](./config.ini) file in the root of the project and adapt it to your needs. This file will contain all the hyperparameters for the model training.
 
 Now you are ready to go!
 
