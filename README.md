@@ -94,13 +94,15 @@ This project contains dependencies outside of the scope of python. Therefore you
 ### 1. OS Requirements
 ---
 
-It is recommended to use a **Linux** distribution for this project, since it is the most common OS for data science and machine learning tasks and for that reason, NVIDIA GPU configurations are easier to set up. However, you can also use **Windows** with **WSL2** or **MacOS**. The requirements for each OS are as follows:
+It is recommended to use a **Linux (Ubuntu)** distribution for this project, since it is the most common OS for data science and artificial intelligence tasks and for that reason, NVIDIA GPU configurations are easier to set up. Not only that, but also because is the simplest way to configure and maintain the project code overtime since we will be using a Docker container, avoiding any compatibility issues with the OS and if the is any issue update or upgrade, it can be easily resolved by just rebuilding the container.
+
+However, you can also use **Windows** with **WSL2** or **MacOS**. The requirements for each OS are as follows:
 
 <table>
     <thead>
         <tr>
             <th>Windows</th>
-            <th>Linux (Ubuntu)</span></a></th>
+            <th>Linux (Ubuntu) <mark>recommended</mark> </th>
             <th>MacOS</th>
         </tr>
     </thead>
@@ -276,9 +278,11 @@ After installing the NVIDIA drivers, CUDA and cuDNN, you can follow the same ste
 
 After installing Docker in [OS Requirements](#1-os-requirements) section just follow the steps below:
 
-4.1 Install the NVIDIA Container Toolkit: [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#configuring-docker)
+#### 4.1 Install the NVIDIA Container Toolkit
 
-4.2 Check the installation:
+Follow the [NVIDIA Container Toolkit Guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#configuring-docker)
+
+#### 4.2 Check the installation
 
 ```bash
 sudo docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
@@ -302,11 +306,30 @@ sudo docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
 >
 >```
 
-After that, in VSCode, open the project folder and click on the ```Reopen in Container``` button that appears in the bottom right corner of the window. This will create a container with all the dependencies installed and you will be able to run the code in the container:
+#### 4.3 Pull the `tensorflow-gpu-jupyter` image (Optional)
+
+This image contains all the dependencies for tensorflow with cuda and cudnn installed and a jupyter notebook server to develop the project (if not pull it will be automatically pulled in the next step). You can pull the image with the following command:
+
+```bash
+docker pull tensorflow/tensorflow:latest-gpu-jupyter
+```
+
+#### 4.4 Build the container
+
+Since the project has a Dev Constainer configuration file in [.devcontainer](./.devcontainer) folder you just need to, in VSCode, open the project folder and click on the ```Reopen in Container``` button that appears in the bottom right corner of the window. This will pull the `tensorflow-gpu-jupyter` image if not pulled before and build a container using the custom `Dockerfile` for the project with all the dependencies needed.
 
 <div style=\"text-align:center\">
-<img src='./figures/readme_figures/reopen_in_container.png'>
+<img src='./figures/readme_figures/reopen_in_container_vscode.png'>
 </div>
+
+Or if you missed the button, you can open the command palette with `Ctrl+Shift+P` and type `Reopen in Container`:
+
+<div style=\"text-align:center\">
+<img src='./figures/readme_figures/reopen_in_container_command_palette.png'>
+</div>
+
+
+
 
 ### 5. MacOS Set up
 ---
