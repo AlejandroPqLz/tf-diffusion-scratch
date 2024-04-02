@@ -198,10 +198,31 @@ user@user:~$ nvidia-smi
 **- WSL2:** [Install CUDA toolkit on WSL2](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=WSL-Ubuntu&target_version=2.0&target_type=deb_local) </br>
 **- Ubuntu:** [Install CUDA toolkit on Ubuntu](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_local)
 
+After that open a terminal and run the following command to check the CUDA and cuDNN installation:
+
+- For WSL2 and Ubuntu:
+
+    ```bash
+    sudo apt install nvidia-cuda-toolkit # to avoid any issues with the CUDA installation
+    nvcc --version # to check the CUDA version
+    ```
+- For Windows:
+
+    ```bash
+    nvcc --version # to check the CUDA version
+    ```
+
 #### 2.3 Install cuDNN:
 
 **- WSL2:** [Install cuDNN](https://developer.nvidia.com/cudnn) </br>
 **- Ubuntu:** [Install cuDNN](https://developer.nvidia.com/cudnn)
+
+After that open a terminal and run the following command to check the cuDNN installation:
+
+```bash
+cat /usr/local/cuda/include/cudnn_version.h | grep CUDNN_MAJOR -A 2 # to check the cuDNN version
+```
+
 
 ### 3. Windows Subsystem for Linux (WSL2) Set up
 ---
@@ -246,7 +267,17 @@ Once the environment is activated, you can install the [external dependencies](.
 pip install -e.
 ```
 
-- ### Config.ini
+### 4. Linux (Ubuntu) Set up
+---
+
+After installing the NVIDIA drivers, CUDA and cuDNN, you can follow the same steps as in the [Windows Subsystem for Linux (WSL2) Set up](#3-windows-subsystem-for-linux-wsl2-set-up) section but having in mind that you are working on a Linux distribution it is recommended to use Docker to create a container with all the dependencies installed and avoid any compatibility and version issues.
+
+> <span style="color: red; font-size: 1.5em;">&#9888;</span> **NOTE:** The Doccker set up approach is not recommended for WSL nor Windows, since the there are many issues regarding the CPU usage ([more info](https://github.com/docker/for-win/issues)).
+
+
+
+
+### Config.ini
     After installing the external dependencies, take a look to the [config.ini](./config.ini) file in the root of the project. This file will contain all the hyperparameters for the model training.
 
 Now you are ready to go!
