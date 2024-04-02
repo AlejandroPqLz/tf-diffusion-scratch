@@ -13,15 +13,15 @@ requirements = [
     "pandas",
     "matplotlib",
     "tqdm",
-    "tensorflow[and-cuda] == 2.16", # comment if not using GPU or not a NVIDIA GPU
+    "tensorflow[and-cuda] == 2.16",  # comment if not using GPU or not a NVIDIA GPU
     # "tensorflow == 2.16", # uncomment if not using GPU or not a NVIDIA GPU
     "keras == 3.1",
     "mlflow",
     "pexpect",
     "ipykernel",
     "numba",
-    "gradio"
-    ]
+    "gradio",
+]
 
 setuptools.setup(
     name="poke_diffusion",
@@ -40,5 +40,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.10",
+    python_requires=">=3.10,<=3.12",
 )
