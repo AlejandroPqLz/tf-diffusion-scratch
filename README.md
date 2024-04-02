@@ -239,12 +239,12 @@ And make the following changes in the environment variables for using CUDA and c
     echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/' > $CONDA_PREFIX/etc/conda/activate.d/env_vars.sh
 ```
 
-- ### External Dependencies
-    Once the environment is activated, you can install the [external dependencies](./setup.py) by running the following command:
+#### 3.3 External Dependencies
+Once the environment is activated, you can install the [external dependencies](./setup.py) by running the following command:
     
-    ```bash
-    pip install -e.
-    ```
+```bash
+pip install -e.
+```
 
 - ### Config.ini
     After installing the external dependencies, take a look to the [config.ini](./config.ini) file in the root of the project. This file will contain all the hyperparameters for the model training.
