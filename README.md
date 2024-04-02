@@ -94,11 +94,11 @@ This project contains dependencies outside of the scope of python. Therefore you
 ### 1. OS Requirements
 ---
 
-It is recommended to use a **Linux (Ubuntu)** distribution for this project, since it is the most common OS for data science and artificial intelligence tasks and for that reason, NVIDIA GPU configurations are easier to set up.
+It is **recommended** to use a **`Linux (Ubuntu)`** distribution for this project, since it is the most common OS for data science and artificial intelligence tasks and for that reason, NVIDIA GPU configurations are easier to set up.
 
 Not only that, but also because is the simplest way to configure and maintain the project code overtime since we will be using a Docker container, avoiding any compatibility issues with the OS and if the is any issue update or upgrade, it can be easily resolved by just rebuilding the container.
 
-However, you can also use **Windows** with **WSL2** or **MacOS**. The requirements for each OS are as follows:
+However, you can also use `Windows` with `WSL2` or `MacOS`. The requirements for each OS are as follows:
 
 <table>
     <thead>
@@ -114,7 +114,7 @@ However, you can also use **Windows** with **WSL2** or **MacOS**. The requiremen
                 <ul>
                     <li>Windows 11</li>
                     <li>NVIDIA GPU with CUDA support</li>
-                    <li><a href="https://learn.microsoft.com/en-us/windows/wsl/install">Download and set up WSL2.</a>
+                    <li><a href="https://learn.microsoft.com/en-us/windows/wsl/install">Download and set up WSL2</a>
                     <li>Install Ubuntu from the Microsoft Store</li>
                 </ul>
             </td>
@@ -221,12 +221,11 @@ After that open a terminal and run the following command to check the CUDA and c
 **- WSL2:** [Install cuDNN](https://developer.nvidia.com/cudnn) </br>
 **- Ubuntu:** [Install cuDNN](https://developer.nvidia.com/cudnn)
 
-After that open a terminal and run the following command to check the cuDNN installation:
+After that open a terminal and run the following command to check the cuDNN installation (optional):
 
 ```bash
 cat /usr/local/cuda/include/cudnn_version.h | grep CUDNN_MAJOR -A 2 # to check the cuDNN version
 ```
-
 
 ### 3. Windows Subsystem for Linux (WSL2) Set up
 ---
@@ -289,6 +288,7 @@ Follow the [NVIDIA Container Toolkit Guide](https://docs.nvidia.com/datacenter/c
 ```bash
 sudo docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
 ```
+
 > If you get an error when checking the installation, just follow the next steps:
 > 
 >```bash
@@ -318,20 +318,21 @@ docker pull tensorflow/tensorflow:latest-gpu-jupyter
 
 #### 4.4 Build the container
 
-Since the project has a Dev Constainer configuration file in [.devcontainer](./.devcontainer) folder you just need to, in VSCode, open the project folder and click on the ```Reopen in Container``` button that appears in the bottom right corner of the window. This will pull the `tensorflow-gpu-jupyter` image if not pulled before and build a container using the custom `Dockerfile` for the project with all the dependencies needed.
+Since the project has a Dev Constainer configuration file in [.devcontainer](./.devcontainer) folder you just need to, in VSCode, open the project folder and click on the ```Reopen in Container``` button that appears in the bottom right corner of the window. Or yo can do it at any time by opening the command palette with `Ctrl+Shift+P` and type `Reopen in Container`.
+
+<p align="center">
+  <img src='./figures/readme_figures/reopen_in_container_vscode.png' alt= pop_up style="width: 50%;"/>
+  </br>
+  <img src='./figures/readme_figures/reopen_in_container_command_palette.png' alt="command palette" style="width: 50%;" />
+</p>
+
+This will pull the `tensorflow-gpu-jupyter` image if not pulled before and build a container using the custom `Dockerfile` for the project with all the dependencies needed.
+
+And voilà! You have a container with all the dependencies installed and ready to go!:
 
 <div style=\"text-align:center\">
-<img src='./figures/readme_figures/reopen_in_container_vscode.png'>
+<img src='./figures/readme_figures/container_vscode.png'>
 </div>
-
-Or if you missed the button, you can open the command palette with `Ctrl+Shift+P` and type `Reopen in Container`:
-
-<div style=\"text-align:center\">
-<img src='./figures/readme_figures/reopen_in_container_command_palette.png'>
-</div>
-
-
-
 
 ### 5. MacOS Set up
 ---
@@ -360,10 +361,9 @@ TensorFlow does not support GPU acceleration on MacOS with CUDA and cuDNN, so yo
     pip install tensorflow==2.12 tensorflow-macos tensorflow-metal
 ```
 
-
 ### 6. Config.ini
 
-    After installing the external dependencies, take a look to the [config.ini](./config.ini) file in the root of the project and adapt it to your needs. This file will contain all the hyperparameters for the model training.
+After installing the external dependencies, take a look to the [config.ini](./config.ini) file in the root of the project and adapt it to your needs. This file will contain all the hyperparameters for the model training.
 
 Now you are ready to go!
 
