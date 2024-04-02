@@ -91,12 +91,15 @@ The **structure** of the repository is as follows:
 
 This project contains dependencies outside of the scope of python. Therefore you need to perform additional steps.
 
+### 1. OS Requirements
+---
+
 It is recommended to use a **Linux** distribution for this project, since it is the most common OS for data science and machine learning tasks and for that reason, NVIDIA GPU configurations are easier to set up. However, you can also use **Windows** with **WSL2** or **MacOS**. The requirements for each OS are as follows:
 
 <table>
     <thead>
         <tr>
-            <th>Windows (WSL2)</th>
+            <th>Windows</th>
             <th>Linux (Ubuntu)</span></a></th>
             <th>MacOS</th>
         </tr>
@@ -129,17 +132,17 @@ It is recommended to use a **Linux** distribution for this project, since it is 
     </tbody>
 </table>
 
-### NVIDIA GPU Configuration (Windows and Linux)
+### 2. NVIDIA GPU Configuration (Windows and Linux)
 ---
 
 In order to use the GPU for training the model, you need to install the NVIDIA drivers, CUDA and cuDNN. Eventhough the project is developed in Tensorflow and therefore not all CUDA and cuDNN versions are compatible with the version of Tensorflow used, for the GPU to work properly, the versions of CUDA and cuDNN and the NVIDIA drivers must be the most recent ones.
 
-#### 1. Install the NVIDIA drivers:
+#### 1. Install NVIDIA drivers:
 
 <table>
     <thead>
         <tr>
-            <th>Windows (WSL2)</th>
+            <th>Windows</th>
             <th>Linux (Ubuntu)</span></a></th>
         </tr>
     </thead>
@@ -147,7 +150,7 @@ In order to use the GPU for training the model, you need to install the NVIDIA d
         <tr>
             <td>
                 <ul>
-                    <li>Download the latest NVIDIA drivers </br> for your GPU from the <a href="https://www.nvidia.com/download/index.aspx?lang=en-us">NVIDIA website</a></li>
+                    <li>Download the latest NVIDIA drivers </br> for your GPU on Windowns from the <a href="https://www.nvidia.com/download/index.aspx?lang=en-us">NVIDIA website</a></li>
                     <li>Install the <code>.exe</code> file</li> and follow the instructions
                     <li>Chech the driver installation: </br>
                     <code>nvidia-smi</code></li>
@@ -191,36 +194,15 @@ user@user:~$ nvidia-smi
 ```
 #### 2. Install CUDA toolkit:
 
-<table>
-    <thead>
-        <tr>
-            <th>Windows (WSL2)</th>
-            <th>Linux (Ubuntu)</span></a></th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-                <ul>
-                    <li>Download the latest CUDA toolkit </br> for your GPU from the <a href="https://developer.nvidia.com/cuda-downloads">NVIDIA website</a></li>
-                    <li>Install the <code>.exe</code> file</li> and follow the instructions
-                    <li>Set the environment variables: </br>
-                    <code>export PATH=/usr/local/cuda-12.3/bin${PATH:+:${PATH}}</code> </br>
-                    <code>export LD_LIBRARY_PATH=/usr/local/cuda-12.3/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}</code></li>
-                </ul>
-            </td>
-            <td>
-                <ul>
-                    <li>Download the latest CUDA toolkit </br> for your GPU from the <a href="https://developer.nvidia.com/cuda-downloads">NVIDIA website</a></li>
-                    <li>Install the <code>.deb</code> file</li> and follow the instructions
-                    <li>Set the environment variables: </br>
-                    <code>export PATH=/usr/local/cuda-12.3/bin${PATH:+:${PATH}}</code> </br>
-                    <code>export LD_LIBRARY_PATH=/usr/local/cuda-12.3/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}</code></li>
-                </ul>
-            </td>
-        </tr>
-    </tbody>
-</table>
+**- Windows:** [Install CUDA toolkit on Windows](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64&target_version=11&target_type=exe_local) </br>
+**- WSL2:** [Install CUDA toolkit on WSL2](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=WSL-Ubuntu&target_version=2.0&target_type=deb_local) </br>
+**- Ubuntu:** [Install CUDA toolkit on Ubuntu](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_local)
+
+#### 3. Install cuDNN:
+
+**- WSL2 and Ubuntu:** [Install cuDNN](https://developer.nvidia.com/cudnn) </br>
+
+
 
 TODO: add nvidia drivers etc., explain the why behind the versions of CUDA and cudnn, and add Ubuntu and Windows ways to preprare the enviroment for developing ans using the gpu
 
