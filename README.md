@@ -1,6 +1,5 @@
 # Diffusion from scratch
-
-[![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB)](https://www.python.org/downloads/release/python-312/)
+[![Python 3.10-3.12](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12-3776AB)](https://www.python.org/downloads/release/python-312/)
 [![Tensorflow 2.16.1](https://img.shields.io/badge/tensorflow-2.16.1-FF6F00)](https://www.tensorflow.org/)
 [![Keras 3.1](https://img.shields.io/badge/keras-3.1-D00000)](https://keras.io/)
 [![CUDA 12.3](https://img.shields.io/badge/cuda-12.3-76B900)](https://developer.nvidia.com/cuda-zone)
@@ -21,9 +20,11 @@
 
 ## :mag: Project Overview
 
-Implementing a **conditioned Denoising Diffsuion Probabilistic Model** (DDPM) on Tensorflow from Scratch for **Pokémon generation** and understanding the theory behind it. In order to achieve it, the Pokemon sprite images dataset from Kaggle will be used: [Pokémon sprite images](https://www.kaggle.com/datasets/yehongjiang/pokemon-sprites-images) with license: <img src='https://licensebuttons.net/l/zero/1.0/80x15.png'>.
+Implementing a **conditioned Denoising Diffsuion Probabilistic Model** (DDPM) on Tensorflow from Scratch for **Pokémon generation** and understanding the mathematics and theory behind it. Therefore to achive this goal, the Pokémon sprites dataset will be used: [Pokémon sprite images](https://www.kaggle.com/datasets/yehongjiang/pokemon-sprites-images) with license: <img src='https://licensebuttons.net/l/zero/1.0/80x15.png'>.
 
 This project has been developed for my **Bachelor's Thesis** in **Data Science and Artificial Intelligence** at Universidad Politécnica de Madrid (UPM).
+
+> <span style="color: red; font-size: 1.5em;">&#9888;</span> **NOTE:** Since this project is for a spanish college bachelor's thesis, the documentation markdowns in the notebooks are in spanish. However, the code and comments are in english.
 
 <div style=\"text-align:center\">
 <img src='./figures/readme_figures/poke_red_diffusion_portada.webp'>
@@ -81,7 +82,6 @@ The **structure** of the repository is as follows:
  ┣ 📜.gitattributes
  ┣ 📜.gitignore
  ┣ 📜config.ini
- ┣ 📜config.template.ini
  ┣ 📜LICENSE
  ┣ 📜README.md
  ┗ 📜setup.py
@@ -89,7 +89,54 @@ The **structure** of the repository is as follows:
 
 ## :rocket: Prerequisites
 
-This project contains dependencies outside of the scope of python. Therefore you need to perform additional steps. TODO: add nvidia drivers etc., explain the why behind the versions of CUDA and cudnn, and add Ubuntu and Windows ways to preprare the enviroment for developing ans using the gpu
+This project contains dependencies outside of the scope of python. Therefore you need to perform additional steps.
+
+It is recommended to use a **Linux** distribution for this project, since it is the most common OS for data science and machine learning tasks and for that reason, NVIDIA GPU configurations are easier to set up. However, you can also use **Windows** with **WSL2** or **MacOS**. The requirements for each OS are as follows:
+
+<table>
+    <thead>
+        <tr>
+            <th>Windows (WSL2)</th>
+            <th>Linux</span></a></th>
+            <th>MacOS</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                <ul>
+                    <li>Windows 11</li>
+                    <li>NVIDIA GPU with CUDA support</li>
+                    <li><a href="https://learn.microsoft.com/en-us/windows/wsl/install">Download and set-up WSL2.</a> Then, install the Ubuntu distribution from the Microsoft Store.
+            </td>
+            <td>
+                <ul>
+                    <li>Ubuntu 22.04 or later</li>
+                    <li>NVIDIA GPU with CUDA support</li>
+                    <li><a href="https://docs.docker.com/compose/install/">Install Docker Compose on Ubuntu</a></li>
+                </ul>
+            </td>
+            <td>
+                <ul>
+                    <li>macOS 12.0 or later (Get the latest beta)</li>
+                    <li>Mac computer with Apple silicon or AMD GPUs</li>
+                    <li>Xcode command-line tools: <code>xcode-select — install</code></li>    
+                </ul>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+### NVIDIA GPU Configuration (Linux and Windows)
+---
+
+In order to use the GPU for training the model, you need to install the NVIDIA drivers, CUDA and cuDNN. Since the model is implemented in Tensorflow, you need to install the versions of CUDA and cuDNN that are compatible with the version of Tensorflow you are using. For more information, visit the [Tensorflow versions compatibility](https://www.tensorflow.org/install/source?hl=es#gpu). For this project, since we are using Tensorflow 2.16.1, we need to install CUDA 12.3 and cuDNN 8.9, todo do so, follow the steps below:
+
+- NVIDIA Drivers
+    To install the NVIDIA drivers, you can follow the instructions in the [NVIDIA website](https://www.nvidia.com/Download/index.aspx).
+
+
+TODO: add nvidia drivers etc., explain the why behind the versions of CUDA and cudnn, and add Ubuntu and Windows ways to preprare the enviroment for developing ans using the gpu
 
 - ### Conda Environment
     We will use conda to manage the python environment. You can install it following the [documentation](https://docs.anaconda.com/free/miniconda/#quick-command-line-install).
