@@ -94,7 +94,9 @@ This project contains dependencies outside of the scope of python. Therefore you
 ### 1. OS Requirements
 ---
 
-It is recommended to use a **Linux (Ubuntu)** distribution for this project, since it is the most common OS for data science and artificial intelligence tasks and for that reason, NVIDIA GPU configurations are easier to set up. Not only that, but also because is the simplest way to configure and maintain the project code overtime since we will be using a Docker container, avoiding any compatibility issues with the OS and if the is any issue update or upgrade, it can be easily resolved by just rebuilding the container.
+It is recommended to use a **Linux (Ubuntu)** distribution for this project, since it is the most common OS for data science and artificial intelligence tasks and for that reason, NVIDIA GPU configurations are easier to set up.
+
+Not only that, but also because is the simplest way to configure and maintain the project code overtime since we will be using a Docker container, avoiding any compatibility issues with the OS and if the is any issue update or upgrade, it can be easily resolved by just rebuilding the container.
 
 However, you can also use **Windows** with **WSL2** or **MacOS**. The requirements for each OS are as follows:
 
