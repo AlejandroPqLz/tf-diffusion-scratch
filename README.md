@@ -104,7 +104,7 @@ However, you can also use **Windows** with **WSL2** or **MacOS**. The requiremen
     <thead>
         <tr>
             <th>Windows</th>
-            <th><mark><b><u>Linux (Ubuntu) recommended</b></u></mark> </th>
+            <th><span style="background-color: #e68a00">Linux (Ubuntu) recommended</span></th>
             <th>MacOS</th>
         </tr>
     </thead>
