@@ -224,18 +224,19 @@ After these steps, when executing the `nvidia-smi` command, you should see the f
 
 ```bash
 user@user:~$ nvidia-smi
-+-----------------------------------------------------------------------------+
-| NVIDIA-SMI 510.39.01    Driver Version: 510.39.01    CUDA Version: 12.3     |
-|-------------------------------+----------------------+----------------------+
-| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
-| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
-|                               |                      |               MIG M. |
-|===============================+======================+======================|
-|   0  NVIDIA GeForce ...  Off  | 00000000:01:00.0 Off |                  N/A |
-| N/A   45C    P8    10W /  N/A |      0MiB /  5944MiB |      0%      Default |
-|                               |                      |                  N/A |
-+-------------------------------+----------------------+----------------------+
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 550.54.15              Driver Version: 550.54.15      CUDA Version: 12.4     |
+|-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 3060 ...    Off |   00000000:01:00.0  On |                  N/A |
+| N/A   41C    P8             15W /   70W |      73MiB /   6144MiB |     18%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
 ```
+
 #### 1.2 Install CUDA toolkit:
 
 Download and install the [CUDA toolkit](https://developer.nvidia.com/cuda-downloads) following the instructions for your OS, if you have any issues, visit the [CUDA installation guide](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html):
@@ -250,6 +251,8 @@ After that open a terminal and run the following command to check the CUDA insta
 
     ```bash
     sudo apt install nvidia-cuda-toolkit # to avoid any issues with the CUDA installation
+    ```
+    ```bash
     nvcc --version # to check the CUDA version
     ```
 - For Windows:
@@ -265,12 +268,6 @@ After that open a terminal and run the following command to check the CUDA insta
 **- Windows (WSL2):** [Install cuDNN on Windows](https://developer.nvidia.com/cudnn-downloads?target_os=Windows&target_arch=x86_64&target_version=Agnostic&cuda_version=12) </br>
 **- Ubuntu:** [Install cuDNN on Ubuntu](https://developer.nvidia.com/cudnn)
 
-After that open a terminal (only Ubuntu) and run the following command to check the cuDNN installation:
-
-```bash
-cat /usr/include/cudnn_version.h | grep CUDNN_MAJOR -A 2 # to check the cuDNN version
-```
-
 ### 2. Windows Subsystem for Linux (WSL2) Configuration
 ---
 
@@ -283,7 +280,8 @@ We will use conda to manage the python environment. You can install it following
 ```bash
     # Create the environment
     conda create -n diffusion_env python=3.12 -y
-    
+```
+```bash
     # Activate the environment
     conda activate diffusion_env
 ```
@@ -295,12 +293,12 @@ Since the model is implemented in Tensorflow, you need to install the versions o
 ```bash
     # Install CUDA 12.3
     conda install nvidia/label/cuda-12.3.2::cuda-toolkit
-    
+```
+```bash 
     # Install cuDNN 8.9
     conda install -c conda-forge cudnn=8.9
 ```
-
-And make the following changes in the environment variables for using CUDA and cuDNN after activating the environment:
+And finally, set the environment variables to use the CUDA and cuDNN libraries every time the environment is activated:
 
 ```bash
     mkdir -p $CONDA_PREFIX/etc/conda/activate.d
@@ -385,6 +383,8 @@ And voilà! You have a container with all the dependencies installed and ready t
 <p align="center">
 <img src='./figures/readme_figures/container_vscode.png' style="width: 80%;" />
 </p>
+
+After that, if any issue or problem arises, just rebuild the container using the command palette and selecting the `Rebuild Container` option.
 
 ### 4. MacOS Configuration
 ---
