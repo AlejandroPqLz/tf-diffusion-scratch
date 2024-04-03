@@ -24,11 +24,13 @@ Implementing a **conditioned Denoising Diffsuion Probabilistic Model** (DDPM) on
 
 This project has been developed for my **Bachelor's Thesis** in **Data Science and Artificial Intelligence** at Universidad Politécnica de Madrid (UPM).
 
-> <span style="color: red; font-size: 1.5em;">&#9888;</span> **NOTE:** Since this project is for a spanish college bachelor's thesis, the documentation markdowns in the notebooks are in spanish. However, the code and comments are in english.
+> **NOTE:** Since this project is for a spanish college institution, the documentation markdowns in the notebooks and the thesis document are in **spanish** <span style="font-size: 1em;">&#x1F1EA;&#x1F1F8;</span>. However, the code and comments are in **english** <span style="font-size: 1em;">&#x1F1EC;&#x1F1E7;</span>.
+>
 
-<div style=\"text-align:center\">
+</br>
+<p align="center">
 <img src='./figures/readme_figures/poke_red_diffusion_portada.webp'>
-</div>
+</p>
 
 ## :open_file_folder: Structure
 
@@ -60,8 +62,7 @@ The **structure** of the repository is as follows:
  ┃ ┣ 📜01-Dataset-Creation.ipynb
  ┃ ┣ 📜02-Diffusion-Model-Architecture.ipynb
  ┃ ┣ 📜03-Diffusion-Process.ipynb
- ┃ ┣ 📜04-Training-Diffusion-Model.ipynb
- ┃ ┗ 📜05-Conclusions-and-Results.ipynb
+ ┃ ┗ 📜04-Training-Diffusion-Model.ipynb
  ┣ 📂src
  ┃ ┣ 📂data
  ┃ ┃ ┣ 📜create_dataset.py
@@ -91,9 +92,6 @@ The **structure** of the repository is as follows:
 
 This project contains dependencies outside of the scope of python. Therefore you need to perform additional steps.
 
-### 1. OS Requirements
----
-
 It is **recommended** to use a **`Linux (Ubuntu)`** distribution for this project, since it is the most common OS for data science and artificial intelligence tasks and for that reason, NVIDIA GPU configurations are easier to set up.
 
 Not only that, but also because is the simplest way to configure and maintain the project code overtime since we will be using a Docker container, avoiding any compatibility issues with the OS and if the is any issue update or upgrade, it can be easily resolved by just rebuilding the container.
@@ -116,6 +114,11 @@ However, you can also use `Windows` with `WSL2` or `MacOS`. The requirements for
                     <li>NVIDIA GPU with CUDA support</li>
                     <li><a href="https://learn.microsoft.com/en-us/windows/wsl/install">Download and set up WSL2</a>
                     <li>Install Ubuntu from the Microsoft Store</li>
+                    <li>Follow the configuration and set up steps: </br>
+                        <ul>
+                            <li><a href="#2-nvidia-gpu-configuration-windows-and-linux">NVIDIA GPU Configuration</li>
+                            <li><a href="#3-windows-subsystem-for-linux-wsl2-set-up">WSL2 Set up</a></li>
+                        </ul>
                 </ul>
             </td>
             <td>
@@ -123,25 +126,36 @@ However, you can also use `Windows` with `WSL2` or `MacOS`. The requirements for
                     <li>Ubuntu 22.04 or later</li>
                     <li>NVIDIA GPU with CUDA support</li>
                     <li><a href="https://docs.docker.com/compose/install/">Install Docker Compose on Ubuntu</a></li>
+                    <li>Follow the configuration and set up steps: </br>
+                        <ul>
+                            <li><a href="#3-windows-subsystem-for-linux-wsl2-set-up">WSL2 Set up</a></li>
+                            <li><a href="#4-linux-ubuntu-set-up">Linux Set up</a></li>
+                        </ul>
                 </ul>
             </td>
             <td>
                 <ul>
                     <li>macOS 12.0 or later (Get the latest beta)</li>
                     <li>Mac computer with Apple silicon or AMD GPUs</li>
-                    <li>Xcode command-line tools: <code>xcode-select — install</code></li>    
+                    <li>Xcode command-line tools: <code>xcode-select — install</code></li>
+                    <li>Follow the configuration and set up steps: </br>
+                        <ul>
+                            <li><a href="#2-nvidia-gpu-configuration-windows-and-linux">NVIDIA GPU Configuration</li>
+                        </ul>
                 </ul>
             </td>
         </tr>
     </tbody>
 </table>
 
-### 2. NVIDIA GPU Configuration (Windows and Linux)
+## :wrench: Configuration and Set up
+
+### 1. NVIDIA GPU Configuration (Windows and Linux)
 ---
 
 In order to use the GPU for training the model, you need to install the NVIDIA drivers, CUDA and cuDNN. Eventhough the project is developed in Tensorflow and therefore not all CUDA and cuDNN versions are compatible with the version of Tensorflow used, for the GPU to work properly, the versions of CUDA and cuDNN and the NVIDIA drivers must be the most recent ones.
 
-#### 2.1 Install NVIDIA drivers:
+#### 1.1 Install NVIDIA drivers:
 
 <table>
     <thead>
@@ -166,7 +180,7 @@ In order to use the GPU for training the model, you need to install the NVIDIA d
                     <code>sudo apt update && sudo apt upgrade</code></li>
                     <li> Remove previous NVIDIA installations: </br>
                     <code>sudo apt autoremove nvidia* --purge</code></li>
-                    <li> Check Ubuntu devices: </br>
+                    <li> Check Ubuntu drivers devices: </br>
                     <code>ubuntu-drivers devices</code></li>
                     <li> Install the recommended NVIDIA driver (its version is tagged with recommended): </br>
                     <code>sudo apt-get install nvidia-driver-&ltdriver_number&gt</code></li>
@@ -196,13 +210,15 @@ user@user:~$ nvidia-smi
 |                               |                      |                  N/A |
 +-------------------------------+----------------------+----------------------+
 ```
-#### 2.2 Install CUDA toolkit:
+#### 1.2 Install CUDA toolkit:
+
+Download and install the [CUDA toolkit](https://developer.nvidia.com/cuda-downloads) following the instructions for your OS, if you have any issues, visit the [CUDA installation guide](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html):
 
 **- Windows:** [Install CUDA toolkit on Windows](https://developer.nvidia.com/cuda-downloads?target_os=Windows&target_arch=x86_64&target_version=11&target_type=exe_local) </br>
 **- WSL2:** [Install CUDA toolkit on WSL2](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=WSL-Ubuntu&target_version=2.0&target_type=deb_local) </br>
 **- Ubuntu:** [Install CUDA toolkit on Ubuntu](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_local)
 
-After that open a terminal and run the following command to check the CUDA and cuDNN installation:
+After that open a terminal and run the following command to check the CUDA installation:
 
 - For WSL2 and Ubuntu:
 
@@ -216,23 +232,25 @@ After that open a terminal and run the following command to check the CUDA and c
     nvcc --version # to check the CUDA version
     ```
 
-#### 2.3 Install cuDNN:
+#### 1.3 Install cuDNN:
 
-**- WSL2:** [Install cuDNN](https://developer.nvidia.com/cudnn) </br>
-**- Ubuntu:** [Install cuDNN](https://developer.nvidia.com/cudnn)
+[Install cuDNN](https://developer.nvidia.com/cudnn-downloads) following the instructions for your OS, if you have any issues, visit the [cuDNN installation guide](https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html):
 
-After that open a terminal and run the following command to check the cuDNN installation (optional):
+**- Windows (WSL2):** [Install cuDNN on Windows](https://developer.nvidia.com/cudnn-downloads?target_os=Windows&target_arch=x86_64&target_version=Agnostic&cuda_version=12) </br>
+**- Ubuntu:** [Install cuDNN on Ubuntu](https://developer.nvidia.com/cudnn)
+
+After that open a terminal (only Ubuntu) and run the following command to check the cuDNN installation:
 
 ```bash
-cat /usr/local/cuda/include/cudnn_version.h | grep CUDNN_MAJOR -A 2 # to check the cuDNN version
+cat /usr/include/cudnn_version.h | grep CUDNN_MAJOR -A 2 # to check the cuDNN version
 ```
 
-### 3. Windows Subsystem for Linux (WSL2) Set up
+### 2. Windows Subsystem for Linux (WSL2) Set up
 ---
 
-After installing the NVIDIA drivers, CUDA and cuDNN, you need to set up WSL2 to use the GPU for training the model. To do this, follow the steps below:
+After installing the NVIDIA drivers, CUDA and cuDNN, if you are going to develop the project on Windows, you need to set up WSL2 to use the GPU for training the model. To do this, follow the steps below:
 
-#### 3.1  Conda Environment
+#### 2.1  Conda Environment
 
 We will use conda to manage the python environment. You can install it following the [Miniconda instalation guide](https://docs.anaconda.com/free/miniconda/#quick-command-line-install). After installing miniconda, create a new environment with the following command:
     
@@ -244,7 +262,7 @@ We will use conda to manage the python environment. You can install it following
     conda activate diffusion_env
 ```
 
-#### 3.2  CUDA and cuDNN compatible versions
+#### 2.2  CUDA and cuDNN compatible versions
 
 Since the model is implemented in Tensorflow, you need to install the versions of CUDA and cuDNN that are compatible with the version of Tensorflow you are using. For more information, visit the [Tensorflow versions compatibility](https://www.tensorflow.org/install/source?hl=es#gpu). For this project, since we are using Tensorflow 2.16.1, we need to install CUDA 12.3 and cuDNN 8.9, todo do so, just execute the following commands:
 
@@ -263,27 +281,27 @@ And make the following changes in the environment variables for using CUDA and c
     echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/' > $CONDA_PREFIX/etc/conda/activate.d/env_vars.sh
 ```
 
-#### 3.3 External Dependencies
+#### 2.3 External Dependencies
 Once the environment is activated, you can install the [external dependencies](./setup.py) by running the following command:
     
 ```bash
 pip install -e.
 ```
 
-### 4. Linux (Ubuntu) Set up
+### 3. Linux (Ubuntu) Set up
 ---
 
-After installing the NVIDIA drivers, CUDA and cuDNN, you can follow the same steps as in the [Windows Subsystem for Linux (WSL2) Set up](#3-windows-subsystem-for-linux-wsl2-set-up) section but having in mind that you are working on a Linux distribution it is recommended to use Docker to create a container with all the dependencies installed and avoid any compatibility and version issues.
+After installing the NVIDIA drivers, CUDA and cuDNN, if you are going to develop the project on Ubuntu, you can follow the same steps as in the [Windows Subsystem for Linux (WSL2) Set up](#3-windows-subsystem-for-linux-wsl2-set-up) section but having in mind that you are working on a Linux distribution it is recommended to use Docker to create a container with all the dependencies installed and avoid any compatibility and version issues.
 
-> <span style="color: red; font-size: 1.5em;">&#9888;</span> **NOTE:** The Doccker set up approach is not recommended for WSL nor Windows, since the there are many issues regarding the CPU usage ([more info](https://github.com/docker/for-win/issues)).
+Previously installed Docker in [OS Requirements](#1-os-requirements) section just follow the steps below:
 
-After installing Docker in [OS Requirements](#1-os-requirements) section just follow the steps below:
+> <span style="color: red; font-size: 1.5em;">&#9888;</span> **WARNING:** The Doccker set up approach is not recommended for WSL nor Windows, since the there are many issues regarding the CPU usage ([more info](https://github.com/docker/for-win/issues)).
 
-#### 4.1 Install the NVIDIA Container Toolkit
+#### 3.1 Install the NVIDIA Container Toolkit
 
 Follow the [NVIDIA Container Toolkit Guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#configuring-docker)
 
-#### 4.2 Check the installation
+#### 3.2 Check the installation
 
 ```bash
 sudo docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
@@ -308,36 +326,44 @@ sudo docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
 >
 >```
 
-#### 4.3 Pull the `tensorflow-gpu-jupyter` image (Optional)
+#### 3.3 Pull the `tensorflow-gpu-jupyter` image (Optional)
 
-This image contains all the dependencies for tensorflow with cuda and cudnn installed and a jupyter notebook server to develop the project (if not pull it will be automatically pulled in the next step). You can pull the image with the following command:
+This image contains all the correct dependencies for tensorflow with cuda and cudnn installed and a jupyter notebook server to develop the project (if not pull it will be automatically pulled in the next step). You can pull the image with the following command:
 
 ```bash
 docker pull tensorflow/tensorflow:latest-gpu-jupyter
 ```
 
-#### 4.4 Build the container
+#### 3.4 Build the container
 
 Since the project has a Dev Constainer configuration file in [.devcontainer](./.devcontainer) folder you just need to, in VSCode, open the project folder and click on the ```Reopen in Container``` button that appears in the bottom right corner of the window. Or yo can do it at any time by opening the command palette with `Ctrl+Shift+P` and type `Reopen in Container`.
 
+</br>
 <p align="center">
   <img src='./figures/readme_figures/reopen_in_container_vscode.png' alt= pop_up style="width: 50%;"/>
   </br>
-  <img src='./figures/readme_figures/reopen_in_container_command_palette.png' alt="command palette" style="width: 50%;" />
+    <i>Pop-up VSCode message</i>
 </p>
+
+<p align="center">
+  <img src='./figures/readme_figures/reopen_in_container_command_palette.png' alt="command palette" style="width: 50%;" />
+    </br>
+        <i>Command palette</i>
+</p>
+</br>
 
 This will pull the `tensorflow-gpu-jupyter` image if not pulled before and build a container using the custom `Dockerfile` for the project with all the dependencies needed.
 
 And voilà! You have a container with all the dependencies installed and ready to go!:
 
-<div style=\"text-align:center\">
-<img src='./figures/readme_figures/container_vscode.png'>
-</div>
+<p align="center">
+<img src='./figures/readme_figures/container_vscode.png' style="width: 80%;" />
+</p>
 
-### 5. MacOS Set up
+### 4. MacOS Set up
 ---
 
-#### 5.1 Conda Environment
+#### 4.1 Conda Environment
 
 We will follow the same first steps as in the [Windows Subsystem for Linux (WSL2) Set up](#3-windows-subsystem-for-linux-wsl2-set-up) section, since we are goint to use a coda environment to manage the dependencies. Therefore, install miniconda following the [Miniconda instalation guide](https://docs.anaconda.com/free/miniconda/#quick-command-line-install). After installing miniconda, create a new environment with the following command:
     
@@ -352,7 +378,7 @@ We will follow the same first steps as in the [Windows Subsystem for Linux (WSL2
     pip install -e.
 ```
 
-#### 5.2 TensorFlow for MacOS
+#### 4.2 TensorFlow for MacOS
 
 TensorFlow does not support GPU acceleration on MacOS with CUDA and cuDNN, so you need to install the its specific version for MacOS. To do so, just run the following command:
 
@@ -361,9 +387,6 @@ TensorFlow does not support GPU acceleration on MacOS with CUDA and cuDNN, so yo
     pip install tensorflow==2.12 tensorflow-macos tensorflow-metal
 ```
 
-### 6. Config.ini
-
-After installing the external dependencies, take a look to the [config.ini](./config.ini) file in the root of the project and adapt it to your needs. This file will contain all the hyperparameters for the model training.
 
 Now you are ready to go!
 
@@ -375,18 +398,29 @@ The dataset contains +10,000 Pokémon sprites in PNG format (half of them are sh
 
 ## :hammer_and_wrench: Usage
 
-After following the steps described in the [Prerequisites](https://github.com/AlejandroPqLz/DiffusionScratch#rocket-prerequisites) section, TODO
+After following the steps described in the [Prerequisites](https://github.com/AlejandroPqLz/DiffusionScratch#rocket-prerequisites) section, you can start using the project by running the notebooks in the [notebooks](./notebooks) folder. But first, take a look to the [config.ini](./config.ini) file in the root of the project and adapt it to your needs. This file will contain all the hyperparameters for the model training.
+
+Once done that, you can run the notebooks in the prestablished order where:
+
+1. [00-Intro-and-Analysis.ipynb](./notebooks/00-Intro-and-Analysis.ipynb): Introduce the project and analyze the dataset.
+2. [01-Dataset-Creation.ipynb](./notebooks/01-Dataset-Creation.ipynb): Create the dataset for the model training.
+3. [02-Diffusion-Model-Architecture.ipynb](./notebooks/02-Diffusion-Model-Architecture.ipynb): Implement the model architecture and explain the theory behind it.
+4. [03-Diffusion-Process.ipynb](./notebooks/03-Diffusion-Process.ipynb): Implement the diffusion process and explain the theory behind it.
+5. [04-Training-Diffusion-Model.ipynb](./notebooks/04-Training-Diffusion-Model.ipynb): Train the model and analyze the results.
 
 
 ## :books: Resources
 - Resources and tutorials that have been found useful for this project are located in the [/docs](./docs) folder.
 - Conda environment installation and management: [Conda documentation](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html).
+- Docker installation and management: [Docker documentation](https://docs.docker.com/get-docker/).
+- NVIDIA GPU configuration: [NVIDIA documentation](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html), [CUDA installation guide](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html), [cuDNN installation guide](https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html).
+- TensorFlow installation: [TensorFlow documentation](https://www.tensorflow.org/install/source?hl=es#gpu).
 - Git LFS to upload large files into the repository:
 
     Git Large File Storage (LFS) replaces large files such as datasets, models or weights with text pointers inside Git, while storing the file contents on a remote server like GitHub.com or GitHub Enterprise. 
     For more info, visit: [Git LFS repository](https://github.com/git-lfs/git-lfs/tree/main).
     
-    > **WARNING:** Every account using Git Large File Storage receives 1 GiB of free storage and 1 GiB a month of free bandwidth, so in order to avoid any issues uploading heavy files, it is recommended to only upload the heavy files one at a time and do not commit other changes additionally.
+    > <span style="color: red; font-size: 1.5em;">&#9888;</span> **WARNING:** Every account using Git Large File Storage receives 1 GiB of free storage and 1 GiB a month of free bandwidth, so in order to avoid any issues uploading heavy files, it is recommended to only upload the heavy files one at a time and do not commit other changes additionally.
 
 ## :seedling: Contributing
 
