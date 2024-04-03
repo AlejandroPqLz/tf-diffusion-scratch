@@ -1,36 +1,62 @@
+
 # Diffusion from scratch
 
-  [![WSL2](https://img.shields.io/badge/WSL2-0078D6?style=flat&logo=windows&logoColor=white)](https://docs.microsoft.com/en-us/windows/wsl/install)
-  [![Ubuntu](https://img.shields.io/badge/Ubuntu_22.04-E95420?style=flat&logo=ubuntu&logoColor=white)](https://ubuntu.com/)
-  [![MacOS](https://img.shields.io/badge/MacOS_12.0-000000?style=flat&logo=apple&logoColor=white)](https://www.apple.com/macos/monterey-preview/)
+<p align="center">
+<img src='./figures/readme_figures/poke_red_diffusion_portada.webp'>
+</p>
 
-  [![Python logo 3.10-3.12](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/downloads/release/python-312/)
-  [![Tensorflow logo 2.16.1](https://img.shields.io/badge/tensorflow-2.16.1-FF6F00?style=flat&logo=tensorflow&logoColor=white)](https://www.tensorflow.org/)
-  [![Keras logo 3.1](https://img.shields.io/badge/keras-3.1-D00000?style=flat&logo=keras&logoColor=white)](https://keras.io/)
-
-  [![NVIDIA](https://img.shields.io/badge/NVIDIA_GPU-76B900?style=flat&logo=nvidia&logoColor=white)](https://www.nvidia.com/)
-  [![CUDA 12.3](https://img.shields.io/badge/cuda-12.3-76B900)](https://developer.nvidia.com/cuda-zone)
-  [![cuDNN 8.9](https://img.shields.io/badge/cudnn-8.9-76B900)](https://developer.nvidia.com/cudnn)
-
-  [![Docker](https://img.shields.io/badge/docker-0db7ed?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
-  [![VS Code](https://img.shields.io/badge/VSCode-007ACC?style=flat&logo=visual-studio-code&logoColor=white)](https://code.visualstudio.com/)
-  [![Miniconda](https://img.shields.io/badge/miniconda-44A833?style=flat&logo=anaconda&logoColor=white)](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html)
-  [![Git LFS](https://img.shields.io/badge/git_lfs-F05032?style=flat&logo=git&logoColor=white)](https://git-lfs.github.com/)
-
-  [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-
-<pre>
- _(`-')     _                                       (`-').->  _                <-. (`-')_      (`-').->             (`-')  (`-')  _ (`-')               (`-').->
-( (OO ).-> (_)       <-.        <-.          .->    ( OO)_   (_)         .->      \( OO) )     ( OO)_   _        <-.(OO )  (OO ).-/ ( OO).->  _         (OO )__ 
- \    .'_  ,-(`-')(`-')-----.(`-')-----.,--.(,--.  (_)--\_)  ,-(`-')(`-')----. ,--./ ,--/     (_)--\_)  \-,-----.,------,) / ,---.  /    '._  \-,-----.,--. ,'-'
- '`'-..__) | ( OO)(OO|(_\---'(OO|(_\---'|  | |(`-')/    _ /  | ( OO)( OO).-.  '|   \ |  |     /    _ /   |  .--./|   /`. ' | \ /`.\ |'--...__) |  .--./|  | |  |
- |  |  ' | |  |  ) / |  '--.  / |  '--. |  | |(OO )\_..`--.  |  |  )( _) | |  ||  . '|  |)    \_..`--.  /_) (`-')|  |_.' | '-'|_.' |`--.  .--'/_) (`-')|  `-'  |
- |  |  / :(|  |_/  \_)  .--'  \_)  .--' |  | | |  \.-._)   \(|  |_/  \|  |)|  ||  |\    |     .-._)   \ ||  |OO )|  .   .'(|  .-.  |   |  |   ||  |OO )|  .-.  |
- |  '-'  / |  |'->  `|  |_)    `|  |_)  \  '-'(_ .'\       / |  |'->  '  '-'  '|  | \   |     \       /(_'  '--'\|  |\  \  |  | |  |   |  |  (_'  '--'\|  | |  |
- `------'  `--'      `--'       `--'     `-----'    `-----'  `--'      `-----' `--'  `--'      `-----'    `-----'`--' '--' `--' `--'   `--'     `-----'`--' `--'
-</pre>
+<p align="center">
+    <a href="https://docs.microsoft.com/en-us/windows/wsl/install" alt="WSL2">
+        <img src="https://img.shields.io/badge/WSL2-0078D6?style=flat&logo=windows&logoColor=white" />
+    </a>
+    <a href="https://ubuntu.com/" alt="Ubuntu">
+        <img src="https://img.shields.io/badge/Ubuntu_22.04-E95420?style=flat&logo=ubuntu&logoColor=white" />
+    </a>
+    <a href="https://www.apple.com/macos/monterey-preview/" alt="MacOS">
+        <img src="https://img.shields.io/badge/MacOS_12.0-000000?style=flat&logo=apple&logoColor=white" />
+    </a>
+    <br>
+    <a href="https://www.python.org/downloads/release/python-312/" alt="Python logo 3.10-3.12">
+        <img src="https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12-3776AB?style=flat&logo=python&logoColor=white" />
+    </a>
+    <a href="https://www.tensorflow.org/" alt="Tensorflow logo 2.16.1">
+        <img src="https://img.shields.io/badge/tensorflow-2.16.1-FF6F00?style=flat&logo=tensorflow&logoColor=white" />
+    </a>
+    <a href="https://keras.io/" alt="Keras logo 3.1">
+        <img src="https://img.shields.io/badge/keras-3.1-D00000?style=flat&logo=keras&logoColor=white" />
+    </a>
+    <br>
+    <a href="https://www.nvidia.com/" alt="NVIDIA">
+        <img src="https://img.shields.io/badge/NVIDIA_GPU-76B900?style=flat&logo=nvidia&logoColor=white" />
+    </a>
+    <a href="https://developer.nvidia.com/cuda-zone" alt="CUDA 12.3">
+        <img src="https://img.shields.io/badge/cuda-12.3-76B900" />
+    </a>
+    <a href="https://developer.nvidia.com/cudnn" alt="cuDNN 8.9">
+        <img src="https://img.shields.io/badge/cudnn-8.9-76B900" />
+    </a>
+    <br>
+    <a href="https://www.docker.com/" alt="Docker">
+        <img src="https://img.shields.io/badge/docker-0db7ed?style=flat&logo=docker&logoColor=white" />
+    </a>
+    <a href="https://code.visualstudio.com/" alt="VS Code">
+        <img src="https://img.shields.io/badge/VSCode-007ACC?style=flat&logo=visual-studio-code&logoColor=white" />
+    </a>
+    <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html" alt="Miniconda">
+        <img src="https://img.shields.io/badge/miniconda-44A833?style=flat&logo=anaconda&logoColor=white" />
+    </a>
+    <a href="https://git-lfs.github.com/" alt="Git LFS">
+        <img src="https://img.shields.io/badge/git_lfs-F05032?style=flat&logo=git&logoColor=white" />
+    </a>
+    <br>
+    <a href="https://github.com/psf/black"
+        alt="Black">
+        <img src="https://img.shields.io/badge/code%20style-black-000000.svg" />
+    </a>
+    <a href="https://opensource.org/licenses/MIT" alt="License: MIT">
+        <img src="https://img.shields.io/badge/License-MIT-yellow.svg" />
+    </a>
+</p>
 
 ## :mag: Project Overview
 
@@ -40,11 +66,6 @@ This project has been developed for my **Bachelor's Thesis** in **Data Science a
 
 > **NOTE:** Since this project is for a spanish college institution, the **jupyter-notebook's markdowns** and the **thesis document** are in **spanish** <span style="font-size: 1em;">&#x1F1EA;&#x1F1F8;</span>. However, the **code** and **comments** are in **english** <span style="font-size: 1em;">&#x1F1EC;&#x1F1E7;</span>.
 >
-
-</br>
-<p align="center">
-<img src='./figures/readme_figures/poke_red_diffusion_portada.webp'>
-</p>
 
 ## :open_file_folder: Structure
 
