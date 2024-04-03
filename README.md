@@ -116,8 +116,8 @@ However, you can also use `Windows` with `WSL2` or `MacOS`. The requirements for
                     <li>Install Ubuntu from the Microsoft Store</li>
                     <li>Follow the configuration and set up steps: </br>
                         <ul>
-                            <li><a href="#2-nvidia-gpu-configuration-windows-and-linux">NVIDIA GPU Configuration</li>
-                            <li><a href="#3-windows-subsystem-for-linux-wsl2-set-up">WSL2 Set up</a></li>
+                            <li><a href="#1-nvidia-gpu-configuration-windows-and-linux">NVIDIA GPU Configuration</li>
+                            <li><a href="#2-windows-subsystem-for-linux-wsl2-set-up">WSL2 Set up</a></li>
                         </ul>
                 </ul>
             </td>
@@ -128,8 +128,8 @@ However, you can also use `Windows` with `WSL2` or `MacOS`. The requirements for
                     <li><a href="https://docs.docker.com/compose/install/">Install Docker Compose on Ubuntu</a></li>
                     <li>Follow the configuration and set up steps: </br>
                         <ul>
-                            <li><a href="#3-windows-subsystem-for-linux-wsl2-set-up">WSL2 Set up</a></li>
-                            <li><a href="#4-linux-ubuntu-set-up">Linux Set up</a></li>
+                            <li><a href="#2-windows-subsystem-for-linux-wsl2-set-up">WSL2 Set up</a></li>
+                            <li><a href="#3-linux-ubuntu-set-up">Linux Set up</a></li>
                         </ul>
                 </ul>
             </td>
@@ -140,7 +140,7 @@ However, you can also use `Windows` with `WSL2` or `MacOS`. The requirements for
                     <li>Xcode command-line tools: <code>xcode-select — install</code></li>
                     <li>Follow the configuration and set up steps: </br>
                         <ul>
-                            <li><a href="#2-nvidia-gpu-configuration-windows-and-linux">NVIDIA GPU Configuration</li>
+                            <li><a href="#1-nvidia-gpu-configuration-windows-and-linux">NVIDIA GPU Configuration</li>
                         </ul>
                 </ul>
             </td>
@@ -287,13 +287,14 @@ Once the environment is activated, you can install the [external dependencies](.
 ```bash
 pip install -e.
 ```
+And you are ready to go!
 
 ### 3. Linux (Ubuntu) Set up
 ---
 
-After installing the NVIDIA drivers, CUDA and cuDNN, if you are going to develop the project on Ubuntu, you can follow the same steps as in the [Windows Subsystem for Linux (WSL2) Set up](#3-windows-subsystem-for-linux-wsl2-set-up) section but having in mind that you are working on a Linux distribution it is recommended to use Docker to create a container with all the dependencies installed and avoid any compatibility and version issues.
+After installing the NVIDIA drivers, CUDA and cuDNN, if you are going to develop the project on Ubuntu, you can follow the same steps as in the [Windows Subsystem for Linux (WSL2) Set up](#2-windows-subsystem-for-linux-wsl2-set-up) section but having in mind that you are working on a Linux distribution it is recommended to use Docker to create a container with all the dependencies installed and avoid any compatibility and version issues.
 
-Previously installed Docker in [OS Requirements](#1-os-requirements) section just follow the steps below:
+Previously installed Docker in [Prerequisites](#rocket-prerequisites) section just follow the steps below:
 
 > <span style="color: red; font-size: 1.5em;">&#9888;</span> **WARNING:** The Doccker set up approach is not recommended for WSL nor Windows, since the there are many issues regarding the CPU usage ([more info](https://github.com/docker/for-win/issues)).
 
@@ -365,7 +366,7 @@ And voilà! You have a container with all the dependencies installed and ready t
 
 #### 4.1 Conda Environment
 
-We will follow the same first steps as in the [Windows Subsystem for Linux (WSL2) Set up](#3-windows-subsystem-for-linux-wsl2-set-up) section, since we are goint to use a coda environment to manage the dependencies. Therefore, install miniconda following the [Miniconda instalation guide](https://docs.anaconda.com/free/miniconda/#quick-command-line-install). After installing miniconda, create a new environment with the following command:
+We will follow the same first steps as in the [Windows Subsystem for Linux (WSL2) Set up](#2-windows-subsystem-for-linux-wsl2-set-up) section, since we are goint to use a coda environment to manage the dependencies. Therefore, install miniconda following the [Miniconda instalation guide](https://docs.anaconda.com/free/miniconda/#quick-command-line-install). After installing miniconda, create a new environment with the following command:
     
 ```bash
     # Create the environment
@@ -386,7 +387,6 @@ TensorFlow does not support GPU acceleration on MacOS with CUDA and cuDNN, so yo
     pip uninstall tensorflow
     pip install tensorflow==2.12 tensorflow-macos tensorflow-metal
 ```
-
 
 Now you are ready to go!
 
