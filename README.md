@@ -103,7 +103,7 @@ However, you can also use `Windows` with `WSL2` or `MacOS`. The requirements for
         <tr>
             <th>Windows</th>
             <th><span style="background-color: #e68a00">Linux (Ubuntu) recommended</span></th>
-            <th>MacOS</th>
+            <th><a href="https://developer.apple.com/metal/tensorflow-plugin/">MacOS</a></th>
         </tr>
     </thead>
     <tbody>
@@ -139,6 +139,7 @@ However, you can also use `Windows` with `WSL2` or `MacOS`. The requirements for
                 <ul>
                     <li>macOS 12.0 or later (Get the latest beta)</li>
                     <li>Mac computer with Apple silicon or AMD GPUs</li>
+                    <li>Python version 3.10 or later</li>
                     <li>Xcode command-line tools: <code>xcode-select — install</code></li>
                     <hr>
                     <li>Follow the configuration steps: </br>
@@ -156,7 +157,9 @@ However, you can also use `Windows` with `WSL2` or `MacOS`. The requirements for
 ### 1. NVIDIA GPU Configuration (Windows and Linux)
 ---
 
-In order to use the GPU for training the model, you need to install the NVIDIA drivers, CUDA and cuDNN. Eventhough the project is developed in Tensorflow and therefore not all CUDA and cuDNN versions are compatible with the version of Tensorflow used, for the GPU to work properly, the versions of CUDA and cuDNN and the NVIDIA drivers must be the most recent ones.
+In order to use the GPU for training the model, you need to install the **NVIDIA drivers**, **CUDA** and **cuDNN**.
+
+Eventhough the project is developed in Tensorflow and therefore not all CUDA and cuDNN versions are compatible with the version of Tensorflow used, for the GPU to work properly, the versions of CUDA and cuDNN and the NVIDIA drivers must be the most recent ones.
 
 #### 1.1 Install NVIDIA drivers:
 
@@ -297,15 +300,14 @@ And you are ready to go!
 
 After installing the NVIDIA drivers, CUDA and cuDNN, if you are going to develop the project on Ubuntu, you can follow the same steps as in the [Windows Subsystem for Linux (WSL2) Configuration](#2-windows-subsystem-for-linux-wsl2-configuration) section but having in mind that you are working on a Linux distribution it is recommended to use Docker to create a container with all the dependencies installed and avoid any compatibility and version issues.
 
-Previously installed Docker in [Prerequisites](#rocket-prerequisites) section just follow the steps below:
-
-> <span style="color: red; font-size: 1.5em;">&#9888;</span> **WARNING:** The Doccker set up approach is not recommended for WSL nor Windows, since the there are many issues regarding the CPU usage ([more info](https://github.com/docker/for-win/issues)).
+> <span style="color: red; font-size: 1.5em;">&#9888;</span>
+> **WARNING:** **Docker** set up approach is **not recommended for WSL2 nor Windows**, since the there are many issues regarding the CPU usage making it unworkable ([more info](https://github.com/docker/for-win/issues)).
 
 #### 3.1 Install the NVIDIA Container Toolkit
 
 Follow the [NVIDIA Container Toolkit Guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#configuring-docker)
 
-#### 3.2 Check the installation
+After installing the NVIDIA Container Toolkit, you can check the installation by running the following command:
 
 ```bash
 sudo docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
@@ -330,7 +332,7 @@ sudo docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
 >
 >```
 
-#### 3.3 Pull the `tensorflow-gpu-jupyter` image (Optional)
+#### 3.2 Pull the `tensorflow-gpu-jupyter` image (Optional)
 
 This image contains all the correct dependencies for tensorflow with cuda and cudnn installed and a jupyter notebook server to develop the project (if not pull it will be automatically pulled in the next step). You can pull the image with the following command:
 
@@ -338,7 +340,7 @@ This image contains all the correct dependencies for tensorflow with cuda and cu
 docker pull tensorflow/tensorflow:latest-gpu-jupyter
 ```
 
-#### 3.4 Build the container
+#### 3.3 Build the container
 
 Since the project has a Dev Constainer configuration file in [.devcontainer](./.devcontainer) folder you just need to, in VSCode, open the project folder and click on the ```Reopen in Container``` button that appears in the bottom right corner of the window. Or yo can do it at any time by opening the command palette with `Ctrl+Shift+P` and type `Reopen in Container`.
 
@@ -367,6 +369,8 @@ And voilà! You have a container with all the dependencies installed and ready t
 ### 4. MacOS Configuration
 ---
 
+Finally, if you are going to develop the project on MacOS, you can follow the next steps based on [TensorFlow Metal](https://developer.apple.com/metal/tensorflow-plugin/) but adapting it to the project dependencies:
+
 #### 4.1 Conda Environment
 
 We will follow the same first steps as in the [Windows Subsystem for Linux (WSL2) Configuration](#2-windows-subsystem-for-linux-wsl2-configuration) section, since we are goint to use a coda environment to manage the dependencies. Therefore, install miniconda following the [Miniconda instalation guide](https://docs.anaconda.com/free/miniconda/#quick-command-line-install). After installing miniconda, create a new environment with the following command:
@@ -387,8 +391,7 @@ We will follow the same first steps as in the [Windows Subsystem for Linux (WSL2
 TensorFlow does not support GPU acceleration on MacOS with CUDA and cuDNN, so you need to install the its specific version for MacOS. To do so, just run the following command:
 
 ```bash
-    pip uninstall tensorflow
-    pip install tensorflow==2.12 tensorflow-macos tensorflow-metal
+    pip install tensorflow-metal
 ```
 
 Now you are ready to go!
@@ -401,16 +404,19 @@ The dataset contains +10,000 Pokémon sprites in PNG format (half of them are sh
 
 ## :hammer_and_wrench: Usage
 
-After following the steps described in the [Prerequisites](https://github.com/AlejandroPqLz/DiffusionScratch#rocket-prerequisites) section, you can start using the project by running the notebooks in the [notebooks](./notebooks) folder. But first, take a look to the [config.ini](./config.ini) file in the root of the project and adapt it to your needs. This file will contain all the hyperparameters for the model training.
+After following the steps described in the [Prerequisites](https://github.com/AlejandroPqLz/DiffusionScratch#rocket-prerequisites) section, you can start using the project by running the notebooks in the [notebooks](./notebooks) folder. Which contain the whole process of the project from the dataset creation to the model training.
 
-Once done that, you can run the notebooks in the prestablished order where:
+Before diving into the notebooks, take a look to the [config.ini](./config.ini) file in the root of the project and adapt it to your needs. This file will contain all the hyperparameters for the model training. Once done that, you can run the notebooks in the prestablished order where:
 
-1. [00-Intro-and-Analysis.ipynb](./notebooks/00-Intro-and-Analysis.ipynb): Introduce the project and analyze the dataset.
-2. [01-Dataset-Creation.ipynb](./notebooks/01-Dataset-Creation.ipynb): Create the dataset for the model training.
-3. [02-Diffusion-Model-Architecture.ipynb](./notebooks/02-Diffusion-Model-Architecture.ipynb): Implement the model architecture and explain the theory behind it.
-4. [03-Diffusion-Process.ipynb](./notebooks/03-Diffusion-Process.ipynb): Implement the diffusion process and explain the theory behind it.
-5. [04-Training-Diffusion-Model.ipynb](./notebooks/04-Training-Diffusion-Model.ipynb): Train the model and analyze the results.
+- [00-Intro-and-Analysis.ipynb](./notebooks/00-Intro-and-Analysis.ipynb): Introduces the project and analyzes the Pokémon sprites dataset and `pokedex.csv` file.
 
+- [01-Dataset-Creation.ipynb](./notebooks/01-Dataset-Creation.ipynb): Gives multiple choices to create the dataset for the model and offers a raw dataset to custom the dataset creation process. Finally, it saves the dataset in the `data/processed/pokemon_tf_dataset` folder as a `Tensorflow Dataset`.
+
+- [02-Diffusion-Model-Architecture.ipynb](./notebooks/02-Diffusion-Model-Architecture.ipynb): Defines the model architecture `Unet` and explain the theory behind it.
+
+- [03-Diffusion-Process.ipynb](./notebooks/03-Diffusion-Process.ipynb): Defines and explain the diffusion functionalities for the model architecture: `forward`, `reverse`, `sample` and leaves the `training` process for the next notebook.
+
+- [04-Training-Diffusion-Model.ipynb](./notebooks/04-Training-Diffusion-Model.ipynb): Defines and explains the training diffussion process and trains the model with the dataset created in the `01-Dataset-Creation.ipynb` notebook.
 
 ## :books: Resources
 - Resources and tutorials that have been found useful for this project are located in the [/docs](./docs) folder.
