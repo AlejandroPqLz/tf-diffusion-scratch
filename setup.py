@@ -13,7 +13,7 @@ requirements = [
     "pandas",
     "matplotlib",
     "tqdm",
-    "tensorflow == 2.16",
+    "tensorflow == 2.16.1",
     "keras == 3.1",
     "mlflow",
     "pexpect",
