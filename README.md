@@ -9,32 +9,32 @@
     <a href="https://docs.microsoft.com/en-us/windows/wsl/install" alt="WSL2">
         <img src="https://img.shields.io/badge/WSL2-0078D6?style=flat&logo=windows&logoColor=white" /></a>
     <a href="https://ubuntu.com/" alt="Ubuntu">
-        <img src="https://img.shields.io/badge/Ubuntu_22.04-E95420?style=flat&logo=ubuntu&logoColor=white" /></a>
+        <img src="https://img.shields.io/badge/22.04-E95420?style=flat&logo=ubuntu&logoColor=white" /></a>
     <a href="https://www.apple.com/macos/monterey-preview/" alt="MacOS">
-        <img src="https://img.shields.io/badge/MacOS_12.0-000000?style=flat&logo=apple&logoColor=white" /></a>
+        <img src="https://img.shields.io/badge/12.0-000000?style=flat&logo=apple&logoColor=white" /></a>
     <br>
     <a href="https://www.python.org/downloads/release/python-312/" alt="Python logo 3.10-3.12">
-        <img src="https://img.shields.io/badge/python-3.10|3.11|3.12-3776AB?style=flat&logo=python&logoColor=white" /></a>
+        <img src="https://img.shields.io/badge/3.10|3.11|3.12-3776AB?style=flat&logo=python&logoColor=white" /></a>
     <a href="https://www.tensorflow.org/" alt="Tensorflow logo 2.16.1">
-        <img src="https://img.shields.io/badge/tensorflow-2.16.1-FF6F00?style=flat&logo=tensorflow&logoColor=white" /></a>
+        <img src="https://img.shields.io/badge/2.16.1-FF6F00?style=flat&logo=tensorflow&logoColor=white" /></a>
     <a href="https://keras.io/" alt="Keras logo 3.1">
-        <img src="https://img.shields.io/badge/keras-3.1-D00000?style=flat&logo=keras&logoColor=white" /></a>
+        <img src="https://img.shields.io/badge/3.1-D00000?style=flat&logo=keras&logoColor=white" /></a>
     <br>
     <a href="https://www.nvidia.com/" alt="NVIDIA">
-        <img src="https://img.shields.io/badge/NVIDIA_GPU-76B900?style=flat&logo=nvidia&logoColor=white" /></a>
+        <img src="https://img.shields.io/badge/GPU-76B900?style=flat&logo=nvidia&logoColor=white" /></a>
     <a href="https://developer.nvidia.com/cuda-zone" alt="CUDA 12.3">
         <img src="https://img.shields.io/badge/cuda-12.3-76B900" /></a>
     <a href="https://developer.nvidia.com/cudnn" alt="cuDNN 8.9">
         <img src="https://img.shields.io/badge/cudnn-8.9-76B900" /></a>
     <br>
     <a href="https://www.docker.com/" alt="Docker">
-        <img src="https://img.shields.io/badge/docker-0db7ed?style=flat&logo=docker&logoColor=white" /></a>
+        <img src="https://img.shields.io/badge/Docker-0db7ed?style=flat&logo=docker&logoColor=white" /></a>
     <a href="https://code.visualstudio.com/" alt="VS Code">
         <img src="https://img.shields.io/badge/VSCode-007ACC?style=flat&logo=visual-studio-code&logoColor=white" /></a>
     <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html" alt="Miniconda">
-        <img src="https://img.shields.io/badge/miniconda-44A833?style=flat&logo=anaconda&logoColor=white" /></a>
+        <img src="https://img.shields.io/badge/conda_env-44A833?style=flat&logo=anaconda&logoColor=white" /></a>
     <a href="https://git-lfs.github.com/" alt="Git LFS">
-        <img src="https://img.shields.io/badge/git_lfs-F05032?style=flat&logo=git&logoColor=white" /></a>
+        <img src="https://img.shields.io/badge/LFS-F05032?style=flat&logo=git&logoColor=white" /></a>
     <br>
     <a href="https://github.com/psf/black"
         alt="Black">
