@@ -1,9 +1,22 @@
 # Diffusion from scratch
-[![Python 3.10-3.12](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12-3776AB)](https://www.python.org/downloads/release/python-312/)
-[![Tensorflow 2.16.1](https://img.shields.io/badge/tensorflow-2.16.1-FF6F00)](https://www.tensorflow.org/)
-[![Keras 3.1](https://img.shields.io/badge/keras-3.1-D00000)](https://keras.io/)
+[![Python logo 3.10-3.12](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/downloads/release/python-312/)
+[![Tensorflow logo 2.16.1](https://img.shields.io/badge/tensorflow-2.16.1-FF6F00?style=flat&logo=tensorflow&logoColor=white)](https://www.tensorflow.org/)
+[![Keras logo 3.1](https://img.shields.io/badge/keras-3.1-D00000?style=flat&logo=keras&logoColor=white)](https://keras.io/)
+
+[![Windows](https://img.shields.io/badge/Windows-11-0078D6?style=flat&logo=windows&logoColor=white)](https://www.microsoft.com/en-us/windows)
+[![WSL2](https://img.shields.io/badge/WSL2-0078D6?style=flat&logo=windows&logoColor=white)](https://docs.microsoft.com/en-us/windows/wsl/install)
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04-E95420?style=flat&logo=ubuntu&logoColor=white)](https://ubuntu.com/)
+[![MacOS](https://img.shields.io/badge/MacOS-12.0-000000?style=flat&logo=apple&logoColor=white)](https://www.apple.com/macos/monterey-preview/)
+
+[![NVIDIA](https://img.shields.io/badge/NVIDIA-76B900?style=flat&logo=nvidia&logoColor=white)](https://www.nvidia.com/)
 [![CUDA 12.3](https://img.shields.io/badge/cuda-12.3-76B900)](https://developer.nvidia.com/cuda-zone)
 [![cuDNN 8.9](https://img.shields.io/badge/cudnn-8.9-76B900)](https://developer.nvidia.com/cudnn)
+
+[![Docker](https://img.shields.io/badge/docker-0db7ed?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
+[![VSCode](https://img.shields.io/badge/VSCode-007ACC?style=flat&logo=visual-studio-code&logoColor=white)](https://code.visualstudio.com/)
+[![Mini Conda](https://img.shields.io/badge/mini_conda-44A833?style=flat&logo=anaconda&logoColor=white)](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html)
+ [![Git LFS](https://img.shields.io/badge/git_lfs-F05032?style=flat&logo=git&logoColor=white)](https://git-lfs.com/)
+
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
