@@ -14,7 +14,7 @@
         <img src="https://img.shields.io/badge/MacOS_12.0-000000?style=flat&logo=apple&logoColor=white" /></a>
     <br>
     <a href="https://www.python.org/downloads/release/python-312/" alt="Python logo 3.10-3.12">
-        <img src="https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12-3776AB?style=flat&logo=python&logoColor=white" /></a>
+        <img src="https://img.shields.io/badge/python-3.10|3.11|3.12-3776AB?style=flat&logo=python&logoColor=white" /></a>
     <a href="https://www.tensorflow.org/" alt="Tensorflow logo 2.16.1">
         <img src="https://img.shields.io/badge/tensorflow-2.16.1-FF6F00?style=flat&logo=tensorflow&logoColor=white" /></a>
     <a href="https://keras.io/" alt="Keras logo 3.1">
