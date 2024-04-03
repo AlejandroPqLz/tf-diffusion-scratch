@@ -11,7 +11,7 @@
     <a href="https://ubuntu.com/" alt="Ubuntu">
         <img src="https://img.shields.io/badge/22.04-E95420?style=flat&logo=ubuntu&logoColor=white" /></a>
     <a href="https://www.apple.com/macos/monterey-preview/" alt="MacOS">
-        <img src="https://img.shields.io/badge/12.0-000000?style=flat&logo=apple&logoColor=white" /></a>
+        <img src="https://img.shields.io/badge/MacOS_12.0-000000?style=flat&logo=apple&logoColor=white" /></a>
     <br>
     <a href="https://www.python.org/downloads/release/python-312/" alt="Python logo 3.10-3.12">
         <img src="https://img.shields.io/badge/3.10|3.11|3.12-3776AB?style=flat&logo=python&logoColor=white" /></a>
