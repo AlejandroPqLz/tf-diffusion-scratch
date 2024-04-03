@@ -17,14 +17,11 @@
     </a>
     <br>
     <a href="https://www.python.org/downloads/release/python-312/" alt="Python logo 3.10-3.12">
-        <img src="https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12-3776AB?style=flat&logo=python&logoColor=white" />
-    </a>
+        <img src="https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12-3776AB?style=flat&logo=python&logoColor=white" /></a>
     <a href="https://www.tensorflow.org/" alt="Tensorflow logo 2.16.1">
-        <img src="https://img.shields.io/badge/tensorflow-2.16.1-FF6F00?style=flat&logo=tensorflow&logoColor=white" />
-    </a>
+        <img src="https://img.shields.io/badge/tensorflow-2.16.1-FF6F00?style=flat&logo=tensorflow&logoColor=white" /></a>
     <a href="https://keras.io/" alt="Keras logo 3.1">
-        <img src="https://img.shields.io/badge/keras-3.1-D00000?style=flat&logo=keras&logoColor=white" />
-    </a>
+        <img src="https://img.shields.io/badge/keras-3.1-D00000?style=flat&logo=keras&logoColor=white" /></a>
     <br>
     <a href="https://www.nvidia.com/" alt="NVIDIA">
         <img src="https://img.shields.io/badge/NVIDIA_GPU-76B900?style=flat&logo=nvidia&logoColor=white" />
