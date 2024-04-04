@@ -191,7 +191,7 @@ class DiffusionModel(tf.keras.Model):
         # Return the final denoised image
         return x_t  # 6: return x_0
 
-    def plot_samples(self, num_samples: int = 5, poke_type: str = None):
+    def plot_samples(self, num_samples: int = 1, poke_type: str = None):
         """
         Generate and plot samples from the diffusion model.
 
