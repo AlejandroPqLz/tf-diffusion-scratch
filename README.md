@@ -378,6 +378,12 @@ Since the project has a Dev Constainer configuration file in [.devcontainer](./.
 
 This will pull the `tensorflow-gpu-jupyter` image if not pulled before and build a container using the custom `Dockerfile` for the project with all the dependencies needed.
 
+In order to avoid posible issues with the container not detecting some versions of the libraries, just run the following command in the container terminal to install the external dependencies declared in the [setup.py](./setup.py) file:
+
+```bash
+pip install -e.
+```
+
 Finally, when running any juptyer notebook, choose the python version that matches the one the image was built with. To check the python version, just run the following command in container terminal:
 
 ```bash

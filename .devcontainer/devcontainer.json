@@ -11,9 +11,9 @@
     "customizations": {
         "vscode": {
             "extensions": [
+                "ms-python.black-formatter", // mantain the black formatter in the first position to avoid conflicts with editor.defaultFormatter
                 "ms-python.python",
                 "donjayamanne.python-extension-pack",
-                "ms-python.black-formatter",
                 "ms-python.isort",
                 "ms-python.pylint",
                 "ms-toolsai.jupyter",

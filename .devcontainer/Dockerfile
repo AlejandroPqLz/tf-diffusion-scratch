@@ -29,7 +29,7 @@ WORKDIR /home/${USER_NAME}
 
 # Install Python packages using pip
 RUN pip install --upgrade pip && \
-    pip install gradio ipykernel keras matplotlib mlflow numba numpy pandas pexpect \
+    pip install gradio ipykernel keras==3.1 matplotlib mlflow numba numpy pandas pexpect \
     tqdm --no-cache-dir --no-warn-script-location
 
 # Set the default command or entry point for the container
