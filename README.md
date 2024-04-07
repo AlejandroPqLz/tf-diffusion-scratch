@@ -58,6 +58,7 @@ The **structure** of the repository is as follows:
 
 ```tree
 📦DiffusionScratch
+ ┣ 📂.devcontainer
  ┣ 📂data
  ┃ ┣ 📂interim
  ┃ ┃ ┣ 📜image_paths.json

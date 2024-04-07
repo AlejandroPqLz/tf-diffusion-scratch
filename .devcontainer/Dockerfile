@@ -27,7 +27,7 @@ USER ${USER_NAME}
 # Set the working directory to the user's home directory (change this to match your needs)
 WORKDIR /home/${USER_NAME}
 
-# Install Python packages using pip
+# Install Python packages using pip (add or remove packages as needed)
 RUN pip install --upgrade pip && \
     pip install gradio ipykernel keras==3.1 matplotlib mlflow numba numpy pandas pexpect \
     tqdm --no-cache-dir --no-warn-script-location

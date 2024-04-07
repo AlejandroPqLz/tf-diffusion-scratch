@@ -3,13 +3,13 @@
     "build": {
         "dockerfile": "Dockerfile",
         "args": {
-            "USER_NAME": "pqlza",
+            "USER_NAME": "pqlza", // Change this to your computer username
             "USER_UID": "1000"
         }
     },
     "runArgs": ["--gpus", "all"], // Enable GPU support in the container
     "customizations": {
-        "vscode": {
+        "vscode": { // Add or remove extensions and settings as desired
             "extensions": [
                 "ms-python.black-formatter", // mantain the black formatter in the first position to avoid conflicts with editor.defaultFormatter
                 "ms-python.python",
