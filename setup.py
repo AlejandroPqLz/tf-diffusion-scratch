@@ -19,6 +19,7 @@ requirements = [
     "pexpect",
     "ipykernel",
     "numba",
+    "pydot",
     "gradio",
 ]
 

@@ -59,13 +59,13 @@ def plot_image_paths(image_paths: list, n: int = 6) -> None:
 # Plot a batch of images from a dataset
 # =====================================================================
 def plot_images_batch(
-    dataset_tf: tf.data.Dataset, n: int = 6, df: pd.DataFrame = poke_df
+    dataset_tf: tf.data.Dataset, df: pd.DataFrame = poke_df, n: int = 6
 ) -> None:
     """Plots a batch of images with their labels, if the time_steps are given plot them too
 
     :param dataset_tf: The tensorflow dataset with the images and labels
-    :param df: The dataframe with the pokemon data
     :param n: The number of images to plot
+    :param df: The dataframe with the pokemon data
     :return: None
     """
 
