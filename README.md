@@ -45,7 +45,7 @@
 
 ## :mag: Project Overview
 
-Implementing a **conditioned Denoising Diffsuion Probabilistic Model** (DDPM) on Tensorflow from Scratch for **Pokémon generation** and understanding the mathematics and theory behind it. Therefore to achive this goal, the Pokémon sprites dataset will be used: [Pokémon sprite images](https://www.kaggle.com/datasets/yehongjiang/pokemon-sprites-images) with license: <img src='https://licensebuttons.net/l/zero/1.0/80x15.png'>.
+Implementing a **conditioned Denoising Diffusion Probabilistic Model** (DDPM) on TensorFlow from Scratch for **Pokémon generation** and understanding the mathematics and theory behind it. Therefore, to achieve this goal, the Pokémon sprites dataset will be used: [Pokémon sprite images](https://www.kaggle.com/datasets/yehongjiang/pokemon-sprites-images) with license: <img src='https://licensebuttons.net/l/zero/1.0/80x15.png'>.
 
 This project has been developed for my **Bachelor's Thesis** in **Data Science and Artificial Intelligence** at Universidad Politécnica de Madrid (UPM).
 
@@ -111,11 +111,11 @@ The **structure** of the repository is as follows:
 
 ## :rocket: Prerequisites
 
-This project contains dependencies outside of the scope of python. Therefore you need to perform additional steps.
+This project contains dependencies outside the scope of python. Therefore, you need to perform additional steps.
 
 It is **recommended** to use a **`Linux (Ubuntu)`** distribution for this project, since it is the most common OS for data science and artificial intelligence tasks and for that reason, NVIDIA GPU configurations are easier to set up.
 
-Not only that, but also because is the simplest way to configure and maintain the project code overtime since we will be using a Docker container, avoiding any compatibility issues with the OS and if the is any issue update or upgrade, it can be easily resolved by just rebuilding the container.
+Not only that, but also because it is the simplest way to configure and maintain the project code overtime since we will be using a Docker container, avoiding any compatibility issues with the OS and if the is any issue update or upgrade, it can be easily resolved by just rebuilding the container.
 
 However, you can also use `Windows` with `WSL2` or `MacOS`. The requirements for each OS are as follows:
 
@@ -180,7 +180,7 @@ However, you can also use `Windows` with `WSL2` or `MacOS`. The requirements for
 
 In order to use the GPU for training the model, you need to install the **NVIDIA drivers**, **CUDA** and **cuDNN**.
 
-Eventhough the project is developed in Tensorflow and therefore not all CUDA and cuDNN versions are compatible with the version of Tensorflow used, for the GPU to work properly, the versions of CUDA and cuDNN and the NVIDIA drivers must be the most recent ones.
+Even though the project is developed in TensorFlow and therefore not all CUDA and cuDNN versions are compatible with the version of TensorFlow used, for the GPU to work properly, the versions of CUDA and cuDNN and the NVIDIA drivers must be the most recent ones.
 
 #### 1.1 Install NVIDIA drivers:
 
@@ -195,9 +195,9 @@ Eventhough the project is developed in Tensorflow and therefore not all CUDA and
         <tr>
             <td>
                 <ul>
-                    <li>Download the latest NVIDIA drivers </br> for your GPU on Windowns from the <a href="https://www.nvidia.com/download/index.aspx?lang=en-us">NVIDIA website</a></li>
+                    <li>Download the latest NVIDIA drivers </br> for your GPU on Windows from the <a href="https://www.nvidia.com/download/index.aspx?lang=en-us">NVIDIA website</a></li>
                     <li>Install the <code>.exe</code> file</li> and follow the instructions
-                    <li>Chech the driver installation: </br>
+                    <li>Check the driver installation: </br>
                     <code>nvidia-smi</code></li>
                 </ul>
             </td>
@@ -213,7 +213,7 @@ Eventhough the project is developed in Tensorflow and therefore not all CUDA and
                     <code>sudo apt-get install nvidia-driver-&ltdriver_number&gt</code></li>
                     <li> Reboot the system: </br>
                     <code>reboot</code></li>
-                    <li>Chech the driver installation: </br>
+                    <li>Check the driver installation: </br>
                     <code>nvidia-smi</code></li>
                 </ul>
             </td>
@@ -246,7 +246,7 @@ Download and install the [CUDA toolkit](https://developer.nvidia.com/cuda-downlo
 **- WSL2:** [Install CUDA toolkit on WSL2](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=WSL-Ubuntu&target_version=2.0&target_type=deb_local) </br>
 **- Ubuntu:** [Install CUDA toolkit on Ubuntu](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_local)
 
-After that open a terminal and run the following command to check the CUDA installation:
+After that, open a terminal and run the following command to check the CUDA installation:
 
 - For WSL2 and Ubuntu:
 
@@ -276,7 +276,7 @@ After installing the NVIDIA drivers, CUDA and cuDNN, if you are going to develop
 
 #### 2.1  Conda Environment
 
-We will use conda to manage the python environment. You can install it following the [Miniconda instalation guide](https://docs.anaconda.com/free/miniconda/#quick-command-line-install). After installing miniconda, create a new environment with the following command:
+We will use conda to manage the python environment. You can install it following the [Miniconda installation guide](https://docs.anaconda.com/free/miniconda/#quick-command-line-install). After installing miniconda, create a new environment with the following command:
     
 ```bash
     # Create the environment
@@ -289,7 +289,7 @@ We will use conda to manage the python environment. You can install it following
 
 #### 2.2  CUDA and cuDNN compatible versions
 
-Since the model is implemented in Tensorflow, you need to install the versions of CUDA and cuDNN that are compatible with the version of Tensorflow you are using. For more information, visit the [Tensorflow versions compatibility](https://www.tensorflow.org/install/source?hl=es#gpu). For this project, since we are using Tensorflow 2.16.1, we need to install CUDA 12.3 and cuDNN 8.9, todo do so, just execute the following commands:
+Since the model is implemented in TensorFlow, you need to install the versions of CUDA and cuDNN that are compatible with the version of TensorFlow you are using. For more information, visit the [TensorFlow versions compatibility](https://www.tensorflow.org/install/source?hl=es#gpu). For this project, since we are using TensorFlow 2.16.1, we need to install CUDA 12.3 and cuDNN 8.9, to do do so, just execute the following commands:
 
 ```bash
     # Install CUDA 12.3
@@ -353,7 +353,7 @@ sudo docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
 
 #### 3.2 Pull the `tensorflow-gpu-jupyter` image (Optional)
 
-This image contains all the correct dependencies for tensorflow with cuda and cudnn installed and a jupyter notebook server to develop the project (if not pull it will be automatically pulled in the next step). You can pull the image with the following command:
+This image contains all the correct dependencies for TensorFlow with CUDA and cuDNN installed and a Jupyter notebook server to develop the project (if not, pull it will be automatically pulled in the next step). You can pull the image with the following command:
 
 ```bash
 docker pull tensorflow/tensorflow:latest-gpu-jupyter
@@ -361,7 +361,7 @@ docker pull tensorflow/tensorflow:latest-gpu-jupyter
 
 #### 3.3 Build the container
 
-Since the project has a Dev Constainer configuration file in [.devcontainer](./.devcontainer) folder you just need to, in VSCode, open the project folder and click on the ```Reopen in Container``` button that appears in the bottom right corner of the window. Or yo can do it at any time by opening the command palette with `Ctrl+Shift+P` and type `Reopen in Container`.
+Since the project has a Dev Container configuration file in [.devcontainer](./.devcontainer) folder, you just need to, in VSCode, open the project folder and click on the ```Reopen in Container``` button that appears in the bottom right corner of the window. Or you can do it at any time by opening the command palette with `Ctrl+Shift+P` and type `Reopen in Container`.
 
 </br>
 <p align="center">
@@ -379,19 +379,19 @@ Since the project has a Dev Constainer configuration file in [.devcontainer](./.
 
 This will pull the `tensorflow-gpu-jupyter` image if not pulled before and build a container using the custom `Dockerfile` for the project with all the dependencies needed.
 
-In order to avoid posible issues with the container not detecting some versions of the libraries, just run the following command in the container terminal to install the external dependencies declared in the [setup.py](./setup.py) file:
+In order to avoid possible issues with the container not detecting some versions of the libraries, just run the following command in the container terminal to install the external dependencies declared in the [setup.py](./setup.py) file:
 
 ```bash
 pip install -e.
 ```
 
-Finally, when running any juptyer notebook, choose the python version that matches the one the image was built with. To check the python version, just run the following command in container terminal:
+Finally, when running any Jupyter notebook, choose the python version that matches the one the image was built with. To check the python version, just run the following command in container terminal:
 
 ```bash
 python --version
 ```
 
-To this date, the image is built with python `3.11.0rc1`, therefore you need to select the python `3.11.0` kernel in the jupyter notebook.
+To this date, the image is built with python `3.11.0rc1`, therefore you need to select the python `3.11.0` kernel in the Jupyter notebook.
 
 And voilà! You have a container with all the dependencies installed and ready to go!:
 
@@ -408,7 +408,7 @@ Finally, if you are going to develop the project on MacOS, you can follow the ne
 
 #### 4.1 Conda Environment
 
-We will follow the same first steps as in the [Windows Subsystem for Linux (WSL2) Configuration](#2-windows-subsystem-for-linux-wsl2-configuration) section, since we are goint to use a coda environment to manage the dependencies. Therefore, install miniconda following the [Miniconda instalation guide](https://docs.anaconda.com/free/miniconda/#quick-command-line-install). After installing miniconda, create a new environment with the following command:
+We will follow the same first steps as in the [Windows Subsystem for Linux (WSL2) Configuration](#2-windows-subsystem-for-linux-wsl2-configuration) section, since we are going to use a coda environment to manage the dependencies. Therefore, install miniconda following the [Miniconda installation guide](https://docs.anaconda.com/free/miniconda/#quick-command-line-install). After installing miniconda, create a new environment with the following command:
     
 ```bash
     # Create the environment
@@ -423,7 +423,7 @@ We will follow the same first steps as in the [Windows Subsystem for Linux (WSL2
 
 #### 4.2 TensorFlow for MacOS
 
-TensorFlow does not support GPU acceleration on MacOS with CUDA and cuDNN, so you need to install the its specific version for MacOS. To do so, just run the following command:
+TensorFlow does not support GPU acceleration on MacOS with CUDA and cuDNN, so you need to install the specific version for MacOS. To do so, just run the following command:
 
 ```bash
     pip install tensorflow-metal
@@ -435,15 +435,15 @@ Now you are ready to go!
 
 As mentioned before, the dataset used in this project is the [Pokémon sprite images](https://www.kaggle.com/datasets/yehongjiang/pokemon-sprites-images) from Kaggle. 
 
-The dataset contains +10,000 Pokémon sprites in PNG format (half of them are shiny variants) in 96x96 resolution from 898 Pokemon in different games, and their corresponding labels that may relate to their design in a CSV file. These aspects will be analyzed deeper in the [00-Intro-and-Analysis.ipynb](./notebooks/00-Intro-and-Analysis.ipynb) notebook.
+The dataset contains +10,000 Pokémon sprites in PNG format (half of them are shiny variants) in 96x96 resolution from 898 Pokémon in different games, and their corresponding labels that may relate to their design in a CSV file. These aspects will be analysed deeper in the [00-Intro-and-Analysis.ipynb](./notebooks/00-Intro-and-Analysis.ipynb) notebook.
 
 ## :hammer_and_wrench: Usage
 
 After following the steps described in the [Prerequisites](https://github.com/AlejandroPqLz/DiffusionScratch#rocket-prerequisites) section, you can start using the project by running the notebooks in the [notebooks](./notebooks) folder. Which contain the whole process of the project from the dataset creation to the model training.
 
-Before diving into the notebooks, take a look to the [config.ini](./config.ini) file in the root of the project and adapt it to your needs. This file will contain all the hyperparameters for the model training. Once done that, you can run the notebooks in the prestablished order where:
+Before diving into the notebooks, take a look at the [config.ini](./config.ini) file in the root of the project and adapt it to your needs. This file will contain all the hyperparameters for the model training. Once done that, you can run the notebooks in the pre-established order where:
 
-- [00-Intro-and-Analysis.ipynb](./notebooks/00-Intro-and-Analysis.ipynb): Introduces the project and analyzes the Pokémon sprites dataset and `pokedex.csv` file.
+- [00-Intro-and-Analysis.ipynb](./notebooks/00-Intro-and-Analysis.ipynb): Introduces the project and analyses the Pokémon sprites dataset and `pokedex.csv` file.
 
 - [01-Dataset-Creation.ipynb](./notebooks/01-Dataset-Creation.ipynb): Gives multiple choices to create the dataset for the model and offers a raw dataset to custom the dataset creation process. Finally, it saves the dataset in the `data/processed/pokemon_tf_dataset` folder as a `Tensorflow Dataset`.
 
@@ -451,9 +451,10 @@ Before diving into the notebooks, take a look to the [config.ini](./config.ini) 
 
 - [03-Diffusion-Process.ipynb](./notebooks/03-Diffusion-Process.ipynb): Defines and explain the diffusion functionalities for the model architecture: `forward`, `reverse`, `sample` and leaves the `training` process for the next notebook.
 
-- [04-Training-Diffusion-Model.ipynb](./notebooks/04-Training-Diffusion-Model.ipynb): Defines and explains the training diffussion process and trains the model with the dataset created in the `01-Dataset-Creation.ipynb` notebook.
+- [04-Training-Diffusion-Model.ipynb](./notebooks/04-Training-Diffusion-Model.ipynb): Defines and explains the training diffusion process and trains the model with the dataset created in the `01-Dataset-Creation.ipynb` notebook.
 
 ## :books: Resources
+
 - Resources and tutorials that have been found useful for this project are located in the [/docs](./docs) folder.
 - Conda environment installation and management: [Conda documentation](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html).
 - Docker installation and management: [Docker documentation](https://docs.docker.com/get-docker/).
