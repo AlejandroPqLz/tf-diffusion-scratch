@@ -1,5 +1,6 @@
 <div align="center">
 
+
 <h1>Diffusion from scratch</h1>
 
 <img src='./figures/readme_figures/poke_red_diffusion_portada.webp'>
