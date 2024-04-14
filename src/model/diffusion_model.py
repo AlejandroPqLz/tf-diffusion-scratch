@@ -317,48 +317,34 @@ class DiffusionModel(tf.keras.Model):
 
 # Custom Callback for the Diffusion Model
 # =====================================================================
-class CustomCallback(tf.keras.callbacks.Callback):
-    """
-    CustomCallback class
+class DiffusionCallback(tf.keras.callbacks.Callback):
+    """Custom Callback for the Diffusion Model that generates samples every 20 epochs.
 
     Attributes:
-    - model (DiffusionModel): The diffusion model to which the callback is attached.
+        - diffusion_model (DiffusionModel): The diffusion model to generate samples from.
+        - frequency (int): The frequency at which to generate samples.
 
     Methods:
-    - on_epoch_end(epoch, logs): Perform actions at the end of each epoch.
+        - on_epoch_end(epoch, logs): The method that is called at the end of each epoch.
 
     """
 
-    def __init__(self, model):
-        super().__init__()
-        self._model = model
+    def __init__(self, diffusion_model: DiffusionModel, frequency=20):
+        super(DiffusionCallback, self).__init__()
+        # super().__init__()
+        self.diffusion_model = diffusion_model
+        self.frequency = frequency
 
-    @property
-    def model(self):
-        """DiffusionModel: The diffusion model to which the callback is attached."""
-
-        return self._model
-
-    @model.setter
-    def model(self, value):
-        """Set the diffusion model to which the callback is attached.
+    def on_epoch_end(self, epoch, logs=None):
+        """The method that is called at the end of each epoch.
 
         Args:
-            value (DiffusionModel): The diffusion model to attach the callback to.
-        """
-        self._model = value
-
-    def on_epoch_end(self, epoch):
-        """
-        Perform actions at the end of each epoch.
-
-        Args:
-            epoch (int): The current epoch number.
+            - epoch (int): The current epoch number.
+            - logs (dict): The logs containing the training metrics.
 
         """
-        if epoch % 20 == 0:
-            # Save the model or do something every 20 epochs
-            # self.model.save_weights("diffusion_model_weights.h5")
 
-            # Generate and plot samples every 10 epochs
-            self.model.plot_samples(num_samples=3)
+        if (epoch + 1) % self.frequency == 0:
+            print(f"Epoch {epoch+1}: Generating samples.")
+            self.diffusion_model.plot_samples(num_samples=1)
+            # self.model.save_weights("diffusion_model.h5")
