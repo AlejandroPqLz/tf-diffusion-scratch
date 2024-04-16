@@ -131,7 +131,7 @@ class DiffusionModel(tf.keras.Model):
         # target_noise = noised_data - input_data * tf.sqrt(alpha_cumprod[t]) / tf.sqrt(
         #     1 - alpha_cumprod[t]
         # )
-
+        # noised_data[t]
         target_noise = (noised_data - tf.sqrt(alpha_cumprod[t]) * input_data) / tf.sqrt(
             1 - alpha_cumprod[t]
         )
@@ -150,7 +150,7 @@ class DiffusionModel(tf.keras.Model):
 
         # Store last batch data for plotting
         self.last_batch_data = (
-            input_data[0],
+            noised_data[0],
             target_noise[0],
             predicted_noise[0],
         )
@@ -364,12 +364,12 @@ class PlottingCallback(tf.keras.callbacks.Callback):
 
         """
         if (epoch + 1) % self.freq == 0:
-            input_data, target_noise, predicted_noise = (
+            noised_data, target_noise, predicted_noise = (
                 self.diffusion_model.get_last_batch_data()
             )
 
-            input_data = (input_data - tf.reduce_min(input_data)) / (
-                tf.reduce_max(input_data) - tf.reduce_min(input_data)
+            noised_data = (noised_data - tf.reduce_min(noised_data)) / (
+                tf.reduce_max(noised_data) - tf.reduce_min(noised_data)
             )
             target_noise = (target_noise - tf.reduce_min(target_noise)) / (
                 tf.reduce_max(target_noise) - tf.reduce_min(target_noise)
@@ -379,8 +379,8 @@ class PlottingCallback(tf.keras.callbacks.Callback):
             )
 
             plt.figure(figsize=(10, 5))
-            titles = ["Input", "Target Noise", "Predicted Noise"]
-            for i, data in enumerate([input_data, target_noise, predicted_noise]):
+            titles = ["Input(noised img)", "Target Noise", "Predicted Noise"]
+            for i, data in enumerate([noised_data, target_noise, predicted_noise]):
                 ax = plt.subplot(1, 3, i + 1)
                 ax.imshow(data)  # Plot the first image in the batch
                 ax.title.set_text(titles[i])
