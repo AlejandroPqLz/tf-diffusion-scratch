@@ -113,7 +113,7 @@ class DiffusionModel(tf.keras.Model):
 
         # 3: t ~ U(0, T)
         # Generate a random timestep for each image in the batch
-        t = np.random.randint(0, T)
+        t = tf.random.uniform(shape=(), minval=0, maxval=self.T, dtype=tf.int32)
         normalized_t = tf.fill([input_data.shape[0], 1], tf.cast(t, tf.float32) / T)
 
         # 2: x_0 ~ q(x_0)

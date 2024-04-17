@@ -128,10 +128,6 @@ class DiffusionModel(tf.keras.Model):
         )
 
         # 4: eps_t ~ N(0, I)
-        # target_noise = noised_data - input_data * tf.sqrt(alpha_cumprod[t]) / tf.sqrt(
-        #     1 - alpha_cumprod[t]
-        # )
-
         target_noise = (noised_data - tf.sqrt(alpha_cumprod[t]) * input_data) / tf.sqrt(
             1 - alpha_cumprod[t]
         )
