@@ -128,10 +128,6 @@ class DiffusionModel(tf.keras.Model):
         )
 
         # 4: eps_t ~ N(0, I)
-        # target_noise = noised_data - input_data * tf.sqrt(alpha_cumprod[t]) / tf.sqrt(
-        #     1 - alpha_cumprod[t]
-        # )
-        # noised_data[t]
         target_noise = (noised_data - tf.sqrt(alpha_cumprod[t]) * input_data) / tf.sqrt(
             1 - alpha_cumprod[t]
         )
@@ -153,6 +149,7 @@ class DiffusionModel(tf.keras.Model):
             noised_data[0],
             target_noise[0],
             predicted_noise[0],
+            input_data[0],
         )
 
         # Update and return training metrics
@@ -364,7 +361,7 @@ class PlottingCallback(tf.keras.callbacks.Callback):
 
         """
         if (epoch + 1) % self.freq == 0:
-            noised_data, target_noise, predicted_noise = (
+            noised_data, target_noise, predicted_noise, input_data = (
                 self.diffusion_model.get_last_batch_data()
             )
 
@@ -378,6 +375,10 @@ class PlottingCallback(tf.keras.callbacks.Callback):
                 tf.reduce_max(predicted_noise) - tf.reduce_min(predicted_noise)
             )
 
+            input_data = (input_data - tf.reduce_min(input_data)) / (
+                tf.reduce_max(input_data) - tf.reduce_min(input_data)
+            )
+
             plt.figure(figsize=(10, 5))
             titles = ["Input(noised img)", "Target Noise", "Predicted Noise"]
             for i, data in enumerate([noised_data, target_noise, predicted_noise]):
@@ -385,6 +386,41 @@ class PlottingCallback(tf.keras.callbacks.Callback):
                 ax.imshow(data)  # Plot the first image in the batch
                 ax.title.set_text(titles[i])
                 ax.axis("off")
+            plt.show()
+
+            # get the coordinates of the bottom left corner of the sprite
+            x = 60
+            y = 60
+            w = 50
+            h = 50
+
+            # Slice the tensor to get the pixel values within the background area
+            area_noised = noised_data[y : y + h, x : x + w, :]
+            target_noised = target_noise[y : y + h, x : x + w, :]
+            print("MSE area: ", tf.reduce_mean(tf.square(area_noised - target_noised)))
+
+            # Calculate the MSE between the input_noised and the target noise
+            img_synthetic = noised_data - target_noise
+            print("MSE: ", tf.reduce_mean(tf.square(input_data - img_synthetic)))
+
+            _, axs = plt.subplots(2, 3, figsize=(10, 7))
+            axs[0, 0].imshow(noised_data[y : y + h, x : x + w, :])
+            axs[0, 0].set_title("AREA input_noised")
+
+            axs[0, 1].imshow(target_noise[y : y + h, x : x + w, :])
+            axs[0, 1].set_title("AREA target noise")
+
+            axs[0, 2].imshow(noised_data - target_noise)
+            axs[0, 2].set_title("noised_data - target_noise")
+
+            axs[1, 0].imshow(input_data)
+            axs[1, 0].set_title("input_data")
+
+            axs[1, 1].imshow(img_synthetic)
+            axs[1, 1].set_title("img_synthetic")
+
+            axs[1, 2].imshow(input_data - img_synthetic)
+            axs[1, 2].set_title("input_data - img_synthetic")
             plt.show()
 
 
