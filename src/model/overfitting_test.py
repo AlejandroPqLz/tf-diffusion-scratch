@@ -297,6 +297,32 @@ class DiffusionModel(tf.keras.Model):
 
         return x_t
 
+    @staticmethod
+    def beta_scheduler(
+        scheduler: str, T: int, beta_start: float, beta_end: float, s: float
+    ) -> tf.Tensor:
+        """
+        Generates a schedule for beta values according to the specified type ('linear' or 'cosine').
+        """
+
+        if scheduler == "linear":
+            beta = tf.linspace(beta_start, beta_end, T)
+
+        elif scheduler == "cosine":
+
+            def f(t):
+                return tf.cos((t / T + s) / (1 + s) * tf.constant(np.pi * 0.5)) ** 2
+
+            t = tf.range(0, T + 1, dtype=tf.float32)
+            alphas_cumprod = f(t) / f(0)
+            beta = 1 - alphas_cumprod[1:] / alphas_cumprod[:-1]
+            beta = tf.clip_by_value(beta, 0.0001, 0.999)
+
+        else:
+            raise ValueError(f"Unsupported scheduler: {scheduler}")
+
+        return beta
+
     # @staticmethod
     # def beta_scheduler(
     #     scheduler: str, T: int, beta_start: float, beta_end: float, s: float
@@ -332,32 +358,6 @@ class DiffusionModel(tf.keras.Model):
     #         raise ValueError(f"Unsupported scheduler: {scheduler}")
 
     #     return beta
-
-    @staticmethod
-    def beta_scheduler(
-        scheduler: str, T: int, beta_start: float, beta_end: float, s: float
-    ) -> tf.Tensor:
-        """
-        Generates a schedule for beta values according to the specified type ('linear' or 'cosine').
-        """
-
-        if scheduler == "linear":
-            beta = tf.linspace(beta_start, beta_end, T)
-
-        elif scheduler == "cosine":
-
-            def f(t):
-                return tf.cos((t / T + s) / (1 + s) * tf.constant(np.pi * 0.5)) ** 2
-
-            t = tf.range(0, T + 1, dtype=tf.float32)
-            alphas_cumprod = f(t) / f(0)
-            beta = 1 - alphas_cumprod[1:] / alphas_cumprod[:-1]
-            beta = tf.clip_by_value(beta, 0.0001, 0.999)
-
-        else:
-            raise ValueError(f"Unsupported scheduler: {scheduler}")
-
-        return beta
 
 
 # Custom Callback for the Diffusion Model

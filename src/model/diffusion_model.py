@@ -301,10 +301,10 @@ class DiffusionModel(tf.keras.Model):
 
         elif scheduler == "cosine":
 
-            def f(t):  # TODO: CAMBIAR NP POR TF
+            def f(t):
                 return tf.cos((t / T + s) / (1 + s) * tf.constant(np.pi * 0.5)) ** 2
 
-            t = np.arange(0, T + 1)
+            t = tf.range(0, T + 1, dtype=tf.float32)
             alphas_cumprod = f(t) / f(0)
             beta = 1 - alphas_cumprod[1:] / alphas_cumprod[:-1]
             beta = tf.clip_by_value(beta, 0.0001, 0.999)
