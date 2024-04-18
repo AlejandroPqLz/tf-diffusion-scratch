@@ -114,6 +114,7 @@ class DiffusionModel(tf.keras.Model):
         # 3: t ~ U(0, T)
         # Generate a random timestep for each image in the batch
         t = tf.random.uniform(shape=(), minval=0, maxval=self.T, dtype=tf.int32)
+        # t = np.random.randint(0, T)
         normalized_t = tf.fill([input_data.shape[0], 1], tf.cast(t, tf.float32) / T)
 
         # 2: x_0 ~ q(x_0)
@@ -296,22 +297,48 @@ class DiffusionModel(tf.keras.Model):
 
         return x_t
 
+    # @staticmethod
+    # def beta_scheduler(
+    #     scheduler: str, T: int, beta_start: float, beta_end: float, s: float
+    # ) -> tf.Tensor:
+    #     """
+    #     Generates a schedule for beta values according to the specified type ('linear' or 'cosine').
+
+    #     Args:
+    #         scheduler (str): The type of schedule to use. Options are "linear" or "cosine".
+    #         T (int): Total number of timesteps.
+    #         beta_start (float): Starting value of beta.
+    #         beta_end (float): Ending value of beta.
+    #         s (float): Scale factor for the variance curve, used in the 'cosine' scheduler.
+
+    #     Returns:
+    #         tf.Tensor: The beta values for each timestep.
+    #     """
+
+    #     if scheduler == "linear":
+    #         beta = tf.linspace(beta_start, beta_end, T)
+
+    #     elif scheduler == "cosine":
+
+    #         def f(t):  # TODO: CAMBIAR NP POR TF
+    #             return tf.cos((t / T + s) / (1 + s) * tf.constant(np.pi * 0.5)) ** 2
+
+    #         t = np.arange(0, T + 1)
+    #         alphas_cumprod = f(t) / f(0)
+    #         beta = 1 - alphas_cumprod[1:] / alphas_cumprod[:-1]
+    #         beta = tf.clip_by_value(beta, 0.0001, 0.999)
+
+    #     else:
+    #         raise ValueError(f"Unsupported scheduler: {scheduler}")
+
+    #     return beta
+
     @staticmethod
     def beta_scheduler(
         scheduler: str, T: int, beta_start: float, beta_end: float, s: float
     ) -> tf.Tensor:
         """
         Generates a schedule for beta values according to the specified type ('linear' or 'cosine').
-
-        Args:
-            scheduler (str): The type of schedule to use. Options are "linear" or "cosine".
-            T (int): Total number of timesteps.
-            beta_start (float): Starting value of beta.
-            beta_end (float): Ending value of beta.
-            s (float): Scale factor for the variance curve, used in the 'cosine' scheduler.
-
-        Returns:
-            tf.Tensor: The beta values for each timestep.
         """
 
         if scheduler == "linear":
@@ -322,7 +349,7 @@ class DiffusionModel(tf.keras.Model):
             def f(t):
                 return tf.cos((t / T + s) / (1 + s) * tf.constant(np.pi * 0.5)) ** 2
 
-            t = np.arange(0, T + 1)
+            t = tf.range(0, T + 1, dtype=tf.float32)
             alphas_cumprod = f(t) / f(0)
             beta = 1 - alphas_cumprod[1:] / alphas_cumprod[:-1]
             beta = tf.clip_by_value(beta, 0.0001, 0.999)
@@ -347,10 +374,11 @@ class PlottingCallback(tf.keras.callbacks.Callback):
 
     """
 
-    def __init__(self, diffusion_model, freq=1):
+    def __init__(self, diffusion_model, freq=1, img_size=IMG_SIZE):
         super(PlottingCallback, self).__init__()
         self.diffusion_model = diffusion_model
         self.freq = freq  # Frequency to plot during training (every 'freq' epochs)
+        self.img_size = img_size
 
     def on_epoch_end(self, epoch, logs=None):
         """The method that is called at the end of each epoch.
@@ -389,10 +417,16 @@ class PlottingCallback(tf.keras.callbacks.Callback):
             plt.show()
 
             # get the coordinates of the bottom left corner of the sprite
-            x = 60
-            y = 60
-            w = 50
-            h = 50
+            if self.img_size == 64:
+                x = 60
+                y = 60
+                w = 50
+                h = 50
+            elif self.img_size == 32:
+                x = 30
+                y = 30
+                w = 25
+                h = 25
 
             # Slice the tensor to get the pixel values within the background area
             area_noised = noised_data[y : y + h, x : x + w, :]
