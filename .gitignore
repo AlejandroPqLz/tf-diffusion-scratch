@@ -9,6 +9,7 @@ snapshot.metadata
 #python files
 *.egg-info
 __pycache__
+*.h5
 
 # dags
 *_dag_params.py
