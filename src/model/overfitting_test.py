@@ -203,7 +203,19 @@ class DiffusionModel(tf.keras.Model):
 
             # Calculate x_{t-1}
             # 4: x_{t-1} = (x_t - (1 - alpha_t) / sqrt(1 - alpha_cumprod_t) * eps_theta) / sqrt(alpha_t) + sigma_t * z
-            sigma_t = tf.sqrt(1 - alpha_cumprod[t])  # TODO: CHECK
+            # sigma_t = tf.sqrt(1 - alpha_cumprod[t])  # TODO: CHECK
+
+            # for all timesteps.
+            sigma_t = (
+                tf.sqrt((1 - alpha_cumprod[t - 1]) / (1 - alpha_cumprod[t]))
+                if t > 1
+                else 0
+            )
+            # if t > 1:
+            #     sigma_t = tf.sqrt((1 - alpha_cumprod[t-1]) / (1 - alpha_cumprod[t]))
+            # else:
+            #     sigma_t = 0
+
             x_t = (
                 x_t - (1 - alpha[t]) / tf.sqrt(1 - alpha_cumprod[t]) * predicted_noise
             ) / tf.sqrt(alpha[t]) + sigma_t * z
@@ -232,8 +244,8 @@ class DiffusionModel(tf.keras.Model):
         for i in range(num_samples):
             tqdm.write(f"Generating sample {i + 1}/{num_samples}")
 
-            # Start with random noise as input
-            start_noise = tf.random.normal([1, self.img_size, self.img_size, 3])
+            # Start with random noise as input that follows N(0, I)
+            start_noise = tf.random.normal(shape=(1, self.img_size, self.img_size, 3))
 
             # Set the label for the sample(s)
             if poke_type is not None:
