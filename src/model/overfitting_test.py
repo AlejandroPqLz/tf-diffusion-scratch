@@ -81,9 +81,11 @@ class DiffusionModel(tf.keras.Model):
         self.beta_end = beta_end
         self.s = s
 
-        self.beta = self.beta_scheduler(scheduler, T, beta_start, beta_end, s)
+        self.beta = self.beta_scheduler(
+            scheduler, T, beta_start, beta_end, s
+        )  # TODO: CHECK THIS
         self.alpha = 1 - self.beta
-        self.alpha_cumprod = tf.math.cumprod(self.alpha)
+        self.alpha_cumprod = tf.math.cumprod(self.alpha)  # TODO: CHECK THIS
 
     def train_step(self, data):
         """
@@ -114,8 +116,9 @@ class DiffusionModel(tf.keras.Model):
         # 3: t ~ U(0, T)
         # Generate a random timestep for each image in the batch
         t = tf.random.uniform(shape=(), minval=0, maxval=T, dtype=tf.int32)
-        # t = np.random.randint(0, T)
-        normalized_t = tf.fill([tf.shape(input_data)[0], 1], tf.cast(t, tf.float32) / T)
+        normalized_t = tf.fill(
+            [tf.shape(input_data)[0], 1], tf.cast(t, tf.float32) / T
+        )  # TODO: CHECK THIS
 
         # 2: x_0 ~ q(x_0)
         x_t, x_0, per_noise = self.forward_diffusion(
@@ -126,18 +129,18 @@ class DiffusionModel(tf.keras.Model):
             beta_start,
             beta_end,
             s,
-        )
+        )  # TODO: CHECK THIS
 
         # 4: eps_t ~ N(0, I)
         target_noise = (x_t - tf.sqrt(alpha_cumprod[t]) * input_data) / tf.sqrt(
             1 - alpha_cumprod[t]
-        )
+        )  # TODO: CHECK THIS
 
         # 5: Take a gradient descent step on
         with tf.GradientTape() as tape:
             predicted_noise = self.model(
                 [x_t, normalized_t, input_label], training=True
-            )
+            )  # TODO: CHECK THIS
             loss = loss_fn(target_noise, predicted_noise)
 
         gradients = tape.gradient(loss, self.trainable_variables)
@@ -153,7 +156,7 @@ class DiffusionModel(tf.keras.Model):
             input_data[0],
             x_0[0],
             per_noise[0],
-        )
+        )  # TODO: CHECK THIS
 
         # Update and return training metrics
         return {"loss": loss}
@@ -192,33 +195,28 @@ class DiffusionModel(tf.keras.Model):
         # 2: for t = T − 1, . . . , 1 do
         time.sleep(0.4)
         for t in tqdm(reversed(range(1, T)), desc="Sampling sprite", total=T - 1):
-            normalized_t = tf.fill([tf.shape(x_t)[0], 1], tf.cast(t, tf.float32) / T)
+            normalized_t = tf.fill(
+                [tf.shape(x_t)[0], 1], tf.cast(t, tf.float32) / T
+            )  # TODO: CHECK THIS
 
             # Sample z
             # 3: z ~ N(0, I) if t > 1, else z = 0
-            z = tf.random.normal(shape=tf.shape(x_t)) if t > 1 else tf.zeros_like(x_t)
+            z = (
+                tf.random.normal(shape=tf.shape(x_t)) if t > 1 else tf.zeros_like(x_t)
+            )  # TODO: CHECK THIS
 
             # Calculate the predicted noise
             predicted_noise = self.model([x_t, normalized_t, y_t], training=False)
 
             # Calculate x_{t-1}
             # 4: x_{t-1} = (x_t - (1 - alpha_t) / sqrt(1 - alpha_cumprod_t) * eps_theta) / sqrt(alpha_t) + sigma_t * z
-            # sigma_t = tf.sqrt(1 - alpha_cumprod[t])  # TODO: CHECK
-
-            # for all timesteps.
-            sigma_t = (
-                tf.sqrt((1 - alpha_cumprod[t - 1]) / (1 - alpha_cumprod[t]))
-                if t > 1
-                else 0
-            )
-            # if t > 1:
-            #     sigma_t = tf.sqrt((1 - alpha_cumprod[t-1]) / (1 - alpha_cumprod[t]))
-            # else:
-            #     sigma_t = 0
+            sigma_t = tf.sqrt(1 - alpha[t])  # TODO: CHECK THIS
 
             x_t = (
                 x_t - (1 - alpha[t]) / tf.sqrt(1 - alpha_cumprod[t]) * predicted_noise
-            ) / tf.sqrt(alpha[t]) + sigma_t * z
+            ) / tf.sqrt(
+                alpha[t]
+            ) + sigma_t * z  # TODO: CHECK THIS
 
         # 5: end for
         # Return the final denoised image
@@ -245,7 +243,9 @@ class DiffusionModel(tf.keras.Model):
             tqdm.write(f"Generating sample {i + 1}/{num_samples}")
 
             # Start with random noise as input that follows N(0, I)
-            start_noise = tf.random.normal(shape=(1, self.img_size, self.img_size, 3))
+            start_noise = tf.random.normal(
+                shape=(1, self.img_size, self.img_size, 3)
+            )  # TODO: CHECK THIS
 
             # Set the label for the sample(s)
             if poke_type is not None:
@@ -265,7 +265,7 @@ class DiffusionModel(tf.keras.Model):
             # Scale to [0, 1] for plotting
             sample = (sample - tf.reduce_min(sample)) / (
                 tf.reduce_max(sample) - tf.reduce_min(sample)
-            )
+            )  # TODO: CHECK THIS
 
             # Plot the sample
             axs[i].imshow(sample)
@@ -306,10 +306,12 @@ class DiffusionModel(tf.keras.Model):
         alpha_cumprod = tf.math.cumprod(alpha)
 
         # Apply the diffusion process: x_t = sqrt(alpha_cumprod_t) * x_0 + sqrt(1-alpha_cumprod_t) * noise
-        noise = tf.random.normal(shape=tf.shape(x_0))
-        x_t = tf.sqrt(alpha_cumprod[t]) * x_0 + tf.sqrt(1 - alpha_cumprod[t]) * noise
-        per_noise = tf.sqrt(1 - alpha_cumprod[t]) * noise
-        x_0 = (x_t - per_noise) / tf.sqrt(alpha_cumprod[t])
+        noise = tf.random.normal(shape=tf.shape(x_0))  # TODO: CHECK THIS
+        x_t = (
+            tf.sqrt(alpha_cumprod[t]) * x_0 + tf.sqrt(1 - alpha_cumprod[t]) * noise
+        )  # TODO: CHECK THIS
+        per_noise = tf.sqrt(1 - alpha_cumprod[t]) * noise  # TODO: CHECK THIS
+        x_0 = (x_t - per_noise) / tf.sqrt(alpha_cumprod[t])  # TODO: CHECK THIS
 
         return x_t, x_0, per_noise
 
@@ -322,12 +324,14 @@ class DiffusionModel(tf.keras.Model):
         """
 
         if scheduler == "linear":
-            beta = tf.linspace(beta_start, beta_end, T)
+            beta = tf.linspace(beta_start, beta_end, T)  # TODO: CHECK THIS (probar)
 
         elif scheduler == "cosine":
 
             def f(t):
-                return tf.cos((t / T + s) / (1 + s) * tf.constant(np.pi * 0.5)) ** 2
+                return (
+                    tf.cos((t / T + s) / (1 + s) * tf.constant(np.pi * 0.5)) ** 2
+                )  # TODO: CHECK THIS
 
             t = tf.range(0, T + 1, dtype=tf.float32)
             alphas_cumprod = f(t) / f(0)
@@ -449,7 +453,7 @@ class PlottingCallback(tf.keras.callbacks.Callback):
             #     w = 25
             #     h = 25
 
-            x = 30
+            x = 30  # TODO: CHECK THIS
             y = 30
             w = 25
             h = 25
@@ -457,11 +461,15 @@ class PlottingCallback(tf.keras.callbacks.Callback):
             # Slice the tensor to get the pixel values within the background area
             area_noised = x_t[y : y + h, x : x + w, :]
             target_noised = target_noise[y : y + h, x : x + w, :]
-            print("MSE area: ", tf.reduce_mean(tf.square(area_noised - target_noised)))
+            print(
+                "MSE area: ", tf.reduce_mean(tf.square(area_noised - target_noised))
+            )  # TODO: CHECK THIS
 
             # Calculate the MSE between the input_noised and the target noise
             img_synthetic = x_t - target_noise
-            print("MSE: ", tf.reduce_mean(tf.square(input_data - img_synthetic)))
+            print(
+                "MSE: ", tf.reduce_mean(tf.square(input_data - img_synthetic))
+            )  # TODO: CHECK THIS
 
             _, axs = plt.subplots(2, 3, figsize=(10, 7))
             axs[0, 0].imshow(x_t[y : y + h, x : x + w, :])
