@@ -118,7 +118,7 @@ class DiffusionModel(tf.keras.Model):
         normalized_t = tf.fill([tf.shape(input_data)[0], 1], tf.cast(t, tf.float32) / T)
 
         # 2: x_0 ~ q(x_0)
-        noised_data = self.forward_diffusion(
+        x_t, x_0, per_noise = self.forward_diffusion(
             input_data,
             t,
             T,
@@ -129,14 +129,14 @@ class DiffusionModel(tf.keras.Model):
         )
 
         # 4: eps_t ~ N(0, I)
-        target_noise = (noised_data - tf.sqrt(alpha_cumprod[t]) * input_data) / tf.sqrt(
+        target_noise = (x_t - tf.sqrt(alpha_cumprod[t]) * input_data) / tf.sqrt(
             1 - alpha_cumprod[t]
         )
 
         # 5: Take a gradient descent step on
         with tf.GradientTape() as tape:
             predicted_noise = self.model(
-                [noised_data, normalized_t, input_label], training=True
+                [x_t, normalized_t, input_label], training=True
             )
             loss = loss_fn(target_noise, predicted_noise)
 
@@ -147,10 +147,12 @@ class DiffusionModel(tf.keras.Model):
 
         # Store last batch data for plotting
         self.last_batch_data = (
-            noised_data[0],
+            x_t[0],
             target_noise[0],
             predicted_noise[0],
             input_data[0],
+            x_0[0],
+            per_noise[0],
         )
 
         # Update and return training metrics
@@ -201,7 +203,7 @@ class DiffusionModel(tf.keras.Model):
 
             # Calculate x_{t-1}
             # 4: x_{t-1} = (x_t - (1 - alpha_t) / sqrt(1 - alpha_cumprod_t) * eps_theta) / sqrt(alpha_t) + sigma_t * z
-            sigma_t = tf.sqrt(1 - alpha_cumprod[t])
+            sigma_t = tf.sqrt(1 - alpha_cumprod[t])  # TODO: CHECK
             x_t = (
                 x_t - (1 - alpha[t]) / tf.sqrt(1 - alpha_cumprod[t]) * predicted_noise
             ) / tf.sqrt(alpha[t]) + sigma_t * z
@@ -294,8 +296,10 @@ class DiffusionModel(tf.keras.Model):
         # Apply the diffusion process: x_t = sqrt(alpha_cumprod_t) * x_0 + sqrt(1-alpha_cumprod_t) * noise
         noise = tf.random.normal(shape=tf.shape(x_0))
         x_t = tf.sqrt(alpha_cumprod[t]) * x_0 + tf.sqrt(1 - alpha_cumprod[t]) * noise
+        per_noise = tf.sqrt(1 - alpha_cumprod[t]) * noise
+        x_0 = (x_t - per_noise) / tf.sqrt(alpha_cumprod[t])
 
-        return x_t
+        return x_t, x_0, per_noise
 
     @staticmethod
     def beta_scheduler(
@@ -389,13 +393,12 @@ class PlottingCallback(tf.keras.callbacks.Callback):
 
         """
         if (epoch + 1) % self.freq == 0:
-            noised_data, target_noise, predicted_noise, input_data = (
+            x_t, target_noise, predicted_noise, input_data, x_0, per_noise = (
                 self.diffusion_model.get_last_batch_data()
             )
 
-            noised_data = (noised_data - tf.reduce_min(noised_data)) / (
-                tf.reduce_max(noised_data) - tf.reduce_min(noised_data)
-            )
+            # Normalize the images for plotting
+            x_t = (x_t - tf.reduce_min(x_t)) / (tf.reduce_max(x_t) - tf.reduce_min(x_t))
             target_noise = (target_noise - tf.reduce_min(target_noise)) / (
                 tf.reduce_max(target_noise) - tf.reduce_min(target_noise)
             )
@@ -407,9 +410,15 @@ class PlottingCallback(tf.keras.callbacks.Callback):
                 tf.reduce_max(input_data) - tf.reduce_min(input_data)
             )
 
+            x_0 = (x_0 - tf.reduce_min(x_0)) / (tf.reduce_max(x_0) - tf.reduce_min(x_0))
+
+            per_noise = (per_noise - tf.reduce_min(per_noise)) / (
+                tf.reduce_max(per_noise) - tf.reduce_min(per_noise)
+            )
+
             plt.figure(figsize=(10, 5))
             titles = ["Input(noised img)", "Target Noise", "Predicted Noise"]
-            for i, data in enumerate([noised_data, target_noise, predicted_noise]):
+            for i, data in enumerate([x_t, target_noise, predicted_noise]):
                 ax = plt.subplot(1, 3, i + 1)
                 ax.imshow(data)  # Plot the first image in the batch
                 ax.title.set_text(titles[i])
@@ -417,44 +426,49 @@ class PlottingCallback(tf.keras.callbacks.Callback):
             plt.show()
 
             # get the coordinates of the bottom left corner of the sprite
-            if self.img_size == 64:
-                x = 60
-                y = 60
-                w = 50
-                h = 50
-            elif self.img_size == 32:
-                x = 30
-                y = 30
-                w = 25
-                h = 25
+            # if self.img_size == 64:
+            #     x = 60
+            #     y = 60
+            #     w = 50
+            #     h = 50
+            # elif self.img_size == 32:
+            #     x = 30
+            #     y = 30
+            #     w = 25
+            #     h = 25
+
+            x = 30
+            y = 30
+            w = 25
+            h = 25
 
             # Slice the tensor to get the pixel values within the background area
-            area_noised = noised_data[y : y + h, x : x + w, :]
+            area_noised = x_t[y : y + h, x : x + w, :]
             target_noised = target_noise[y : y + h, x : x + w, :]
             print("MSE area: ", tf.reduce_mean(tf.square(area_noised - target_noised)))
 
             # Calculate the MSE between the input_noised and the target noise
-            img_synthetic = noised_data - target_noise
+            img_synthetic = x_t - target_noise
             print("MSE: ", tf.reduce_mean(tf.square(input_data - img_synthetic)))
 
             _, axs = plt.subplots(2, 3, figsize=(10, 7))
-            axs[0, 0].imshow(noised_data[y : y + h, x : x + w, :])
+            axs[0, 0].imshow(x_t[y : y + h, x : x + w, :])
             axs[0, 0].set_title("AREA input_noised")
 
             axs[0, 1].imshow(target_noise[y : y + h, x : x + w, :])
             axs[0, 1].set_title("AREA target noise")
 
-            axs[0, 2].imshow(noised_data - target_noise)
-            axs[0, 2].set_title("noised_data - target_noise")
+            axs[0, 2].imshow(img_synthetic)
+            axs[0, 2].set_title("noised_data - target_noise (synthetic)")
 
-            axs[1, 0].imshow(input_data)
-            axs[1, 0].set_title("input_data")
+            axs[1, 0].imshow(x_t)
+            axs[1, 0].set_title("noised_data (x_t)")
 
-            axs[1, 1].imshow(img_synthetic)
-            axs[1, 1].set_title("img_synthetic")
+            axs[1, 1].imshow(x_0)
+            axs[1, 1].set_title("x_0")
 
-            axs[1, 2].imshow(input_data - img_synthetic)
-            axs[1, 2].set_title("input_data - img_synthetic")
+            axs[1, 2].imshow(per_noise)
+            axs[1, 2].set_title("per_noise")
             plt.show()
 
 
@@ -472,11 +486,12 @@ class DiffusionCallback(tf.keras.callbacks.Callback):
 
     """
 
-    def __init__(self, diffusion_model: DiffusionModel, frequency=20):
+    def __init__(self, diffusion_model: DiffusionModel, frequency=20, type=None):
         super(DiffusionCallback, self).__init__()
         # super().__init__()
         self.diffusion_model = diffusion_model
         self.frequency = frequency
+        self.type = type
 
     def on_epoch_end(self, epoch, logs=None):
         """The method that is called at the end of each epoch.
@@ -489,5 +504,5 @@ class DiffusionCallback(tf.keras.callbacks.Callback):
 
         if (epoch + 1) % self.frequency == 0:
             print(f"Epoch {epoch+1}: Generating samples.")
-            self.diffusion_model.plot_samples(num_samples=1)
+            self.diffusion_model.plot_samples(num_samples=1, poke_type=self.type)
             # self.model.save_weights("diffusion_model.h5")
