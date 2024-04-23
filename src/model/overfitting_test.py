@@ -81,9 +81,7 @@ class DiffusionModel(tf.keras.Model):
         self.beta_end = beta_end
         self.s = s
 
-        self.beta = self.beta_scheduler(
-            scheduler, T, beta_start, beta_end, s
-        )  # TODO: CHECK THIS
+        self.beta = self.beta_scheduler(scheduler, T, beta_start, beta_end, s)
         self.alpha = 1 - self.beta
         self.alpha_cumprod = tf.math.cumprod(self.alpha)  # TODO: CHECK THIS
 
