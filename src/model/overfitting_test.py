@@ -322,7 +322,7 @@ class DiffusionModel(tf.keras.Model):
         """
 
         if scheduler == "linear":
-            beta = tf.linspace(beta_start, beta_end, T)  # TODO: CHECK THIS (probar)
+            beta = tf.linspace(beta_start, beta_end, T)
 
         elif scheduler == "cosine":
 
