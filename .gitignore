@@ -3,8 +3,8 @@ Diffsuion study.pdf
 
 # dataset tf
 *.snapshot
-dataset_spec.pb
-snapshot.metadata
+*.pb
+*.metadata
 
 #python files
 *.egg-info
@@ -17,3 +17,4 @@ __pycache__
 # others
 temp
 models
+pokemon_tf_dataset
