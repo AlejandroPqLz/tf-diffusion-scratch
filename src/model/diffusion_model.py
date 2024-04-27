@@ -152,7 +152,7 @@ class DiffusionModel(tf.keras.Model):
         Algorithm 2: (sampling) The prediction step for the diffusion model.
 
         Args:
-            data (tuple): A tuple containing the input data and labels.
+            data (tuple): A tuple containing the input noised data and label.
 
         Returns:
             tf.Tensor: The final denoised image.

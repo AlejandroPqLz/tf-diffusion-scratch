@@ -174,7 +174,7 @@ class DiffusionModel(tf.keras.Model):
         Algorithm 2: (sampling) The prediction step for the diffusion model.
 
         Args:
-            data (tuple): A tuple containing the input data and labels.
+            data (tuple): A tuple containing the input noised data and label.
 
         Returns:
             tf.Tensor: The final denoised image.
@@ -192,7 +192,7 @@ class DiffusionModel(tf.keras.Model):
         # Reverse the diffusion process
         # 2: for t = T − 1, . . . , 1 do
         time.sleep(0.4)
-        for t in tqdm(reversed(range(1, T)), desc="Sampling sprite", total=T - 1):
+        for t in tqdm(reversed(range(0, T)), desc="Sampling sprite", total=T - 1):
             normalized_t = tf.fill(
                 [tf.shape(x_t)[0], 1], tf.cast(t, tf.float32) / T
             )  # TODO: CHECK THIS
