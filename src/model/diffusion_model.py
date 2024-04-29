@@ -110,6 +110,12 @@ class DiffusionModel(tf.keras.Model):
         input_data, input_label = data
 
         # mask out label randomly
+        p = 0.9
+
+        context_mask = tf.random.uniform([input_label.shape[0]]) < p
+        input_label = input_label * tf.cast(
+            tf.expand_dims(context_mask, -1), dtype=input_label.dtype
+        )
 
         # 1: repeat ------
 
