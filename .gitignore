@@ -9,12 +9,11 @@ Diffsuion study.pdf
 #python files
 *.egg-info
 __pycache__
-*.h5
+*.keras
 
 # dags
 *_dag_params.py
 
 # others
 temp
-models
 pokemon_tf_dataset
