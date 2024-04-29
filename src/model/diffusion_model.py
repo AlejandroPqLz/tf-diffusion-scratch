@@ -109,6 +109,8 @@ class DiffusionModel(tf.keras.Model):
         # Unpack the data
         input_data, input_label = data
 
+        # mask out label randomly
+
         # 1: repeat ------
 
         # 3: t ~ U(0, T)
