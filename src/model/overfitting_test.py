@@ -192,6 +192,7 @@ class DiffusionModel(tf.keras.Model):
         # Reverse the diffusion process
         # 2: for t = T − 1, . . . , 1 do
         time.sleep(0.4)
+        alpha_list = []
         for t in tqdm(reversed(range(0, T)), desc="Sampling sprite", total=T - 1):
             normalized_t = tf.fill(
                 [tf.shape(x_t)[0], 1], tf.cast(t, tf.float32) / T
@@ -209,6 +210,7 @@ class DiffusionModel(tf.keras.Model):
             # Calculate x_{t-1}
             # 4: x_{t-1} = (x_t - (1 - alpha_t) / sqrt(1 - alpha_cumprod_t) * eps_theta) / sqrt(alpha_t) + sigma_t * z
             sigma_t = tf.sqrt(1 - alpha[t])  # TODO: CHECK THIS
+            alpha_list.append(alpha[t])
 
             x_t = (
                 x_t - (1 - alpha[t]) / tf.sqrt(1 - alpha_cumprod[t]) * predicted_noise
@@ -216,6 +218,7 @@ class DiffusionModel(tf.keras.Model):
                 alpha[t]
             ) + sigma_t * z  # TODO: CHECK THIS
 
+        print(alpha_list)
         # 5: end for
         # Return the final denoised image
         return x_t  # 6: return x_0
@@ -257,7 +260,7 @@ class DiffusionModel(tf.keras.Model):
             y_label = tf.reshape(y_label, [1, NUM_CLASSES])
 
             # Generate the sample
-            sample = self.predict_step((start_noise, y_label))
+            sample, alpha_list = self.predict_step((start_noise, y_label))
             sample = tf.squeeze(sample)  # remove the batch dimension
 
             # Scale to [0, 1] for plotting
@@ -269,8 +272,11 @@ class DiffusionModel(tf.keras.Model):
             axs[i].imshow(sample)
             axs[i].title.set_text(onehot_to_string(y_label))
             axs[i].axis("off")
+            plt.show()
+            plt.plot(alpha_list)
+            plt.show()
 
-        return plt.show()
+        return None
 
     @staticmethod
     def forward_diffusion(
@@ -322,22 +328,49 @@ class DiffusionModel(tf.keras.Model):
         """
 
         if scheduler == "linear":
-            beta = tf.linspace(beta_start, beta_end, T)
+            beta = beta_start + (beta_end - beta_start) * np.arange(T) / (T - 1)
+            # beta = tf.linspace(beta_start, beta_end, T)
 
         elif scheduler == "cosine":
 
             def f(t):
                 return tf.cos((t / T + s) / (1 + s) * tf.constant(np.pi * 0.5)) ** 2
 
-            t = tf.range(0, T + 1, dtype=tf.float32)  # TODO: CHECK THIS (T+1)
+            t = tf.range(T, dtype=tf.float32)
             alphas_cumprod = f(t) / f(0)
-            beta = 1 - alphas_cumprod[1:] / tf.maximum(alphas_cumprod[:-1], 1e-10)
+            beta = 1 - alphas_cumprod[1:] / tf.maximum(alphas_cumprod[:-1], 0.999)
             beta = tf.clip_by_value(beta, 0.0001, 0.999)
 
         else:
             raise ValueError(f"Unsupported scheduler: {scheduler}")
 
         return beta
+
+    # @staticmethod
+    # def beta_scheduler(
+    #     scheduler: str, T: int, beta_start: float, beta_end: float, s: float
+    # ) -> tf.Tensor:
+    #     """
+    #     Generates a schedule for beta values according to the specified type ('linear' or 'cosine').
+    #     """
+
+    #     if scheduler == "linear":
+    #         beta = tf.linspace(beta_start, beta_end, T)
+
+    #     elif scheduler == "cosine":
+
+    #         def f(t):
+    #             return tf.cos((t / T + s) / (1 + s) * tf.constant(np.pi * 0.5)) ** 2
+
+    #         t = tf.range(0, T + 1, dtype=tf.float32)  # TODO: CHECK THIS (T+1)
+    #         alphas_cumprod = f(t) / f(0)
+    #         beta = 1 - alphas_cumprod[1:] / tf.maximum(alphas_cumprod[:-1], 1e-10)
+    #         beta = tf.clip_by_value(beta, 0.0001, 0.999)
+
+    #     else:
+    #         raise ValueError(f"Unsupported scheduler: {scheduler}")
+
+    #     return beta
 
     # @staticmethod
     # def beta_scheduler(
