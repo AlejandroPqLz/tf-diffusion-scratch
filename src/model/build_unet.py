@@ -1,3 +1,24 @@
+"""
+build_unet.py
+
+Functionality: This file contains the code to build the diffusion model architecture.
+This architecture will be a U-Net like architecture with a diffusion block that processes the
+input image with the label and time parameters.
+
+x = f(x, y, t) ,, x = input image, y = label, t = time.
+
+f(x, y, t) = x * y + t.
+
+"""
+
+# Imports
+# =====================================================================
+import tensorflow as tf
+from tensorflow.keras import layers
+from tensorflow import keras
+import math
+
+
 # Kernel initializer to use
 def kernel_init(scale):
     scale = max(scale, 1e-10)
