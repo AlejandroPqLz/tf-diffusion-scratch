@@ -1,150 +1,204 @@
-"""
-build_unet.py
-
-Functionality: This file contains the code to build the diffusion model architecture.
-This architecture will be a U-Net like architecture with a diffusion block that processes the
-input image with the label and time parameters.
-
-x = f(x, y, t) ,, x = input image, y = label, t = time.
-
-f(x, y, t) = x * y + t.
-
-"""
-
-# Imports
-# =====================================================================
-import tensorflow as tf
-from tensorflow.keras import layers
+# Kernel initializer to use
+def kernel_init(scale):
+    scale = max(scale, 1e-10)
+    return keras.initializers.VarianceScaling(
+        scale, mode="fan_avg", distribution="uniform"
+    )
 
 
-# Main Function
-# =====================================================================
-def build_unet(img_size: int, num_classes: int) -> tf.keras.Model:
-    """Creates the U-Net model
+class AttentionBlock(layers.Layer):
+    """Applies self-attention.
 
-    :param img_size: The size of the image
-    :param num_classes: The number of classes
-    :return: The U-Net model
-
+    Args:
+        units: Number of units in the dense layers
+        groups: Number of groups to be used for GroupNormalization layer
     """
 
-    # ----- input -----
-    x = x_input = layers.Input(shape=(img_size, img_size, 3), name="x_input")
+    def __init__(self, units, groups=8, **kwargs):
+        self.units = units
+        self.groups = groups
+        super().__init__(**kwargs)
 
-    x_ts = x_ts_input = layers.Input(shape=(1,), name="x_ts_input")
-    x_ts = process_block(x_ts)
+        self.norm = layers.GroupNormalization(groups=groups)
+        self.query = layers.Dense(units, kernel_initializer=kernel_init(1.0))
+        self.key = layers.Dense(units, kernel_initializer=kernel_init(1.0))
+        self.value = layers.Dense(units, kernel_initializer=kernel_init(1.0))
+        self.proj = layers.Dense(units, kernel_initializer=kernel_init(0.0))
 
-    x_label = y_input = layers.Input(shape=(num_classes,), name="y_input")
-    x_label = process_block(x_label)
+    def call(self, inputs):
+        batch_size = tf.shape(inputs)[0]
+        height = tf.shape(inputs)[1]
+        width = tf.shape(inputs)[2]
+        scale = tf.cast(self.units, tf.float32) ** (-0.5)
 
-    # ----- left ( down ) -----
-    x = x64 = diffusion_block(x, x_ts, x_label)
-    x = layers.MaxPool2D(2)(x)
+        inputs = self.norm(inputs)
+        q = self.query(inputs)
+        k = self.key(inputs)
+        v = self.value(inputs)
 
-    x = x32 = diffusion_block(x, x_ts, x_label)
-    x = layers.MaxPool2D(2)(x)
+        attn_score = tf.einsum("bhwc, bHWc->bhwHW", q, k) * scale
+        attn_score = tf.reshape(attn_score, [batch_size, height, width, height * width])
 
-    x = x16 = diffusion_block(x, x_ts, x_label)
-    x = layers.MaxPool2D(2)(x)
+        attn_score = tf.nn.softmax(attn_score, -1)
+        attn_score = tf.reshape(attn_score, [batch_size, height, width, height, width])
 
-    x = x8 = diffusion_block(x, x_ts, x_label)
-
-    # ----- mlp -----
-    x = mlp_block(x, x_ts, x_label)
-
-    # ----- right ( up ) -----
-    x = layers.Concatenate()([x, x8])
-    x = diffusion_block(x, x_ts, x_label)
-    x = layers.UpSampling2D(2)(x)
-
-    x = layers.Concatenate()([x, x16])
-    x = diffusion_block(x, x_ts, x_label)
-    x = layers.UpSampling2D(2)(x)
-
-    x = layers.Concatenate()([x, x32])
-    x = diffusion_block(x, x_ts, x_label)
-    x = layers.UpSampling2D(2)(x)
-
-    x = layers.Concatenate()([x, x64])
-    x = diffusion_block(x, x_ts, x_label)
-
-    # ----- output -----
-    x = layers.Conv2D(3, kernel_size=1, padding="same")(x)
-    model = tf.keras.models.Model([x_input, x_ts_input, y_input], x)
-
-    return model
+        proj = tf.einsum("bhwHW,bHWc->bhwc", attn_score, v)
+        proj = self.proj(proj)
+        return inputs + proj
 
 
-# Auxiliary Functions
-# =====================================================================
-def process_block(input_tensor):
-    """
-    Process the time steps or label input tensor
+class TimeEmbedding(layers.Layer):
+    def __init__(self, dim, **kwargs):
+        super().__init__(**kwargs)
+        self.dim = dim
+        self.half_dim = dim // 2
+        self.emb = math.log(10000) / (self.half_dim - 1)
+        self.emb = tf.exp(tf.range(self.half_dim, dtype=tf.float32) * -self.emb)
 
-    :param input_tensor: The input tensor to process
-    :return: The processed tensor
-
-    """
-
-    x = layers.Dense(128, activation="relu")(input_tensor)
-    x = layers.LayerNormalization()(x)
-    x = layers.Activation("relu")(x)
-    return x
+    def call(self, inputs):
+        inputs = tf.cast(inputs, dtype=tf.float32)
+        emb = inputs[:, None] * self.emb[None, :]
+        emb = tf.concat([tf.sin(emb), tf.cos(emb)], axis=-1)
+        return emb
 
 
-def mlp_block(x: tf.Tensor, x_ts: tf.Tensor, x_label: tf.Tensor) -> tf.Tensor:
-    """The MLP block of the diffusion model
+def ResidualBlock(width, groups=8, activation_fn=keras.activations.swish):
+    def apply(inputs):
+        x, t = inputs
+        input_width = x.shape[3]
 
-    :param x: The image to process
-    :param x_ts: The time steps to process
-    :param x_label: The label to process
-    :return: The processed image
+        if input_width == width:
+            residual = x
+        else:
+            residual = layers.Conv2D(
+                width, kernel_size=1, kernel_initializer=kernel_init(1.0)
+            )(x)
 
-    """
-    shape = x.shape
+        temb = activation_fn(t)
+        temb = layers.Dense(width, kernel_initializer=kernel_init(1.0))(temb)[
+            :, None, None, :
+        ]
 
-    x = layers.Flatten()(x)
-    x = layers.Concatenate()([x, x_ts, x_label])
+        x = layers.GroupNormalization(groups=groups)(x)
+        x = activation_fn(x)
+        x = layers.Conv2D(
+            width, kernel_size=3, padding="same", kernel_initializer=kernel_init(1.0)
+        )(x)
 
-    x = layers.Dense(128)(x)
-    x = layers.LayerNormalization()(x)
-    x = layers.Activation("relu")(x)
+        x = layers.Add()([x, temb])
+        x = layers.GroupNormalization(groups=groups)(x)
+        x = activation_fn(x)
 
-    x = layers.Dense(shape[1] * shape[2] * shape[3])(x)
-    x = layers.LayerNormalization()(x)
-    x = layers.Activation("relu")(x)
+        x = layers.Conv2D(
+            width, kernel_size=3, padding="same", kernel_initializer=kernel_init(0.0)
+        )(x)
+        x = layers.Add()([x, residual])
+        return x
 
-    x = layers.Reshape(shape[1:])(x)
-
-    return x
+    return apply
 
 
-def diffusion_block(x_img: tf.Tensor, x_ts: tf.Tensor, x_label: tf.Tensor) -> tf.Tensor:
-    """The block of the diffusion model
+def DownSample(width):
+    def apply(x):
+        x = layers.Conv2D(
+            width,
+            kernel_size=3,
+            strides=2,
+            padding="same",
+            kernel_initializer=kernel_init(1.0),
+        )(x)
+        return x
 
-    :param x_img: The image to process
-    :param x_ts: The time steps to process
-    :param x_label: The label to process
-    :return: The processed image
-    """
+    return apply
 
-    x_parameter = layers.Conv2D(128, kernel_size=3, padding="same")(x_img)
-    x_parameter = layers.Activation("relu")(x_parameter)
 
-    time_parameter = layers.Dense(128)(x_ts)
-    time_parameter = layers.Activation("relu")(time_parameter)
-    time_parameter = layers.Reshape((1, 1, 128))(time_parameter)
+def UpSample(width, interpolation="nearest"):
+    def apply(x):
+        x = layers.UpSampling2D(size=2, interpolation=interpolation)(x)
+        x = layers.Conv2D(
+            width, kernel_size=3, padding="same", kernel_initializer=kernel_init(1.0)
+        )(x)
+        return x
 
-    label_parameter = layers.Dense(128)(x_label)
-    label_parameter = layers.Activation("relu")(label_parameter)
-    label_parameter = layers.Reshape((1, 1, 128))(label_parameter)
+    return apply
 
-    x_parameter = x_parameter * label_parameter + time_parameter
 
-    # -----
-    x_out = layers.Conv2D(128, kernel_size=3, padding="same")(x_img)
-    x_out = x_out + x_parameter
-    x_out = layers.LayerNormalization()(x_out)
-    x_out = layers.Activation("relu")(x_out)
+def TimeMLP(units, activation_fn=keras.activations.swish):
+    def apply(inputs):
+        temb = layers.Dense(
+            units, activation=activation_fn, kernel_initializer=kernel_init(1.0)
+        )(inputs)
+        temb = layers.Dense(units, kernel_initializer=kernel_init(1.0))(temb)
+        return temb
 
-    return x_out
+    return apply
+
+
+def build_model(
+    img_size,
+    img_channels,
+    widths,
+    has_attention,
+    num_res_blocks=2,
+    norm_groups=8,
+    interpolation="nearest",
+    activation_fn=keras.activations.swish,
+):
+    image_input = layers.Input(
+        shape=(img_size, img_size, img_channels), name="image_input"
+    )
+    time_input = keras.Input(shape=(), dtype=tf.int64, name="time_input")
+
+    x = layers.Conv2D(
+        first_conv_channels,
+        kernel_size=(3, 3),
+        padding="same",
+        kernel_initializer=kernel_init(1.0),
+    )(image_input)
+
+    temb = TimeEmbedding(dim=first_conv_channels * 4)(time_input)
+    temb = TimeMLP(units=first_conv_channels * 4, activation_fn=activation_fn)(temb)
+
+    skips = [x]
+
+    # DownBlock
+    for i in range(len(widths)):
+        for _ in range(num_res_blocks):
+            x = ResidualBlock(
+                widths[i], groups=norm_groups, activation_fn=activation_fn
+            )([x, temb])
+            if has_attention[i]:
+                x = AttentionBlock(widths[i], groups=norm_groups)(x)
+            skips.append(x)
+
+        if widths[i] != widths[-1]:
+            x = DownSample(widths[i])(x)
+            skips.append(x)
+
+    # MiddleBlock
+    x = ResidualBlock(widths[-1], groups=norm_groups, activation_fn=activation_fn)(
+        [x, temb]
+    )
+    x = AttentionBlock(widths[-1], groups=norm_groups)(x)
+    x = ResidualBlock(widths[-1], groups=norm_groups, activation_fn=activation_fn)(
+        [x, temb]
+    )
+
+    # UpBlock
+    for i in reversed(range(len(widths))):
+        for _ in range(num_res_blocks + 1):
+            x = layers.Concatenate(axis=-1)([x, skips.pop()])
+            x = ResidualBlock(
+                widths[i], groups=norm_groups, activation_fn=activation_fn
+            )([x, temb])
+            if has_attention[i]:
+                x = AttentionBlock(widths[i], groups=norm_groups)(x)
+
+        if i != 0:
+            x = UpSample(widths[i], interpolation=interpolation)(x)
+
+    # End block
+    x = layers.GroupNormalization(groups=norm_groups)(x)
+    x = activation_fn(x)
+    x = layers.Conv2D(3, (3, 3), padding="same", kernel_initializer=kernel_init(0.0))(x)
+    return keras.Model([image_input, time_input], x, name="unet")
