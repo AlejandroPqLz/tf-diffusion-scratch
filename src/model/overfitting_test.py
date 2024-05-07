@@ -83,7 +83,8 @@ class DiffusionModel(tf.keras.Model):
 
         self.beta = self.beta_scheduler(scheduler, T, beta_start, beta_end, s)
         self.alpha = 1 - self.beta
-        self.alpha_cumprod = tf.math.cumprod(self.alpha)  # TODO: CHECK THIS
+        self.alpha_cumprod = tf.math.cumprod(self.alpha)
+        alpha_cumprod = tf.cast(alpha_cumprod, tf.float32)
 
     def train_step(self, data):
         """
@@ -128,6 +129,8 @@ class DiffusionModel(tf.keras.Model):
             beta_end,
             s,
         )  # TODO: CHECK THIS
+
+        alpha_cumprod = tf.cast(alpha_cumprod, tf.float32)
 
         # 4: eps_t ~ N(0, I)
         target_noise = (x_t - tf.sqrt(alpha_cumprod[t]) * input_data) / tf.sqrt(
@@ -218,9 +221,7 @@ class DiffusionModel(tf.keras.Model):
                 alpha[t]
             ) + sigma_t * z  # TODO: CHECK THIS
 
-        print(alpha_list)
         # 5: end for
-        # Return the final denoised image
         return x_t  # 6: return x_0
 
     def plot_samples(self, num_samples: int = 5, poke_type: str = None):
@@ -234,7 +235,6 @@ class DiffusionModel(tf.keras.Model):
 
         _, axs = plt.subplots(1, num_samples, figsize=(num_samples * 2, 3))
 
-        # TODO: TRATAR LOS TIPOS CUANDO VENGAN VARIOS Y NO SOLO UNO
         if num_samples == 1:
             axs = [axs]  # Make axs iterable when plotting only one sample
 
@@ -260,7 +260,7 @@ class DiffusionModel(tf.keras.Model):
             y_label = tf.reshape(y_label, [1, NUM_CLASSES])
 
             # Generate the sample
-            sample, alpha_list = self.predict_step((start_noise, y_label))
+            sample = self.predict_step((start_noise, y_label))
             sample = tf.squeeze(sample)  # remove the batch dimension
 
             # Scale to [0, 1] for plotting
@@ -272,8 +272,6 @@ class DiffusionModel(tf.keras.Model):
             axs[i].imshow(sample)
             axs[i].title.set_text(onehot_to_string(y_label))
             axs[i].axis("off")
-            plt.show()
-            plt.plot(alpha_list)
             plt.show()
 
         return None
@@ -308,9 +306,10 @@ class DiffusionModel(tf.keras.Model):
         )
         alpha = 1.0 - beta
         alpha_cumprod = tf.math.cumprod(alpha)
+        alpha_cumprod = tf.cast(alpha_cumprod, tf.float32)
 
         # Apply the diffusion process: x_t = sqrt(alpha_cumprod_t) * x_0 + sqrt(1-alpha_cumprod_t) * noise
-        noise = tf.random.normal(shape=tf.shape(x_0))  # TODO: CHECK THIS
+        noise = tf.random.normal(shape=tf.shape(x_0), dtype=tf.float32)
         x_t = (
             tf.sqrt(alpha_cumprod[t]) * x_0 + tf.sqrt(1 - alpha_cumprod[t]) * noise
         )  # TODO: CHECK THIS

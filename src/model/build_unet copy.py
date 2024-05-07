@@ -148,3 +148,51 @@ def diffusion_block(x_img: tf.Tensor, x_ts: tf.Tensor, x_label: tf.Tensor) -> tf
     x_out = layers.Activation("relu")(x_out)
 
     return x_out
+
+
+# def get_sinusoidal_time_embedding(timesteps, embedding_dim):
+#     """Get the sinusoidal time embeddings
+
+#     Args:
+#         timesteps: The number of timesteps
+#         embedding_dim: The embedding dimension
+
+#     Returns:
+#         embeddings: The sinusoidal time embeddings
+#     """
+#     position = tf.range(timesteps, dtype=tf.float32)[:, tf.newaxis]
+#     div_term = tf.exp(
+#         tf.range(0, embedding_dim, 2, dtype=tf.float32)
+#         * -(np.log(10000.0) / embedding_dim)
+#     )
+
+#     embeddings = tf.concat(
+#         [
+#             tf.sin(position * div_term),
+#             tf.cos(position * div_term)[:, : embedding_dim // 2],
+#         ],
+#         axis=1,
+#     )
+#     return embeddings
+
+
+# def self_attention_block(x_img, channels):
+#     """The self-attention block
+
+#     Args:
+#         x_img: The image tensor
+#         channels: The number of channels
+
+#     Returns:
+#         attended_features: The attended features
+#     """
+#     query = layers.Conv2D(channels, 1, padding="same")(x_img)
+#     key = layers.Conv2D(channels, 1, padding="same")(x_img)
+#     value = layers.Conv2D(channels, 1, padding="same")(x_img)
+
+#     # Calcular la atención
+#     scores = tf.einsum("bijc,bjkc->bikc", query, key)
+#     scores = tf.nn.softmax(scores)
+
+#     attended_features = tf.einsum("bikc,bjkc->bijc", scores, value)
+#     return layers.Conv2D(channels, 1, padding="same")(attended_features)

@@ -15,211 +15,246 @@ f(x, y, t) = x * y + t.
 # =====================================================================
 import tensorflow as tf
 from tensorflow.keras import layers
-from tensorflow import keras
-import math
+import numpy as np
 
 
-# Kernel initializer to use
-def kernel_init(scale):
-    scale = max(scale, 1e-10)
-    return keras.initializers.VarianceScaling(
-        scale, mode="fan_avg", distribution="uniform"
-    )
-
-
-class AttentionBlock(layers.Layer):
-    """Applies self-attention.
+# Main Function
+# =====================================================================
+def build_unet(
+    img_size: int,
+    num_classes: int,
+    num_channels: int = 8,
+    embedding_dim: int = 16,
+):
+    """Creates the U-Net model
 
     Args:
-        units: Number of units in the dense layers
-        groups: Number of groups to be used for GroupNormalization layer
+        img_size (int): The size of the input image
+        num_classes (int): The number of classes
+        num_channels (int): The number of channels
+
+    Returns:
+        model: The U-Net model
+
     """
 
-    def __init__(self, units, groups=8, **kwargs):
-        self.units = units
-        self.groups = groups
-        super().__init__(**kwargs)
+    # ----- Input -----
+    inputs = layers.Input(shape=(img_size, img_size, 3))
+    labels = layers.Input(shape=(num_classes,))
+    timesteps = layers.Input(shape=(1,))
 
-        self.norm = layers.GroupNormalization(groups=groups)
-        self.query = layers.Dense(units, kernel_initializer=kernel_init(1.0))
-        self.key = layers.Dense(units, kernel_initializer=kernel_init(1.0))
-        self.value = layers.Dense(units, kernel_initializer=kernel_init(1.0))
-        self.proj = layers.Dense(units, kernel_initializer=kernel_init(0.0))
+    # ----- Embeddings -----
+    # time_emb = get_sinusoidal_time_embedding(timesteps, embedding_dim)
+    time_emb = SinusoidalTimeEmbeddingLayer(embedding_dim)(timesteps)
+    label_emb = process_block(labels, embedding_dim)
+
+    # ----- Encoder -----
+    x, s1 = encoder_block(inputs, time_emb, label_emb, num_channels, attention=False)
+    x, s2 = encoder_block(x, time_emb, label_emb, num_channels * 2, attention=True)
+    x, s3 = encoder_block(x, time_emb, label_emb, num_channels * 4, attention=True)
+    x, s4 = encoder_block(x, time_emb, label_emb, num_channels * 8, attention=False)
+
+    # ----- Bottleneck -----
+    x = mlp_block(x, time_emb, label_emb, num_channels * 32)
+
+    # ----- Decoder -----
+    x = decoder_block(x, s4, time_emb, label_emb, num_channels * 8, attention=False)
+    x = decoder_block(x, s3, time_emb, label_emb, num_channels * 4, attention=True)
+    x = decoder_block(x, s2, time_emb, label_emb, num_channels * 2, attention=True)
+    x = decoder_block(x, s1, time_emb, label_emb, num_channels, attention=False)
+
+    # ----- Output -----
+    outputs = layers.Conv2D(3, 1, activation="sigmoid")(x)
+
+    # ----- Model -----
+    model = tf.keras.Model(inputs=[inputs, labels, timesteps], outputs=outputs)
+    return model
+
+
+# Ejemplo de uso:
+# model = build_ddpm_unet(32, 18, num_channels=64, time_embedding_dim=128)
+# model.summary()
+
+
+# Auxiliary Functions
+# =====================================================================
+def process_block(input_tensor, embedding_dim):
+    """
+    Process the time steps or label input tensor
+
+    Args:
+        input_tensor: The input tensor
+        embedding_dim: The embedding dimension
+
+    Returns:
+        x: The processed tensor
+    """
+    x = layers.Dense(embedding_dim, activation="relu")(input_tensor)
+    x = layers.LayerNormalization()(x)
+    x = layers.Activation("relu")(x)
+    return x
+
+
+class SinusoidalTimeEmbeddingLayer(layers.Layer):
+    def __init__(self, embedding_dim, **kwargs):
+        super(SinusoidalTimeEmbeddingLayer, self).__init__(**kwargs)
+        self.embedding_dim = embedding_dim
+
+    def call(self, timesteps):
+        # Ensure timesteps are integers for tf.range
+        timesteps = tf.cast(timesteps, dtype=tf.int32)
+        timesteps = tf.squeeze(
+            timesteps, axis=-1
+        )  # Make sure it's the correct shape for tf.range
+        position = tf.range(tf.shape(timesteps)[0], dtype=tf.float32)[:, tf.newaxis]
+        div_term = tf.exp(
+            tf.range(0, self.embedding_dim, 2, dtype=tf.float32)
+            * -(np.log(10000.0) / self.embedding_dim)
+        )
+
+        embeddings = tf.concat(
+            [
+                tf.sin(position * div_term),
+                tf.cos(position * div_term)[:, : self.embedding_dim // 2],
+            ],
+            axis=1,
+        )
+        return embeddings
+
+    def compute_output_shape(self, input_shape):
+        return (input_shape[0], self.embedding_dim)
+
+
+def mlp_block(
+    x: tf.Tensor, time_emb: tf.Tensor, label_emb: tf.Tensor, channels: int
+) -> tf.Tensor:
+    """The MLP block of the diffusion model
+
+    Args:
+        x: The image to process
+        time_emb: The time steps to process
+        label_emb: The label to process
+        channels: The number of channels
+
+    Returns:
+        x: The processed image
+    """
+    shape = x.shape
+
+    x = layers.Flatten()(x)
+    x = layers.Concatenate()([x, time_emb, label_emb])
+
+    x = layers.Dense(channels)(x)
+    x = layers.LayerNormalization()(x)
+    x = layers.Activation("relu")(x)
+
+    x = layers.Dense(shape[1] * shape[2] * shape[3])(x)
+    x = layers.LayerNormalization()(x)
+    x = layers.Activation("relu")(x)
+
+    x = layers.Reshape(shape[1:])(x)
+
+    return x
+
+
+def residual_block(x_img, time_emb, label_emb, channels, attention=False):
+    """The residual block of the diffusion model
+
+    Args:
+        x_img: The image tensor
+        time_emb: The time steps tensor
+        label_emb: The label tensor
+        channels: The number of channels
+        attention: Whether to apply attention or not
+
+    Returns:
+        x_out: The processed tensor
+    """
+    x_parameter = layers.Conv2D(channels, 3, padding="same")(x_img)
+    x_parameter = layers.Activation("relu")(x_parameter)
+
+    time_parameter = layers.Dense(channels)(time_emb)
+    time_parameter = layers.Activation("relu")(time_parameter)
+    time_parameter = layers.Reshape((1, 1, channels))(time_parameter)
+
+    label_parameter = layers.Dense(channels)(label_emb)
+    label_parameter = layers.Activation("relu")(label_parameter)
+    label_parameter = layers.Reshape((1, 1, channels))(label_parameter)
+
+    x_parameter = x_parameter * label_parameter + time_parameter
+
+    x_out = layers.Conv2D(channels, 3, padding="same")(x_img)
+    x_out += x_parameter
+
+    if attention:
+        # x_out = self_attention_block(x_out, channels)
+        x_out = SelfAttentionLayer(channels)(x_out)
+
+    x_out = layers.LayerNormalization()(x_out)
+    x_out = layers.Activation("relu")(x_out)
+
+    return x_out
+
+
+class SelfAttentionLayer(layers.Layer):
+    def __init__(self, channels, **kwargs):
+        super(SelfAttentionLayer, self).__init__(**kwargs)
+        self.channels = channels
+
+    def build(self, input_shape):
+        self.query_conv = layers.Conv2D(self.channels, 1, padding="same")
+        self.key_conv = layers.Conv2D(self.channels, 1, padding="same")
+        self.value_conv = layers.Conv2D(self.channels, 1, padding="same")
+        self.output_conv = layers.Conv2D(self.channels, 1, padding="same")
 
     def call(self, inputs):
-        batch_size = tf.shape(inputs)[0]
-        height = tf.shape(inputs)[1]
-        width = tf.shape(inputs)[2]
-        scale = tf.cast(self.units, tf.float32) ** (-0.5)
+        query = self.query_conv(inputs)
+        key = self.key_conv(inputs)
+        value = self.value_conv(inputs)
 
-        inputs = self.norm(inputs)
-        q = self.query(inputs)
-        k = self.key(inputs)
-        v = self.value(inputs)
+        scores = tf.matmul(query, key, transpose_b=True)
+        distribution = tf.nn.softmax(scores)
+        attention_output = tf.matmul(distribution, value)
+        output = self.output_conv(attention_output)
+        return output
 
-        attn_score = tf.einsum("bhwc, bHWc->bhwHW", q, k) * scale
-        attn_score = tf.reshape(attn_score, [batch_size, height, width, height * width])
-
-        attn_score = tf.nn.softmax(attn_score, -1)
-        attn_score = tf.reshape(attn_score, [batch_size, height, width, height, width])
-
-        proj = tf.einsum("bhwHW,bHWc->bhwc", attn_score, v)
-        proj = self.proj(proj)
-        return inputs + proj
+    def compute_output_shape(self, input_shape):
+        return input_shape
 
 
-class TimeEmbedding(layers.Layer):
-    def __init__(self, dim, **kwargs):
-        super().__init__(**kwargs)
-        self.dim = dim
-        self.half_dim = dim // 2
-        self.emb = math.log(10000) / (self.half_dim - 1)
-        self.emb = tf.exp(tf.range(self.half_dim, dtype=tf.float32) * -self.emb)
+def encoder_block(x, time_emb, label_emb, channels, attention=False):
+    """The encoder block
 
-    def call(self, inputs):
-        inputs = tf.cast(inputs, dtype=tf.float32)
-        emb = inputs[:, None] * self.emb[None, :]
-        emb = tf.concat([tf.sin(emb), tf.cos(emb)], axis=-1)
-        return emb
+    Args:
+        x: The image tensor
+        time_emb: The time steps tensor
+        label_emb: The label tensor
+        channels: The number of channels
+        attention: Whether to apply attention or not
 
-
-def ResidualBlock(width, groups=8, activation_fn=keras.activations.swish):
-    def apply(inputs):
-        x, t = inputs
-        input_width = x.shape[3]
-
-        if input_width == width:
-            residual = x
-        else:
-            residual = layers.Conv2D(
-                width, kernel_size=1, kernel_initializer=kernel_init(1.0)
-            )(x)
-
-        temb = activation_fn(t)
-        temb = layers.Dense(width, kernel_initializer=kernel_init(1.0))(temb)[
-            :, None, None, :
-        ]
-
-        x = layers.GroupNormalization(groups=groups)(x)
-        x = activation_fn(x)
-        x = layers.Conv2D(
-            width, kernel_size=3, padding="same", kernel_initializer=kernel_init(1.0)
-        )(x)
-
-        x = layers.Add()([x, temb])
-        x = layers.GroupNormalization(groups=groups)(x)
-        x = activation_fn(x)
-
-        x = layers.Conv2D(
-            width, kernel_size=3, padding="same", kernel_initializer=kernel_init(0.0)
-        )(x)
-        x = layers.Add()([x, residual])
-        return x
-
-    return apply
+    Returns:
+        x: The processed tensor
+        x: The skipped tensor
+    """
+    x = residual_block(x, time_emb, label_emb, channels, attention)
+    return x, layers.MaxPooling2D(pool_size=(2, 2))(x)
 
 
-def DownSample(width):
-    def apply(x):
-        x = layers.Conv2D(
-            width,
-            kernel_size=3,
-            strides=2,
-            padding="same",
-            kernel_initializer=kernel_init(1.0),
-        )(x)
-        return x
+def decoder_block(x, skip, time_emb, label_emb, channels, attention=False):
+    """The decoder block
 
-    return apply
+    Args:
+        x: The image tensor
+        skip: The skip tensor
+        time_emb: The time steps tensor
+        label_emb: The label tensor
+        channels: The number of channels
+        attention: Whether to apply attention or not
 
-
-def UpSample(width, interpolation="nearest"):
-    def apply(x):
-        x = layers.UpSampling2D(size=2, interpolation=interpolation)(x)
-        x = layers.Conv2D(
-            width, kernel_size=3, padding="same", kernel_initializer=kernel_init(1.0)
-        )(x)
-        return x
-
-    return apply
-
-
-def TimeMLP(units, activation_fn=keras.activations.swish):
-    def apply(inputs):
-        temb = layers.Dense(
-            units, activation=activation_fn, kernel_initializer=kernel_init(1.0)
-        )(inputs)
-        temb = layers.Dense(units, kernel_initializer=kernel_init(1.0))(temb)
-        return temb
-
-    return apply
-
-
-def build_model(
-    img_size,
-    img_channels,
-    widths,
-    has_attention,
-    num_res_blocks=2,
-    norm_groups=8,
-    interpolation="nearest",
-    activation_fn=keras.activations.swish,
-):
-    image_input = layers.Input(
-        shape=(img_size, img_size, img_channels), name="image_input"
-    )
-    time_input = keras.Input(shape=(), dtype=tf.int64, name="time_input")
-
-    x = layers.Conv2D(
-        first_conv_channels,
-        kernel_size=(3, 3),
-        padding="same",
-        kernel_initializer=kernel_init(1.0),
-    )(image_input)
-
-    temb = TimeEmbedding(dim=first_conv_channels * 4)(time_input)
-    temb = TimeMLP(units=first_conv_channels * 4, activation_fn=activation_fn)(temb)
-
-    skips = [x]
-
-    # DownBlock
-    for i in range(len(widths)):
-        for _ in range(num_res_blocks):
-            x = ResidualBlock(
-                widths[i], groups=norm_groups, activation_fn=activation_fn
-            )([x, temb])
-            if has_attention[i]:
-                x = AttentionBlock(widths[i], groups=norm_groups)(x)
-            skips.append(x)
-
-        if widths[i] != widths[-1]:
-            x = DownSample(widths[i])(x)
-            skips.append(x)
-
-    # MiddleBlock
-    x = ResidualBlock(widths[-1], groups=norm_groups, activation_fn=activation_fn)(
-        [x, temb]
-    )
-    x = AttentionBlock(widths[-1], groups=norm_groups)(x)
-    x = ResidualBlock(widths[-1], groups=norm_groups, activation_fn=activation_fn)(
-        [x, temb]
-    )
-
-    # UpBlock
-    for i in reversed(range(len(widths))):
-        for _ in range(num_res_blocks + 1):
-            x = layers.Concatenate(axis=-1)([x, skips.pop()])
-            x = ResidualBlock(
-                widths[i], groups=norm_groups, activation_fn=activation_fn
-            )([x, temb])
-            if has_attention[i]:
-                x = AttentionBlock(widths[i], groups=norm_groups)(x)
-
-        if i != 0:
-            x = UpSample(widths[i], interpolation=interpolation)(x)
-
-    # End block
-    x = layers.GroupNormalization(groups=norm_groups)(x)
-    x = activation_fn(x)
-    x = layers.Conv2D(3, (3, 3), padding="same", kernel_initializer=kernel_init(0.0))(x)
-    return keras.Model([image_input, time_input], x, name="unet")
+    Returns:
+        x: The processed tensor
+    """
+    x = layers.UpSampling2D(size=(2, 2))(x)
+    x = layers.Concatenate()([x, skip])
+    x = residual_block(x, time_emb, label_emb, channels, attention)
+    return x
