@@ -140,7 +140,7 @@ class DiffusionModel(tf.keras.Model):
         # 5: Take a gradient descent step on
         with tf.GradientTape() as tape:
             predicted_noise = self.model(
-                [x_t, normalized_t, input_label], training=True
+                [x_t, input_label, normalized_t], training=True
             )  # TODO: CHECK THIS
             loss = loss_fn(target_noise, predicted_noise)
 
@@ -208,7 +208,7 @@ class DiffusionModel(tf.keras.Model):
             )  # TODO: CHECK THIS
 
             # Calculate the predicted noise
-            predicted_noise = self.model([x_t, normalized_t, y_t], training=False)
+            predicted_noise = self.model([x_t, y_t, normalized_t], training=False)
 
             # Calculate x_{t-1}
             # 4: x_{t-1} = (x_t - (1 - alpha_t) / sqrt(1 - alpha_cumprod_t) * eps_theta) / sqrt(alpha_t) + sigma_t * z

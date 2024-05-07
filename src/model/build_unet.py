@@ -55,7 +55,6 @@ def build_unet(
 
     # ----- Bottleneck -----
     x = mlp_block(x, time_emb, label_emb, num_channels * 8)
-    print(x.shape)
 
     # ----- Decoder -----
     x = decoder_block(x, s4, time_emb, label_emb, num_channels * 8, attention=False)
