@@ -119,39 +119,6 @@ class SinusoidalTimeEmbeddingLayer(layers.Layer):
         )
         return embeddings
 
-    def compute_output_shape(self, input_shape):
-        """Compute the output shape
-
-        Args:
-            input_shape: The input shape
-
-        Returns:
-            shape: The output shape
-        """
-        return (input_shape[0], self.embedding_dim)
-
-
-# def self_attention_block(x_img, channels):
-#     """The self-attention block
-
-#     Args:
-#         x_img: The image tensor
-#         channels: The number of channels
-
-#     Returns:
-#         attended_features: The attended features
-#     """
-#     query = layers.Conv2D(channels, 1, padding="same")(x_img)
-#     key = layers.Conv2D(channels, 1, padding="same")(x_img)
-#     value = layers.Conv2D(channels, 1, padding="same")(x_img)
-
-#     # Calcular la atención
-#     scores = tf.einsum("bijc,bjkc->bikc", query, key)
-#     scores = tf.nn.softmax(scores)
-
-#     attended_features = tf.einsum("bikc,bjkc->bijc", scores, value)
-#     return layers.Conv2D(channels, 1, padding="same")(attended_features)
-
 
 class SelfAttentionLayer(layers.Layer):
     """The self-attention layer"""
@@ -164,13 +131,10 @@ class SelfAttentionLayer(layers.Layer):
         """
         super(SelfAttentionLayer, self).__init__(**kwargs)
         self.channels = channels
-
-    def build(self):
-        """Build the self-attention layer"""
-        self.query_conv = layers.Conv2D(self.channels, 1, padding="same")
-        self.key_conv = layers.Conv2D(self.channels, 1, padding="same")
-        self.value_conv = layers.Conv2D(self.channels, 1, padding="same")
-        self.output_conv = layers.Conv2D(self.channels, 1, padding="same")
+        self.query = layers.Conv2D(self.channels, 1, padding="same")
+        self.key = layers.Conv2D(self.channels, 1, padding="same")
+        self.value = layers.Conv2D(self.channels, 1, padding="same")
+        self.outputs = layers.Conv2D(self.channels, 1, padding="same")
 
     def call(self, inputs):
         """Compute the self-attention
@@ -181,26 +145,24 @@ class SelfAttentionLayer(layers.Layer):
         Returns:
             output: The output tensor
         """
-        query = self.query_conv(inputs)
-        key = self.key_conv(inputs)
-        value = self.value_conv(inputs)
+        batch_size = tf.shape(inputs)[0]
+        height = tf.shape(inputs)[1]
+        width = tf.shape(inputs)[2]
+        scale = tf.cast(self.channels, tf.float32) ** (-0.5)
 
-        scores = tf.matmul(query, key, transpose_b=True)
-        distribution = tf.nn.softmax(scores)
-        attention_output = tf.matmul(distribution, value)
-        output = self.output_conv(attention_output)
-        return output
+        q = self.query(inputs)
+        k = self.key(inputs)
+        v = self.value(inputs)
 
-    def compute_output_shape(self, input_shape):
-        """Compute the output shape
+        attn_score = tf.einsum("bhwc, bHWc->bhwHW", q, k) * scale
+        attn_score = tf.reshape(attn_score, [batch_size, height, width, height * width])
 
-        Args:
-            input_shape: The input shape
+        attn_score = tf.nn.softmax(attn_score, -1)
+        attn_score = tf.reshape(attn_score, [batch_size, height, width, height, width])
 
-        Returns:
-            shape: The output shape
-        """
-        return input_shape
+        attended_features = tf.einsum("bhwHW,bHWc->bhwc", attn_score, v)
+        out = self.outputs(attended_features)
+        return out
 
 
 # Auxiliary Functions
