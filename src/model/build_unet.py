@@ -76,31 +76,29 @@ def build_unet(
 # model.summary()
 
 
-# Auxiliary Functions
+# Auxiliary Classes
 # =====================================================================
-def process_block(input_tensor, embedding_dim):
-    """
-    Process the time steps or label input tensor
-
-    Args:
-        input_tensor: The input tensor
-        embedding_dim: The embedding dimension
-
-    Returns:
-        x: The processed tensor
-    """
-    x = layers.Dense(embedding_dim, activation="relu")(input_tensor)
-    x = layers.LayerNormalization()(x)
-    x = layers.Activation("relu")(x)
-    return x
-
-
 class SinusoidalTimeEmbeddingLayer(layers.Layer):
+    """The sinusoidal time embedding layer"""
+
     def __init__(self, embedding_dim, **kwargs):
+        """Initialize the sinusoidal time embedding layer
+
+        Args:
+            embedding_dim: The embedding dimension
+        """
         super(SinusoidalTimeEmbeddingLayer, self).__init__(**kwargs)
         self.embedding_dim = embedding_dim
 
     def call(self, timesteps):
+        """Compute the sinusoidal time embeddings
+
+        Args:
+            timesteps: The time steps to process
+
+        Returns:
+            embeddings: The computed embeddings
+        """
         # Ensure timesteps are integers for tf.range
         timesteps = tf.cast(timesteps, dtype=tf.int32)
         timesteps = tf.squeeze(
@@ -122,7 +120,84 @@ class SinusoidalTimeEmbeddingLayer(layers.Layer):
         return embeddings
 
     def compute_output_shape(self, input_shape):
+        """Compute the output shape
+
+        Args:
+            input_shape: The input shape
+
+        Returns:
+            shape: The output shape
+        """
         return (input_shape[0], self.embedding_dim)
+
+
+class SelfAttentionLayer(layers.Layer):
+    """The self-attention layer"""
+
+    def __init__(self, channels, **kwargs):
+        """Initialize the self-attention layer
+
+        Args:
+            channels: The number of channels
+        """
+        super(SelfAttentionLayer, self).__init__(**kwargs)
+        self.channels = channels
+
+    def build(self):
+        """Build the self-attention layer"""
+        self.query_conv = layers.Conv2D(self.channels, 1, padding="same")
+        self.key_conv = layers.Conv2D(self.channels, 1, padding="same")
+        self.value_conv = layers.Conv2D(self.channels, 1, padding="same")
+        self.output_conv = layers.Conv2D(self.channels, 1, padding="same")
+
+    def call(self, inputs):
+        """Compute the self-attention
+
+        Args:
+            inputs: The input tensor
+
+        Returns:
+            output: The output tensor
+        """
+        query = self.query_conv(inputs)
+        key = self.key_conv(inputs)
+        value = self.value_conv(inputs)
+
+        scores = tf.matmul(query, key, transpose_b=True)
+        distribution = tf.nn.softmax(scores)
+        attention_output = tf.matmul(distribution, value)
+        output = self.output_conv(attention_output)
+        return output
+
+    def compute_output_shape(self, input_shape):
+        """Compute the output shape
+
+        Args:
+            input_shape: The input shape
+
+        Returns:
+            shape: The output shape
+        """
+        return input_shape
+
+
+# Auxiliary Functions
+# =====================================================================
+def process_block(input_tensor, embedding_dim):
+    """
+    Process the time steps or label input tensor
+
+    Args:
+        input_tensor: The input tensor
+        embedding_dim: The embedding dimension
+
+    Returns:
+        x: The processed tensor
+    """
+    x = layers.Dense(embedding_dim, activation="relu")(input_tensor)
+    x = layers.LayerNormalization()(x)
+    x = layers.Activation("relu")(x)
+    return x
 
 
 def mlp_block(
@@ -194,32 +269,6 @@ def residual_block(x_img, time_emb, label_emb, channels, attention=False):
     x_out = layers.Activation("relu")(x_out)
 
     return x_out
-
-
-class SelfAttentionLayer(layers.Layer):
-    def __init__(self, channels, **kwargs):
-        super(SelfAttentionLayer, self).__init__(**kwargs)
-        self.channels = channels
-
-    def build(self, input_shape):
-        self.query_conv = layers.Conv2D(self.channels, 1, padding="same")
-        self.key_conv = layers.Conv2D(self.channels, 1, padding="same")
-        self.value_conv = layers.Conv2D(self.channels, 1, padding="same")
-        self.output_conv = layers.Conv2D(self.channels, 1, padding="same")
-
-    def call(self, inputs):
-        query = self.query_conv(inputs)
-        key = self.key_conv(inputs)
-        value = self.value_conv(inputs)
-
-        scores = tf.matmul(query, key, transpose_b=True)
-        distribution = tf.nn.softmax(scores)
-        attention_output = tf.matmul(distribution, value)
-        output = self.output_conv(attention_output)
-        return output
-
-    def compute_output_shape(self, input_shape):
-        return input_shape
 
 
 def encoder_block(x, time_emb, label_emb, channels, attention=False):
