@@ -131,6 +131,28 @@ class SinusoidalTimeEmbeddingLayer(layers.Layer):
         return (input_shape[0], self.embedding_dim)
 
 
+# def self_attention_block(x_img, channels):
+#     """The self-attention block
+
+#     Args:
+#         x_img: The image tensor
+#         channels: The number of channels
+
+#     Returns:
+#         attended_features: The attended features
+#     """
+#     query = layers.Conv2D(channels, 1, padding="same")(x_img)
+#     key = layers.Conv2D(channels, 1, padding="same")(x_img)
+#     value = layers.Conv2D(channels, 1, padding="same")(x_img)
+
+#     # Calcular la atención
+#     scores = tf.einsum("bijc,bjkc->bikc", query, key)
+#     scores = tf.nn.softmax(scores)
+
+#     attended_features = tf.einsum("bikc,bjkc->bijc", scores, value)
+#     return layers.Conv2D(channels, 1, padding="same")(attended_features)
+
+
 class SelfAttentionLayer(layers.Layer):
     """The self-attention layer"""
 
