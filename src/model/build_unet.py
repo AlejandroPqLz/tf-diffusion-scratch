@@ -23,8 +23,8 @@ import numpy as np
 def build_unet(
     img_size: int,
     num_classes: int,
-    num_channels: int = 128,
-    embedding_dim: int = 64,
+    num_channels: int = 64,
+    embedding_dim: int = 32,
 ):
     """Creates the U-Net model
 
