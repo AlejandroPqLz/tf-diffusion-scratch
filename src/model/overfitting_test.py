@@ -84,7 +84,6 @@ class DiffusionModel(tf.keras.Model):
         self.beta = self.beta_scheduler(scheduler, T, beta_start, beta_end, s)
         self.alpha = 1 - self.beta
         self.alpha_cumprod = tf.math.cumprod(self.alpha)
-        self.alpha_cumprod = tf.cast(self.alpha_cumprod, tf.float32)
 
     def train_step(self, data):
         """
@@ -195,7 +194,6 @@ class DiffusionModel(tf.keras.Model):
         # Reverse the diffusion process
         # 2: for t = T − 1, . . . , 1 do
         time.sleep(0.4)
-        alpha_list = []
         for t in tqdm(reversed(range(0, T)), desc="Sampling sprite", total=T - 1):
             normalized_t = tf.fill(
                 [tf.shape(x_t)[0], 1], tf.cast(t, tf.float32) / T
@@ -213,7 +211,14 @@ class DiffusionModel(tf.keras.Model):
             # Calculate x_{t-1}
             # 4: x_{t-1} = (x_t - (1 - alpha_t) / sqrt(1 - alpha_cumprod_t) * eps_theta) / sqrt(alpha_t) + sigma_t * z
             sigma_t = tf.sqrt(1 - alpha[t])  # TODO: CHECK THIS
-            alpha_list.append(alpha[t])
+
+            sigma_t = tf.cast(sigma_t, tf.float32)
+            alpha = tf.cast(alpha, tf.float32)
+            alpha_cumprod = tf.cast(alpha_cumprod, tf.float32)
+
+            # print(
+            #     f"x_t: {x_t.dtype}, alpha: {alpha[t].dtype}, alpha_cumprod: {alpha_cumprod[t].dtype}, predicted_noise: {predicted_noise.dtype}, sigma_t: {sigma_t.dtype}, z: {z.dtype}"
+            # )
 
             x_t = (
                 x_t - (1 - alpha[t]) / tf.sqrt(1 - alpha_cumprod[t]) * predicted_noise
