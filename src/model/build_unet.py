@@ -44,18 +44,18 @@ def build_unet(
     timesteps = layers.Input(shape=(1,))
 
     # ----- Embeddings -----
-    # time_emb = get_sinusoidal_time_embedding(timesteps, embedding_dim)
     time_emb = SinusoidalTimeEmbeddingLayer(embedding_dim)(timesteps)
     label_emb = process_block(labels, embedding_dim)
 
     # ----- Encoder -----
-    x, s1 = encoder_block(inputs, time_emb, label_emb, num_channels, attention=False)
-    x, s2 = encoder_block(x, time_emb, label_emb, num_channels * 2, attention=True)
-    x, s3 = encoder_block(x, time_emb, label_emb, num_channels * 4, attention=True)
-    x, s4 = encoder_block(x, time_emb, label_emb, num_channels * 8, attention=False)
+    x = s1 = encoder_block(inputs, time_emb, label_emb, num_channels, attention=False)
+    x = s2 = encoder_block(x, time_emb, label_emb, num_channels * 2, attention=True)
+    x = s3 = encoder_block(x, time_emb, label_emb, num_channels * 4, attention=True)
+    x = s4 = encoder_block(x, time_emb, label_emb, num_channels * 8, attention=False)
 
     # ----- Bottleneck -----
-    x = mlp_block(x, time_emb, label_emb, num_channels * 32)
+    x = mlp_block(x, time_emb, label_emb, num_channels * 8)
+    print(x.shape)
 
     # ----- Decoder -----
     x = decoder_block(x, s4, time_emb, label_emb, num_channels * 8, attention=False)
@@ -71,7 +71,8 @@ def build_unet(
     return model
 
 
-# Ejemplo de uso:
+# Example
+# =====================================================================
 # model = build_ddpm_unet(32, 18, num_channels=64, time_embedding_dim=128)
 # model.summary()
 
@@ -237,7 +238,8 @@ def encoder_block(x, time_emb, label_emb, channels, attention=False):
         x: The skipped tensor
     """
     x = residual_block(x, time_emb, label_emb, channels, attention)
-    return x, layers.MaxPooling2D(pool_size=(2, 2))(x)
+    x = layers.MaxPooling2D(pool_size=(2, 2))(x)
+    return x
 
 
 def decoder_block(x, skip, time_emb, label_emb, channels, attention=False):
@@ -254,7 +256,7 @@ def decoder_block(x, skip, time_emb, label_emb, channels, attention=False):
     Returns:
         x: The processed tensor
     """
-    x = layers.UpSampling2D(size=(2, 2))(x)
     x = layers.Concatenate()([x, skip])
     x = residual_block(x, time_emb, label_emb, channels, attention)
+    x = layers.UpSampling2D(size=(2, 2))(x)
     return x
