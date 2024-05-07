@@ -84,7 +84,7 @@ class DiffusionModel(tf.keras.Model):
         self.beta = self.beta_scheduler(scheduler, T, beta_start, beta_end, s)
         self.alpha = 1 - self.beta
         self.alpha_cumprod = tf.math.cumprod(self.alpha)
-        alpha_cumprod = tf.cast(alpha_cumprod, tf.float32)
+        self.alpha_cumprod = tf.cast(self.alpha_cumprod, tf.float32)
 
     def train_step(self, data):
         """
