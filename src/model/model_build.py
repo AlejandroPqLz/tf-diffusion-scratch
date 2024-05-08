@@ -44,8 +44,7 @@ def build_unet(
     timesteps = layers.Input(shape=(1,), name="t_input")
 
     # ----- Embeddings -----
-    # time_emb = SinusoidalTimeEmbeddingLayer(embedding_dim)(timesteps)
-    time_emb = process_block(timesteps, embedding_dim)
+    time_emb = SinusoidalTimeEmbeddingLayer(embedding_dim)(timesteps)
     label_emb = process_block(labels, embedding_dim)
 
     # ----- Encoder -----
