@@ -24,7 +24,7 @@ def build_unet(
     img_size: int,
     num_classes: int,
     num_channels: int = 64,
-    embedding_dim: int = 32,
+    embedding_dim: int = 64,
 ):
     """Creates the U-Net model
 
@@ -45,21 +45,26 @@ def build_unet(
 
     # ----- Embeddings -----
     time_emb = SinusoidalTimeEmbeddingLayer(embedding_dim)(timesteps)
+    # time_emb = layers.Embedding(input_dim=1000, output_dim=embedding_dim)(timesteps)
+    # time_emb = layers.Flatten()(time_emb)
+    # time_emb = layers.Dense(embedding_dim)(time_emb)
+    # time_emb = process_block(timesteps, embedding_dim)
+
     label_emb = process_block(labels, embedding_dim)
 
     # ----- Encoder -----
     x = s1 = encoder_block(inputs, time_emb, label_emb, num_channels, attention=False)
-    x = s2 = encoder_block(x, time_emb, label_emb, num_channels * 2, attention=True)
+    x = s2 = encoder_block(x, time_emb, label_emb, num_channels * 2, attention=False)
     x = s3 = encoder_block(x, time_emb, label_emb, num_channels * 4, attention=True)
-    x = s4 = encoder_block(x, time_emb, label_emb, num_channels * 8, attention=False)
+    x = s4 = encoder_block(x, time_emb, label_emb, num_channels * 8, attention=True)
 
     # ----- Bottleneck -----
-    x = mlp_block(x, time_emb, label_emb, num_channels * 8)
+    x = mlp_block(x, time_emb, label_emb, num_channels * 8)  # TODO: ADDD ATTENTION HERE
 
     # ----- Decoder -----
-    x = decoder_block(x, s4, time_emb, label_emb, num_channels * 8, attention=False)
+    x = decoder_block(x, s4, time_emb, label_emb, num_channels * 8, attention=True)
     x = decoder_block(x, s3, time_emb, label_emb, num_channels * 4, attention=True)
-    x = decoder_block(x, s2, time_emb, label_emb, num_channels * 2, attention=True)
+    x = decoder_block(x, s2, time_emb, label_emb, num_channels * 2, attention=False)
     x = decoder_block(x, s1, time_emb, label_emb, num_channels, attention=False)
 
     # ----- Output -----

@@ -70,7 +70,7 @@ def build_unet(img_size: int, num_classes: int) -> tf.keras.Model:
 
     # ----- output -----
     x = layers.Conv2D(3, kernel_size=1, padding="same")(x)
-    model = tf.keras.models.Model([x_input, x_ts_input, y_input], x)
+    model = tf.keras.models.Model([x_input, y_input, x_ts_input], x)
 
     return model
 
