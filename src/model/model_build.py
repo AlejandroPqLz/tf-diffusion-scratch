@@ -50,19 +50,19 @@ def build_unet(
 
     # ----- Encoder -----
     x, s1 = encoder_block(inputs, time_emb, label_emb, num_channels, attention=False)
-    x, s2 = encoder_block(x, time_emb, label_emb, num_channels, attention=False)
-    x, s3 = encoder_block(x, time_emb, label_emb, num_channels, attention=True)
+    x, s2 = encoder_block(x, time_emb, label_emb, num_channels * 2, attention=False)
+    x, s3 = encoder_block(x, time_emb, label_emb, num_channels * 4, attention=True)
     x, s4 = encoder_block(
-        x, time_emb, label_emb, num_channels, attention=True, pooling=False
+        x, time_emb, label_emb, num_channels * 8, pooling=False, attention=True
     )
 
     # ----- Bottleneck -----
     x = mlp_block(x, time_emb, label_emb, num_channels)  # TODO: ADDD ATTENTION HERE ???
 
     # ----- Decoder -----
-    x = decoder_block(x, s4, time_emb, label_emb, num_channels, attention=True)
-    x = decoder_block(x, s3, time_emb, label_emb, num_channels, attention=True)
-    x = decoder_block(x, s2, time_emb, label_emb, num_channels, attention=False)
+    x = decoder_block(x, s4, time_emb, label_emb, num_channels * 8, attention=True)
+    x = decoder_block(x, s3, time_emb, label_emb, num_channels * 4, attention=True)
+    x = decoder_block(x, s2, time_emb, label_emb, num_channels * 2, attention=False)
     x = decoder_block(
         x, s1, time_emb, label_emb, num_channels, attention=False, upsampling=False
     )
