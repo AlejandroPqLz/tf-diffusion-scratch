@@ -38,35 +38,35 @@ def build_unet(img_size: int, num_classes: int) -> tf.keras.Model:
     x_label = process_block(x_label)
 
     # ----- left ( down ) -----
-    x = x64 = diffusion_block(x, x_ts, x_label)  # x64 = (None, 64, 64, 128)
-    x = layers.MaxPool2D(2)(x)  # x = (None, 32, 32, 128)
+    x = x64 = diffusion_block(x, x_ts, x_label)
+    x = layers.MaxPool2D(2)(x)
 
-    x = x32 = diffusion_block(x, x_ts, x_label)  # x32 = (None, 32, 32, 128)
-    x = layers.MaxPool2D(2)(x)  # x = (None, 16, 16, 128)
+    x = x32 = diffusion_block(x, x_ts, x_label)
+    x = layers.MaxPool2D(2)(x)
 
-    x = x16 = diffusion_block(x, x_ts, x_label)  # x16 = (None, 16, 16, 128)
-    x = layers.MaxPool2D(2)(x)  # x = (None, 8, 8, 128)
+    x = x16 = diffusion_block(x, x_ts, x_label)
+    x = layers.MaxPool2D(2)(x)
 
-    x = x8 = diffusion_block(x, x_ts, x_label)  # x8 = (None, 8, 8, 128)
+    x = x8 = diffusion_block(x, x_ts, x_label)
 
     # ----- mlp -----
-    x = mlp_block(x, x_ts, x_label)  # x = (None, 8, 8, 128)
+    x = mlp_block(x, x_ts, x_label)
 
     # ----- right ( up ) -----
-    x = layers.Concatenate()([x, x8])  # x = (None, 8, 8, 256)
-    x = diffusion_block(x, x_ts, x_label)  # x = (None, 8, 8, 128)
-    x = layers.UpSampling2D(2)(x)  # x = (None, 16, 16, 128)
+    x = layers.Concatenate()([x, x8])
+    x = diffusion_block(x, x_ts, x_label)
+    x = layers.UpSampling2D(2)(x)
 
-    x = layers.Concatenate()([x, x16])  # x = (None, 16, 16, 256)
-    x = diffusion_block(x, x_ts, x_label)  # x = (None, 16, 16, 128)
-    x = layers.UpSampling2D(2)(x)  # x = (None, 32, 32, 128)
+    x = layers.Concatenate()([x, x16])
+    x = diffusion_block(x, x_ts, x_label)
+    x = layers.UpSampling2D(2)(x)
 
-    x = layers.Concatenate()([x, x32])  # x = (None, 32, 32, 256)
-    x = diffusion_block(x, x_ts, x_label)  # x = (None, 32, 32, 128)
-    x = layers.UpSampling2D(2)(x)  # x = (None, 64, 64, 128)
+    x = layers.Concatenate()([x, x32])
+    x = diffusion_block(x, x_ts, x_label)
+    x = layers.UpSampling2D(2)(x)
 
-    x = layers.Concatenate()([x, x64])  # x = (None, 64, 64, 256)
-    x = diffusion_block(x, x_ts, x_label)  # x = (None, 64, 64, 128)
+    x = layers.Concatenate()([x, x64])
+    x = diffusion_block(x, x_ts, x_label)
 
     # ----- output -----
     x = layers.Conv2D(3, kernel_size=1, padding="same")(x)
