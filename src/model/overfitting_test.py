@@ -277,7 +277,7 @@ class DiffusionModel(tf.keras.Model):
             axs[i].imshow(sample)
             axs[i].title.set_text(onehot_to_string(y_label))
             axs[i].axis("off")
-            plt.show()
+        plt.show()
 
         return None
 
