@@ -127,7 +127,7 @@ class DiffusionModel(tf.keras.Model):
             beta_start,
             beta_end,
             s,
-        )  # TODO: CHECK THIS
+        )
 
         alpha_cumprod = tf.cast(alpha_cumprod, tf.float32)
 
@@ -140,25 +140,13 @@ class DiffusionModel(tf.keras.Model):
         with tf.GradientTape() as tape:
             predicted_noise = self.model(
                 [x_t, input_label, normalized_t], training=True
-            )  # TODO: CHECK THIS
+            )
             loss = loss_fn(target_noise, predicted_noise)
 
         gradients = tape.gradient(loss, self.trainable_variables)
         optimizer.apply_gradients(zip(gradients, self.trainable_variables))
 
         # 6: until convergence ------
-
-        # Store last batch data for plotting
-        self.last_batch_data = (
-            x_t[0],
-            target_noise[0],
-            predicted_noise[0],
-            input_data[0],
-            x_0[0],
-            per_noise[0],
-        )  # TODO: CHECK THIS
-
-        # Update and return training metrics
         return {"loss": loss}
 
     def get_last_batch_data(self):
@@ -184,7 +172,7 @@ class DiffusionModel(tf.keras.Model):
         """
 
         # Rename the variables for easier access
-        T = self.T  # Total diffusion steps
+        T = self.T
         alpha = self.alpha
         alpha_cumprod = self.alpha_cumprod
 
@@ -229,13 +217,16 @@ class DiffusionModel(tf.keras.Model):
         # 5: end for
         return x_t  # 6: return x_0
 
-    def plot_samples(self, num_samples: int = 5, poke_type: str = None):
+    def plot_samples(
+        self, num_samples: int = 5, poke_type: str = None, process: bool = False
+    ) -> None:
         """
         Generate and plot samples from the diffusion model.
 
         Args:
             num_samples (int): The number of samples to generate and plot.
             poke_type (str): The type of Pokemon to generate samples for. If None, a random type is chosen.
+            process (bool): Wether to show the diffusion process or not (every 100 steps). # TODO
         """
 
         _, axs = plt.subplots(1, num_samples, figsize=(num_samples * 2, 3))
@@ -271,7 +262,7 @@ class DiffusionModel(tf.keras.Model):
             # Scale to [0, 1] for plotting
             sample = (sample - tf.reduce_min(sample)) / (
                 tf.reduce_max(sample) - tf.reduce_min(sample)
-            )  # TODO: CHECK THIS
+            )
 
             # Plot the sample
             axs[i].imshow(sample)
