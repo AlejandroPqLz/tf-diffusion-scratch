@@ -25,7 +25,7 @@ def build_unet(
     num_classes: int,
     num_channels: int = 128,
     embedding_dim: int = 128,
-):
+):  # TODO, ADD BLOCK PARAM
     """Creates the U-Net model
 
     Args:
@@ -56,7 +56,9 @@ def build_unet(
     )
 
     # ----- Bottleneck -----
-    x = mlp_block(x, time_emb, label_emb, num_channels)  # TODO: ADDD ATTENTION HERE ???
+    x = mlp_block(
+        x, time_emb, label_emb, num_channels * 8
+    )  # TODO: ADDD ATTENTION HERE ???
 
     # ----- Decoder -----
     x = decoder_block(x, s4, time_emb, label_emb, num_channels * 8, attention=True)
