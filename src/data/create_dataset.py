@@ -113,8 +113,7 @@ def dataset_dict(
             re.search(r"\d+", path).group()
         )  # Get the pokemon id from the path
 
-        # Get the pokemon type from the dataframe #
-        # TODO: AÑADIR TYPE2
+        # Get the pokemon type from the dataframe
         pokemon_type = df.loc[pokemon_id]["type1"]
         data_dict[path] = pokemon_type
 
