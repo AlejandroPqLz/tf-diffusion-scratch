@@ -18,67 +18,113 @@ from tensorflow.keras import layers
 import numpy as np
 
 
-# Main Function
-# =====================================================================
 def build_unet(
     img_size: int,
     num_classes: int,
-    num_channels: int = 128,
-    embedding_dim: int = 128,
-):  # TODO, ADD BLOCK PARAM
-    """Creates the U-Net model
-
-    Args:
-        img_size (int): The size of the input image
-        num_classes (int): The number of classes
-        num_channels (int): The number of channels
-
-    Returns:
-        model: The U-Net model
-
-    """
-
-    # ----- Input -----
+    initial_channels: int = 128,
+    channel_multiplier: list = [1, 2, 4, 8],
+    has_attention: list = [False, False, True, True],
+):
     inputs = layers.Input(shape=(img_size, img_size, 3), name="x_input")
     labels = layers.Input(shape=(num_classes,), name="y_input")
     timesteps = layers.Input(shape=(1,), name="t_input")
 
-    # ----- Embeddings -----
-    time_emb = SinusoidalTimeEmbeddingLayer(embedding_dim)(timesteps)
-    label_emb = process_block(labels, embedding_dim)
+    time_emb = SinusoidalTimeEmbeddingLayer(initial_channels)(timesteps)
+    label_emb = process_block(labels, initial_channels)
 
-    # ----- Encoder -----
-    x, s1 = encoder_block(inputs, time_emb, label_emb, num_channels, attention=False)
-    x, s2 = encoder_block(x, time_emb, label_emb, num_channels * 2, attention=False)
-    x, s3 = encoder_block(x, time_emb, label_emb, num_channels * 4, attention=True)
-    x, s4 = encoder_block(
-        x, time_emb, label_emb, num_channels * 8, pooling=False, attention=True
+    # Encoder
+    x = inputs
+    skips = []
+    channels = [initial_channels * m for m in channel_multiplier]
+    for i, (ch, attn) in enumerate(zip(channels, has_attention)):
+        pooling = True if i < len(channels) - 1 else False
+        x, skip = encoder_block(x, time_emb, label_emb, ch, attn, pooling)
+        skips.append(skip)
+
+    # Bottleneck
+    x = residual_block(
+        x, time_emb, label_emb, channels[-1], attention=has_attention[-1]
     )
+    x = residual_block(x, time_emb, label_emb, channels[-1], attention=has_attention[0])
 
-    # ----- Bottleneck -----
-    x = mlp_block(
-        x, time_emb, label_emb, num_channels * 8
-    )  # TODO: ADDD ATTENTION HERE ???
+    # Decoder
+    skips.reverse()
+    for i, (ch, attn) in enumerate(zip(channels[::-1], has_attention[::-1])):
+        upsampling = True if i < len(channels) - 1 else False
+        x = decoder_block(x, skips[i], time_emb, label_emb, ch, attn, upsampling)
 
-    # ----- Decoder -----
-    x = decoder_block(x, s4, time_emb, label_emb, num_channels * 8, attention=True)
-    x = decoder_block(x, s3, time_emb, label_emb, num_channels * 4, attention=True)
-    x = decoder_block(x, s2, time_emb, label_emb, num_channels * 2, attention=False)
-    x = decoder_block(
-        x, s1, time_emb, label_emb, num_channels, attention=False, upsampling=False
-    )
-
-    # ----- Output -----
     outputs = layers.Conv2D(3, 1, padding="same")(x)
-
-    # ----- Model -----
     model = tf.keras.Model(inputs=[inputs, labels, timesteps], outputs=outputs)
     return model
 
 
+# Main Function
+# =====================================================================
+# def build_unet(
+#     img_size: int,
+#     num_classes: int,
+#     initial_channels: int = 128,
+#     channel_multiplier: list = [1, 2, 4, 8],
+#     has_attention: list = [False, False, True, True],
+# ):
+#     """Creates the U-Net model
+
+#     Args:
+#         img_size (int): The size of the input image
+#         num_classes (int): The number of classes
+#         initial_channels (int): The number of channels
+
+#     Returns:
+#         model: The U-Net model
+
+#     """
+
+#     # ----- Input -----
+#     inputs = layers.Input(shape=(img_size, img_size, 3), name="x_input")
+#     labels = layers.Input(shape=(num_classes,), name="y_input")
+#     timesteps = layers.Input(shape=(1,), name="t_input")
+
+#     # ----- Embeddings -----
+#     time_emb = SinusoidalTimeEmbeddingLayer(initial_channels)(timesteps)
+#     label_emb = process_block(labels, initial_channels)
+
+#     # ----- Encoder -----
+#     channels = [initial_channels * m for m in channel_multiplier]
+#     x, s1 = encoder_block(inputs, time_emb, label_emb, channels[0], has_attention[0])
+#     x, s2 = encoder_block(x, time_emb, label_emb, channels[1], has_attention[1])
+#     x, s3 = encoder_block(x, time_emb, label_emb, channels[2], has_attention[2])
+#     x, s4 = encoder_block(
+#         x, time_emb, label_emb, channels[3], has_attention[3], pooling=False
+#     )
+
+#     # ----- Bottleneck -----
+#     x = mlp_block(x, time_emb, label_emb, channels[3])
+
+#     # ----- Decoder -----
+#     x = decoder_block(x, s4, time_emb, label_emb, channels[3], has_attention[3])
+#     x = decoder_block(x, s3, time_emb, label_emb, channels[2], has_attention[2])
+#     x = decoder_block(x, s2, time_emb, label_emb, channels[1], has_attention[1])
+#     x = decoder_block(
+#         x,
+#         s1,
+#         time_emb,
+#         label_emb,
+#         channels[0],
+#         has_attention[0],
+#         upsampling=False,
+#     )
+
+#     # ----- Output -----
+#     outputs = layers.Conv2D(3, 1, padding="same")(x)
+
+#     # ----- Model -----
+#     model = tf.keras.Model(inputs=[inputs, labels, timesteps], outputs=outputs)
+#     return model
+
+
 # Example
 # =====================================================================
-# model = build_ddpm_unet(32, 18, num_channels=64, embedding_dim=128)
+# model = build_ddpm_unet(32, 18, initial_channels=64)
 # model.summary()
 
 

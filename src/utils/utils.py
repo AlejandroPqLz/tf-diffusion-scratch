@@ -7,13 +7,12 @@ Functionality: This file contains utility functions for the project.
 # Imports
 # =====================================================================
 from pathlib import Path
-import numpy as np
 import pandas as pd
 import tensorflow as tf
 
 # Set up
 # =====================================================================
-# TODO: VIEW THE WAY TO GENERALIZE THIS SO IT WORKS IN ANY FOLDER WITH DIFFERENT DEPTHS
+# TODO: VIEW THE WAY TO GENERALIZE THIS SO IT WORKS IN ANY FOLDER WITH DIFFERENT DEPTHS: ADD TO __INIT__.PY
 PROJECT_DIR = Path(__file__).parents[2]
 DATA_PATH = PROJECT_DIR / "data"
 
@@ -33,7 +32,6 @@ def label_mapping(dict_dataset: dict) -> dict:
     return {type_: idx for idx, type_ in enumerate(types)}
 
 
-# TODO: Adapt this to the new dataset with the new types (type1 and type2)
 def onehot_to_string(one_hot_label: tf.Tensor, df: pd.DataFrame = poke_df) -> str:
     """Converts a one-hot encoded label back to a string
 
