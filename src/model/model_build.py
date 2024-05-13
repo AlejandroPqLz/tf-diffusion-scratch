@@ -14,112 +14,52 @@ f(x, y, t) = x * y + t.
 # Imports
 # =====================================================================
 import tensorflow as tf
-from tensorflow.keras import layers
+from tensorflow.keras import layers, activations
 import numpy as np
 
 
+# Main Function
+# =====================================================================
 def build_unet(
     img_size: int,
     num_classes: int,
-    initial_channels: int = 128,
+    initial_channels: int = 64,
     channel_multiplier: list = [1, 2, 4, 8],
     has_attention: list = [False, False, True, True],
 ):
+    # ----- Input -----
     inputs = layers.Input(shape=(img_size, img_size, 3), name="x_input")
     labels = layers.Input(shape=(num_classes,), name="y_input")
     timesteps = layers.Input(shape=(1,), name="t_input")
 
-    time_emb = SinusoidalTimeEmbeddingLayer(initial_channels)(timesteps)
+    # ----- Embeddings -----
     label_emb = process_block(labels, initial_channels)
+    time_emb = SinusoidalTimeEmbeddingLayer(initial_channels * 2)(timesteps)
 
-    # Encoder
+    # ----- Encoder -----
     x = inputs
     skips = []
     channels = [initial_channels * m for m in channel_multiplier]
     for i, (ch, attn) in enumerate(zip(channels, has_attention)):
         pooling = True if i < len(channels) - 1 else False
-        x, skip = encoder_block(x, time_emb, label_emb, ch, attn, pooling)
+        x, skip = encoder_block(x, label_emb, time_emb, ch, attn, pooling)
         skips.append(skip)
 
-    # Bottleneck
-    x = residual_block(
-        x, time_emb, label_emb, channels[-1], attention=has_attention[-1]
-    )
-    x = residual_block(x, time_emb, label_emb, channels[-1], attention=has_attention[0])
+    # ----- Bottleneck -----
+    x = bottleneck_block(x, label_emb, time_emb, channels[-1])
 
-    # Decoder
+    # ----- Decoder -----
     skips.reverse()
     for i, (ch, attn) in enumerate(zip(channels[::-1], has_attention[::-1])):
         upsampling = True if i < len(channels) - 1 else False
-        x = decoder_block(x, skips[i], time_emb, label_emb, ch, attn, upsampling)
+        x = decoder_block(x, skips[i], label_emb, time_emb, ch, attn, upsampling)
 
+    # ----- Output -----
+    x = layers.GroupNormalization()(x)
+    x = layers.Activation(activations.silu)(x)
     outputs = layers.Conv2D(3, 1, padding="same")(x)
     model = tf.keras.Model(inputs=[inputs, labels, timesteps], outputs=outputs)
     return model
-
-
-# Main Function
-# =====================================================================
-# def build_unet(
-#     img_size: int,
-#     num_classes: int,
-#     initial_channels: int = 128,
-#     channel_multiplier: list = [1, 2, 4, 8],
-#     has_attention: list = [False, False, True, True],
-# ):
-#     """Creates the U-Net model
-
-#     Args:
-#         img_size (int): The size of the input image
-#         num_classes (int): The number of classes
-#         initial_channels (int): The number of channels
-
-#     Returns:
-#         model: The U-Net model
-
-#     """
-
-#     # ----- Input -----
-#     inputs = layers.Input(shape=(img_size, img_size, 3), name="x_input")
-#     labels = layers.Input(shape=(num_classes,), name="y_input")
-#     timesteps = layers.Input(shape=(1,), name="t_input")
-
-#     # ----- Embeddings -----
-#     time_emb = SinusoidalTimeEmbeddingLayer(initial_channels)(timesteps)
-#     label_emb = process_block(labels, initial_channels)
-
-#     # ----- Encoder -----
-#     channels = [initial_channels * m for m in channel_multiplier]
-#     x, s1 = encoder_block(inputs, time_emb, label_emb, channels[0], has_attention[0])
-#     x, s2 = encoder_block(x, time_emb, label_emb, channels[1], has_attention[1])
-#     x, s3 = encoder_block(x, time_emb, label_emb, channels[2], has_attention[2])
-#     x, s4 = encoder_block(
-#         x, time_emb, label_emb, channels[3], has_attention[3], pooling=False
-#     )
-
-#     # ----- Bottleneck -----
-#     x = mlp_block(x, time_emb, label_emb, channels[3])
-
-#     # ----- Decoder -----
-#     x = decoder_block(x, s4, time_emb, label_emb, channels[3], has_attention[3])
-#     x = decoder_block(x, s3, time_emb, label_emb, channels[2], has_attention[2])
-#     x = decoder_block(x, s2, time_emb, label_emb, channels[1], has_attention[1])
-#     x = decoder_block(
-#         x,
-#         s1,
-#         time_emb,
-#         label_emb,
-#         channels[0],
-#         has_attention[0],
-#         upsampling=False,
-#     )
-
-#     # ----- Output -----
-#     outputs = layers.Conv2D(3, 1, padding="same")(x)
-
-#     # ----- Model -----
-#     model = tf.keras.Model(inputs=[inputs, labels, timesteps], outputs=outputs)
-#     return model
 
 
 # Example
@@ -183,6 +123,7 @@ class SelfAttentionLayer(layers.Layer):
         """
         super(SelfAttentionLayer, self).__init__(**kwargs)
         self.channels = channels
+        self.norm = layers.GroupNormalization()
         self.query = layers.Conv2D(self.channels, 1, padding="same")
         self.key = layers.Conv2D(self.channels, 1, padding="same")
         self.value = layers.Conv2D(self.channels, 1, padding="same")
@@ -202,6 +143,7 @@ class SelfAttentionLayer(layers.Layer):
         width = tf.shape(inputs)[2]
         scale = tf.cast(self.channels, tf.float32) ** (-0.5)
 
+        inputs = self.norm(inputs)
         q = self.query(inputs)
         k = self.key(inputs)
         v = self.value(inputs)
@@ -230,19 +172,19 @@ def process_block(input_tensor, embedding_dim):
     Returns:
         x: The processed tensor
     """
-    x = layers.Dense(embedding_dim, activation="relu")(input_tensor)
-    x = layers.LayerNormalization()(x)
-    x = layers.Activation("relu")(x)
+    x = layers.Dense(embedding_dim, activation=activations.silu)(input_tensor)
+    x = layers.GroupNormalization()(x)
+    x = layers.Activation(activations.silu)(x)
     return x
 
 
-def encoder_block(x, time_emb, label_emb, channels, attention=False, pooling=True):
+def encoder_block(x, label_emb, time_emb, channels, attention=False, pooling=True):
     """The encoder block
 
     Args:
         x: The image tensor
-        time_emb: The time steps tensor
         label_emb: The label tensor
+        time_emb: The time steps tensor
         channels: The number of channels
         attention: Whether to apply attention or not
         pooling: Whether to apply pooling or not
@@ -251,21 +193,44 @@ def encoder_block(x, time_emb, label_emb, channels, attention=False, pooling=Tru
         x: The processed tensor
         x: The skipped tensor
     """
-    x = skip = residual_block(x, time_emb, label_emb, channels, attention)
+    x = skip = residual_block(x, label_emb, time_emb, channels, attention)
     x = layers.MaxPooling2D(pool_size=(2, 2))(x) if pooling else x
     return x, skip
 
 
+def bottleneck_block(x, label_emb, time_emb, channels):
+    """The bottleneck block
+
+    Args:
+        x: The image tensor
+        label_emb: The label tensor
+        time_emb: The time steps tensor
+        channels: The number of channels
+
+    Returns:
+        x: The processed tensor
+    """
+    x = residual_block(x, label_emb, time_emb, channels, attention=True)
+    x = residual_block(x, label_emb, time_emb, channels)
+    return x
+
+
 def decoder_block(
-    x, skip, time_emb, label_emb, channels, attention=False, upsampling=True
+    x,
+    skip,
+    label_emb,
+    time_emb,
+    channels,
+    attention=False,
+    upsampling=True,
 ):
     """The decoder block
 
     Args:
         x: The image tensor
         skip: The skip tensor
-        time_emb: The time steps tensor
         label_emb: The label tensor
+        time_emb: The time steps tensor
         channels: The number of channels
         attention: Whether to apply attention or not
         upsampling: Whether to apply upsampling or not
@@ -279,13 +244,13 @@ def decoder_block(
     return x
 
 
-def residual_block(x_img, time_emb, label_emb, channels, attention=False):
+def residual_block(x_img, label_emb, time_emb, channels, attention=False):
     """The residual block of the diffusion model
 
     Args:
         x_img: The image tensor
-        time_emb: The time steps tensor
         label_emb: The label tensor
+        time_emb: The time steps tensor
         channels: The number of channels
         attention: Whether to apply attention or not
 
@@ -293,15 +258,16 @@ def residual_block(x_img, time_emb, label_emb, channels, attention=False):
         x_out: The processed tensor
     """
     x_parameter = layers.Conv2D(channels, 3, padding="same")(x_img)
-    x_parameter = layers.Activation("relu")(x_parameter)
-
-    time_parameter = layers.Dense(channels)(time_emb)
-    time_parameter = layers.Activation("relu")(time_parameter)
-    time_parameter = layers.Reshape((1, 1, channels))(time_parameter)
+    x_parameter = layers.GroupNormalization()(x_parameter)
+    x_parameter = layers.Activation(activations.silu)(x_parameter)
 
     label_parameter = layers.Dense(channels)(label_emb)
-    label_parameter = layers.Activation("relu")(label_parameter)
+    label_parameter = layers.Activation(activations.silu)(label_parameter)
     label_parameter = layers.Reshape((1, 1, channels))(label_parameter)
+
+    time_parameter = layers.Dense(channels)(time_emb)
+    time_parameter = layers.Activation(activations.silu)(time_parameter)
+    time_parameter = layers.Reshape((1, 1, channels))(time_parameter)
 
     x_parameter = x_parameter * label_parameter + time_parameter
 
@@ -311,39 +277,39 @@ def residual_block(x_img, time_emb, label_emb, channels, attention=False):
     if attention:
         x_out = SelfAttentionLayer(channels)(x_out)
 
-    x_out = layers.LayerNormalization()(x_out)
-    x_out = layers.Activation("relu")(x_out)
+    x_out = layers.GroupNormalization()(x_out)
+    x_out = layers.Activation(activations.silu)(x_out)
 
     return x_out
 
 
-def mlp_block(
-    x: tf.Tensor, time_emb: tf.Tensor, label_emb: tf.Tensor, channels: int
-) -> tf.Tensor:
-    """The MLP block of the diffusion model
+# def mlp_block(
+#     x: tf.Tensor, label_emb, time_emb, channels: int
+# ) -> tf.Tensor:
+#     """The MLP block of the diffusion model
 
-    Args:
-        x: The image to process
-        time_emb: The time steps to process
-        label_emb: The label to process
-        channels: The number of channels
+#     Args:
+#         x: The image to process
+#         time_emb: The time steps to process
+#         label_emb: The label to process
+#         channels: The number of channels
 
-    Returns:
-        x: The processed image
-    """
-    shape = x.shape
+#     Returns:
+#         x: The processed image
+#     """
+#     shape = x.shape
 
-    x = layers.Flatten()(x)
-    x = layers.Concatenate()([x, time_emb, label_emb])
+#     x = layers.Flatten()(x)
+#     x = layers.Concatenate()([x, time_emb, label_emb])
 
-    x = layers.Dense(channels)(x)
-    x = layers.LayerNormalization()(x)
-    x = layers.Activation("relu")(x)
+#     x = layers.Dense(channels)(x)
+#     x = layers.LayerNormalization()(x)
+#     x = layers.Activation(activations.silu)(x)
 
-    x = layers.Dense(shape[1] * shape[2] * shape[3])(x)
-    x = layers.LayerNormalization()(x)
-    x = layers.Activation("relu")(x)
+#     x = layers.Dense(shape[1] * shape[2] * shape[3])(x)
+#     x = layers.LayerNormalization()(x)
+#     x = layers.Activation(activations.silu)(x)
 
-    x = layers.Reshape(shape[1:])(x)
+#     x = layers.Reshape(shape[1:])(x)
 
-    return x
+#     return x
