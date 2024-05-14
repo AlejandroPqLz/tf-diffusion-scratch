@@ -281,35 +281,3 @@ def residual_block(x_img, label_emb, time_emb, channels, attention=False):
     x_out = layers.Activation(activations.silu)(x_out)
 
     return x_out
-
-
-# def mlp_block(
-#     x: tf.Tensor, label_emb, time_emb, channels: int
-# ) -> tf.Tensor:
-#     """The MLP block of the diffusion model
-
-#     Args:
-#         x: The image to process
-#         time_emb: The time steps to process
-#         label_emb: The label to process
-#         channels: The number of channels
-
-#     Returns:
-#         x: The processed image
-#     """
-#     shape = x.shape
-
-#     x = layers.Flatten()(x)
-#     x = layers.Concatenate()([x, time_emb, label_emb])
-
-#     x = layers.Dense(channels)(x)
-#     x = layers.LayerNormalization()(x)
-#     x = layers.Activation(activations.silu)(x)
-
-#     x = layers.Dense(shape[1] * shape[2] * shape[3])(x)
-#     x = layers.LayerNormalization()(x)
-#     x = layers.Activation(activations.silu)(x)
-
-#     x = layers.Reshape(shape[1:])(x)
-
-#     return x
