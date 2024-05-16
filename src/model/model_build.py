@@ -244,7 +244,9 @@ def decoder_block(
     return x
 
 
-def residual_block(x_img, label_emb, time_emb, channels, attention=False):
+def residual_block(
+    x_img, label_emb, time_emb, channels, attention=False
+):  # TODO: porcess/weighting block
     """The residual block of the diffusion model
 
     Args:
