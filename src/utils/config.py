@@ -5,7 +5,7 @@ Functionality: This file contains the code to load the configuration of the proj
 in a type-safe way using Pydantic.
 """
 
-# TODO: REVIEW TO SEE IF IS BETTER TO USE DICTS INSTEAD OF CLASSES OR DO:
+# TODO: DO:
 # [hyperparameters]
 # img_size = 64, int
 # num_classes = 10, int
@@ -16,6 +16,13 @@ in a type-safe way using Pydantic.
 # beta_start = 0.0, float
 # beta_end = 1.0, float
 # s = 1.0, float
+
+# for config in config_file:
+#     config = config.split(", ")
+#     key = config[0]
+#     value = config[1]
+#     config_type = config[2]
+#     value = config_type(value)
 
 # Imports
 # =====================================================================
