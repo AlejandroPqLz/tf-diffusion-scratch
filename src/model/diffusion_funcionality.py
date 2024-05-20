@@ -15,24 +15,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from src.utils.utils import string_to_onehot, onehot_to_string
-from src.utils import PROJECT_DIR
+from src.utils.config import Config
+from src.utils import CONFIG_PATH
 
 
 # Set up
 # =====================================================================
-config = configparser.ConfigParser()
-config.read(PROJECT_DIR / "config.ini")
+config = Config.from_config_file(CONFIG_PATH)
 
-IMG_SIZE = int(config["hyperparameters"]["img_size"])
-NUM_CLASSES = int(config["hyperparameters"]["num_classes"])
-BATCH_SIZE = int(config["hyperparameters"]["batch_size"])
-EPOCHS = int(config["hyperparameters"]["epochs"])
+IMG_SIZE = config.hyperparameters.img_size
+NUM_CLASSES = config.hyperparameters.num_classes
+BATCH_SIZE = config.hyperparameters.batch_size
+EPOCHS = config.hyperparameters.epochs
 
-TIMESTEPS = int(config["hyperparameters"]["T"])  # Number of diffusion steps
-SCHEDULER = config["hyperparameters"]["scheduler"]
-BETA_START = float(config["hyperparameters"]["beta_start"])
-BETA_END = float(config["hyperparameters"]["beta_end"])
-S = float(config["hyperparameters"]["s"])  # Scale factor for the variance curve
+TIMESTEPS = config.hyperparameters.timesteps
+SCHEDULER = config.hyperparameters.scheduler
+BETA_START = config.hyperparameters.beta_start
+BETA_END = config.hyperparameters.beta_end
+S = config.hyperparameters.s
 
 
 class DiffusionModel(tf.keras.Model):
