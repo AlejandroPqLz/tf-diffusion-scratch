@@ -9,7 +9,6 @@ in order to be able to create a dataset for the diffusion model.
 # =====================================================================
 import logging
 from typing import List, Dict
-from pathlib import Path
 import tensorflow as tf
 from src.utils.utils import label_mapping
 
@@ -20,12 +19,12 @@ logging.basicConfig(
 
 # Preprocess the images
 # =====================================================================
-def img_preprocess(image_path: Path, buffer: int = 1, size: int = 64) -> tf.Tensor:
+def img_preprocess(image_path: str, buffer: int = 1, size: int = 64) -> tf.Tensor:
     """
     Preprocesses the image by cropping it and adapting it to the generative model input.
 
     Args:
-        image_path (Path): The path to the image.
+        image_path (str): The path to the image.
         buffer (int): The buffer to add to the crop. Defaults to 1.
         size (int): The size to resize the image to. Defaults to 64.
 

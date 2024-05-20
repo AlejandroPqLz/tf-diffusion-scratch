@@ -37,7 +37,7 @@ def dataset_tf(
     img_size: int = 64,
     buffer: int = 1,
     save: bool = False,
-    save_path: Path = "./datasets/dataset_tf/",
+    save_path: Path = Path("./datasets/dataset_tf/"),
     image_paths: List[str] = None,
     df: pd.DataFrame = None,
 ) -> tf.data.Dataset:
@@ -85,23 +85,12 @@ def dataset_tf(
         .prefetch(tf.data.AUTOTUNE)
     )
 
-    if save and save_path.exists():
-        tf.data.Dataset.save(
-            dataset,
-            save_path,
-            compression="GZIP",
-        )
-        logging.info("Dataset saved to file: %s", save_path)
+    if save:
+        if not save_path.exists():
+            save_path.mkdir(parents=True, exist_ok=True)
+            logging.info("The path %s did not exist... Path created", save_path)
 
-    elif save and not save_path.exists():
-        save_path.mkdir(parents=True, exist_ok=True)
-        logging.info("The path %s does not exist... Path created", save_path)
-
-        tf.data.Dataset.save(
-            dataset,
-            save_path,
-            compression="GZIP",
-        )
+        tf.data.experimental.save(dataset, str(save_path), compression="GZIP")
         logging.info("Dataset saved to file: %s", save_path)
 
     return dataset
@@ -111,7 +100,7 @@ def dataset_dict(
     image_paths: List[str],
     df: pd.DataFrame,
     save: bool = False,
-    save_path: Path = "./datasets/dataset_dict.json",
+    save_path: Path = Path("./datasets/dataset_dict.json"),
 ) -> Dict[str, str]:
     """
     Returns a dictionary with the image paths as keys and the pokemon type as values
@@ -135,17 +124,15 @@ def dataset_dict(
             pokemon_type = df.loc[pokemon_id]["type1"]
             data_dict[path] = pokemon_type
 
-        except KeyError as e:
+        except (KeyError, AttributeError) as e:
             logging.error("Error processing path %s: %s", path, e)
 
-    if save and save_path.exists():
-        with save_path.open("w") as f:
-            json.dump(data_dict, f)
-            logging.info("Dictionary saved to file: %s", save_path)
+    if save:
+        if not save_path.parent.exists():
+            save_path.parent.mkdir(parents=True, exist_ok=True)
+            logging.info("The path %s did not exist... Path created", save_path.parent)
 
-    elif save and not save_path.exists():
-        save_path.mkdir(parents=True, exist_ok=True)
-        with save_path.open("w") as f:
+        with save_path.open("w", encoding="utf-8") as f:
             json.dump(data_dict, f)
             logging.info("Dictionary saved to file: %s", save_path)
 
