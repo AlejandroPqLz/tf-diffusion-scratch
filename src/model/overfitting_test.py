@@ -25,6 +25,44 @@ config = Config.from_config_file(CONFIG_PATH)
 NUM_CLASSES = config.hyperparameters.num_classes
 
 
+TODO: CONSIDERING TO INTRODUCE EVERYTHING AS AN ARG SO INSTEAD OF:
+    
+    def __init__(
+        self,
+        model: tf.keras.Model,
+        img_size: int,
+        num_classes: int,
+        timesteps: int,
+        beta_start: float,
+        beta_end: float,
+        s: float,
+        scheduler: str,
+    ):
+
+WE HAVE:
+    
+    def __init__(
+        self,
+        model: tf.keras.Model,
+        args: dict,):
+    
+        self.img_size = args["img_size"]
+        self.num_classes = args["num_classes"]
+        self.timesteps = args["timesteps"]
+        self.beta_start = args["beta_start"]
+        self.beta_end = args["beta_end"]
+        self.s = args["s"]
+        self.scheduler = args["scheduler"]
+        
+        # global variables (TODO: VIEW GLOABL VARIABLES IN PYTHON)
+        self.beta = self.beta_scheduler(args)
+        self.alpha = 1 - self.beta
+        self.alpha_cumprod = tf.math.cumprod(self.alpha)
+    
+    def beta_scheduler(self, args):
+        _, _, timesteps, beta_start, beta_end, s = args
+
+
 class DiffusionModel(tf.keras.Model):
     """
     DiffusionModel class
@@ -237,16 +275,20 @@ class DiffusionModel(tf.keras.Model):
 
         return None
 
+    # @staticmethod
+    # def forward_diffusion(
+    #     x_0: tf.Tensor,
+    #     t: int,
+    #     timesteps: int,
+    #     scheduler: str,
+    #     beta_start: float,
+    #     beta_end: float,
+    #     s: float,
+    # ) -> tf.Tensor:
+    
     @staticmethod
-    def forward_diffusion(
-        x_0: tf.Tensor,
-        t: int,
-        timesteps: int,
-        scheduler: str,
-        beta_start: float,
-        beta_end: float,
-        s: float,
-    ) -> tf.Tensor:
+    def forward_diffusion(x_0: tf.Tensor,t: int,args: dict) -> tf.Tensor:
+        
         """
         Simulate the forward diffusion process by adding noise to the input image.
 
@@ -262,6 +304,8 @@ class DiffusionModel(tf.keras.Model):
         Returns:
             tuple: The diffused image tensor at timestep t.
         """
+        _, _, timesteps, scheduler, beta_start, beta_end, s = args # TODO: CHECK THIS
+        
         # Calculate the noise schedule for beta values
         beta = DiffusionModel.beta_scheduler(
             scheduler, timesteps, beta_start, beta_end, s
@@ -280,10 +324,13 @@ class DiffusionModel(tf.keras.Model):
 
         return x_t
 
+    # @staticmethod
+    # def beta_scheduler(
+    #     scheduler: str, timesteps: int, beta_start: float, beta_end: float, s: float
+    # ) -> tf.Tensor:
+        
     @staticmethod
-    def beta_scheduler(
-        scheduler: str, timesteps: int, beta_start: float, beta_end: float, s: float
-    ) -> tf.Tensor:
+    def beta_scheduler(args: dict) -> tf.Tensor:
         """
         Generates a schedule for beta values according to the specified type ('linear' or 'cosine').
 
@@ -297,6 +344,7 @@ class DiffusionModel(tf.keras.Model):
         Returns:
             tf.Tensor: The beta schedule.
         """
+        _, _, timesteps, beta_start, beta_end, s, scheduler = args # TODO: CHECK THIS
 
         if scheduler == "linear":
             beta = beta_start + (beta_end - beta_start) * np.arange(timesteps) / (
