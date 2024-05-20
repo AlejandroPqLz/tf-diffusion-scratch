@@ -20,6 +20,7 @@ requirements = [
     "ipykernel",
     "numba",
     "pydot",
+    "typing",
 ]
 
 setuptools.setup(
