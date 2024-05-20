@@ -69,6 +69,7 @@ def img_preprocess(image_path: str, buffer: int = 1, size: int = 64) -> tf.Tenso
     tensor_img = tf.image.resize(cropped_img, (size, size))
     final_img = (tensor_img - 0.5) * 2  # From [0,1] to [-1,1]
 
+    logging.info("Images preprocessed successfully")
     return final_img
 
 

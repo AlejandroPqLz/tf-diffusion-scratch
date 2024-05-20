@@ -29,12 +29,17 @@ class PathLoader:
     Attributes:
         load_pattern (str): The glob pattern to load the file paths.
         save_file (Path): The file to save the file paths. Default to "./image_paths.json".
+
+    Methods:
+        load_paths(save: bool = False) -> List[str]: Loads file paths based on the glob pattern and optionally saves them.
+        save_paths(paths: List[str]) -> None: Saves the provided paths to a file.
+        load_paths_from_file(save_file: Path) -> List[str]: Loads the paths from a file.
     """
 
     def __init__(
         self,
         load_pattern: str,
-        save_file: str = "./image_paths.json",
+        save_file: Path = Path("./image_paths.json"),
     ):
         self.load_pattern = load_pattern
         self.save_file = Path(save_file)

@@ -90,7 +90,7 @@ def dataset_tf(
             save_path.mkdir(parents=True, exist_ok=True)
             logging.info("The path %s did not exist... Path created", save_path)
 
-        tf.data.experimental.save(dataset, str(save_path), compression="GZIP")
+        tf.data.Dataset.save(dataset, str(save_path), compression="GZIP")
         logging.info("Dataset saved to file: %s", save_path)
 
     return dataset
