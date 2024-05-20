@@ -6,7 +6,7 @@ diffusion functionality to the defined model.
 
 """
 
-# Imports
+# Imports and setup
 # =====================================================================
 import time
 import tensorflow as tf
@@ -14,6 +14,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from src.utils.utils import string_to_onehot, onehot_to_string
+from src.utils import CONFIG_PATH
+from src.utils.config import Config
+
+# Load the configuration
+config = Config.from_config_file(CONFIG_PATH)
+
+# Constants
+# =====================================================================
+NUM_CLASSES = config.hyperparameters.num_classes
 
 
 class DiffusionModel(tf.keras.Model):
@@ -64,7 +73,7 @@ class DiffusionModel(tf.keras.Model):
         self.alpha = 1 - self.beta
         self.alpha_cumprod = tf.math.cumprod(self.alpha)
 
-    def train_step(self, data):
+    def train_step(self, data: tuple) -> dict:
         """
         Algorithm 1: The training step for the diffusion model.
 
@@ -117,7 +126,7 @@ class DiffusionModel(tf.keras.Model):
         # 6: until convergence ------
         return {"loss": loss}
 
-    def predict_step(self, data):
+    def predict_step(self, data: tuple) -> tf.Tensor:
         """
         Algorithm 2: (sampling) The prediction step for the diffusion model.
 
@@ -170,17 +179,19 @@ class DiffusionModel(tf.keras.Model):
         return x_t  # 6: return x_0
 
     def plot_samples(
-        self, num_samples: int = 5, poke_type: str = None, process: bool = False
+        self, num_samples: int = 3, poke_type: str = None, process: bool = False
     ) -> None:
         """
         Generate and plot samples from the diffusion model.
 
         Args:
             num_samples (int): The number of samples to generate and plot.
-            poke_type (str): The type of Pokemon to generate samples for. If None, a random type is chosen.
+            poke_type (str): The type of Pokemon to generate samples for.
+            If None, a random type is chosen.
             process (bool): Whether to show the diffusion process or not (every 100 steps).
         """
-        # TODO: ADD PROCCES PLOT SO IT PLOT EVERY 100 STEPS HAVING A SUBPLOT OF TIMESTEPS/100 OR DO A GIF FUNCTION OR BOTH
+        # TODO: ADD PROCCES PLOT SO IT PLOT EVERY 100 STEPS HAVING A SUBPLOT OF
+        # TIMESTEPS/100 OR DO A GIF FUNCTION OR BOTH
 
         _, axs = plt.subplots(1, num_samples, figsize=(num_samples * 2, 3))
 
@@ -198,13 +209,14 @@ class DiffusionModel(tf.keras.Model):
             )  # TODO: CHECK THIS
 
             # Set the label for the sample(s)
-            if poke_type is not None:
-                y_label = string_to_onehot(poke_type)
-            else:
-                random_index = tf.random.uniform(
-                    shape=[], minval=0, maxval=NUM_CLASSES, dtype=tf.int32
+            y_label = (
+                string_to_onehot(poke_type)
+                if poke_type is not None
+                else tf.one_hot(
+                    tf.random.uniform(shape=[], maxval=NUM_CLASSES, dtype=tf.int32),
+                    NUM_CLASSES,
                 )
-                y_label = tf.one_hot(random_index, NUM_CLASSES)
+            )
 
             y_label = tf.reshape(y_label, [1, NUM_CLASSES])
 
@@ -248,7 +260,7 @@ class DiffusionModel(tf.keras.Model):
             s (float): The scale factor for the variance curve in the 'cosine' scheduler.
 
         Returns:
-            tuple: The diffused image tensor at timestep t, the original image tensor, and the added noise tensor.
+            tuple: The diffused image tensor at timestep t.
         """
         # Calculate the noise schedule for beta values
         beta = DiffusionModel.beta_scheduler(

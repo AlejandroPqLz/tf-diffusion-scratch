@@ -9,6 +9,11 @@ import tensorflow as tf
 from src.model.diffusion_funcionality import DiffusionModel
 
 
+# TODO: ADD SAVE FUNCTIONALITY TO THE CALLBACKS
+# TODO: WHEN PLOTTING SAMPLES, ADD THE OPTION TO SAMPLE THE DIFF PROCESS (FROM NOISE TO IMAGE)
+# TODO: ADD LOGS FOR TRAINING METRICS
+
+
 # Custom Callback for the Diffusion Model
 # =====================================================================
 class DiffusionCallback(tf.keras.callbacks.Callback):
@@ -41,4 +46,3 @@ class DiffusionCallback(tf.keras.callbacks.Callback):
         if (epoch + 1) % self.frequency == 0:
             print(f"Epoch {epoch+1}: Generating samples.")
             self.diffusion_model.plot_samples(num_samples=1, poke_type=self.poke_type)
-            # self.model.save_weights("diffusion_model.h5")
