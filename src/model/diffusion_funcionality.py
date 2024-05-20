@@ -1,5 +1,5 @@
 """
-diffusion_model.py
+diffusion_functionality.py
 
 Functionality: This file contains the code to define the DiffusionModel class that adds the
 diffusion functionality to the defined model.
@@ -14,7 +14,8 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from src.utils.utils import string_to_onehot, onehot_to_string, PROJECT_DIR
+from src.utils.utils import string_to_onehot, onehot_to_string
+from src.utils import PROJECT_DIR
 
 
 # Set up

@@ -6,44 +6,47 @@ Functionality: This file contains utility functions for the project.
 
 # Imports
 # =====================================================================
-from pathlib import Path
+from typing import Dict
 import pandas as pd
 import tensorflow as tf
+from src.utils import DATA_PATH
 
-# Set up
+# Set global variable
 # =====================================================================
-# TODO: VIEW THE WAY TO GENERALIZE THIS SO IT WORKS IN ANY FOLDER WITH DIFFERENT DEPTHS: ADD TO __INIT__.PY
-PROJECT_DIR = Path(__file__).parents[2]
-DATA_PATH = PROJECT_DIR / "data"
-
 poke_df = pd.read_csv(f"{DATA_PATH}/raw/pokedex.csv")
 
 
 # Functions
 # =====================================================================
-def label_mapping(dict_dataset: dict) -> dict:
-    """Create a mapping from label strings to integer indices
-
-    :param dict_dataset: Dictionary mapping image paths to label strings
-    :return: Dictionary mapping label strings to integer indices
+def label_mapping(dict_dataset: Dict[str, str]) -> Dict[str, int]:
     """
+    Create a mapping from label strings to integer indices
 
+    Args:
+        dict_dataset (Dict[str, str]): Dictionary mapping image paths to label strings
+
+    Returns:
+        Dict[str, int]: Dictionary mapping label strings to integer indices
+    """
     types = sorted(list(set(dict_dataset.values())))
     return {type_: idx for idx, type_ in enumerate(types)}
 
 
 def onehot_to_string(one_hot_label: tf.Tensor, df: pd.DataFrame = poke_df) -> str:
-    """Converts a one-hot encoded label back to a string
-
-    :param one_hot_label: The one-hot encoded label
-    :param df: The dataframe with the pokemon data
-    :return: The string label
     """
+    Converts a one-hot encoded label back to a string
 
+    Args:
+        one_hot_label (tf.Tensor): The one-hot encoded label
+        df (pd.DataFrame): The dataframe with the pokemon data
+
+    Returns:
+        str: The string label
+    """
     dict_df = df.set_index("pokedex_id")["type1"].to_dict()
     label_index = (
-        tf.argmax(one_hot_label, axis=1)
-        if one_hot_label.shape[0] <= 1
+        tf.argmax(one_hot_label, axis=1).numpy()
+        if len(one_hot_label.shape) > 1
         else tf.argmax(one_hot_label)
     )
 
@@ -53,13 +56,16 @@ def onehot_to_string(one_hot_label: tf.Tensor, df: pd.DataFrame = poke_df) -> st
 
 
 def string_to_onehot(label: str, df: pd.DataFrame = poke_df) -> tf.Tensor:
-    """Converts a string label to a one-hot encoded label
-
-    :param label: The string label
-    :param df: The dataframe with the pokemon data
-    :return: The one-hot encoded label
     """
+    Converts a string label to a one-hot encoded label
 
+    Args:
+        label (str): The string label
+        df (pd.DataFrame): The dataframe with the pokemon data
+
+    Returns:
+        tf.Tensor: The one-hot encoded label
+    """
     dict_df = df.set_index("pokedex_id")["type1"].to_dict()
     len_dict = len(set(dict_df.values()))
     label_index = label_mapping(dict_df)[label]
