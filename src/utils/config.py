@@ -5,7 +5,9 @@ Functionality: This file contains the code to load the configuration of the proj
 in a type-safe way using Pydantic.
 """
 
-# Impots
+# TODO: REVIEW TO SEE IF IS BETTER TO USE DICTS INSTEAD OF CLASSES
+
+# Imports
 # =====================================================================
 from pathlib import Path
 import configparser
