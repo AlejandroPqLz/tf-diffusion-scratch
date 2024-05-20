@@ -16,7 +16,9 @@ from pathlib import Path
 from typing import List
 from src.utils.utils import DATA_PATH
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 # class PathLoader
@@ -26,7 +28,7 @@ class PathLoader:
 
     Attributes:
         load_pattern (str): The glob pattern to load the file paths.
-        save_file (str): The file to save the file paths. Default to "./image_paths.json".
+        save_file (Path): The file to save the file paths. Default to "./image_paths.json".
     """
 
     def __init__(
@@ -85,11 +87,11 @@ class PathLoader:
             logging.error("Failed to save paths to %s: %s", self.save_file, e)
 
     @staticmethod
-    def load_paths_from_file(save_file: str) -> List[str]:
+    def load_paths_from_file(save_file: Path) -> List[str]:
         """Loads the paths from a file.
 
         Args:
-            save_file (str): The path to the JSON file.
+            save_file (Path): The path to the JSON file.
 
         Returns:
             List[str]: A list of paths loaded from the file.
@@ -112,11 +114,7 @@ class PathLoader:
 # Main
 # =====================================================================
 def main() -> None:
-    """Main function to load the image paths from the dataset.
-
-    Args:
-        config_path (str): The path to the configuration file.
-    """
+    """Main function to load the image paths from the dataset and save them."""
 
     loader = PathLoader(
         load_pattern=f"{DATA_PATH}/raw/sprites/**/front/**/*.png",
