@@ -43,7 +43,7 @@ class DiffusionModel(tf.keras.Model):
     - model (tf.keras.Model): The base model to which the diffusion process is added.
     - img_size (int): The size of the input images.
     - num_classes (int): The number of classes in the dataset.
-    - T (int): The total number of diffusion steps.
+    - timesteps(int): The total number of diffusion steps.
     - beta_start (float): The starting value of beta (noise level).
     - beta_end (float): The ending value of beta (noise level).
     - s (float): The scale factor for the variance curve in the 'cosine' scheduler.
@@ -54,8 +54,8 @@ class DiffusionModel(tf.keras.Model):
     - train_step(data): The training step for the diffusion model.
     - predict_step(data): The prediction step for the diffusion model.
     - plot_samples(num_samples, poke_type): Generate and plot samples from the diffusion model.
-    - forward_diffusion(x_0, t, T, scheduler, beta_start, beta_end, s): Simulate the forward diffusion process.
-    - beta_scheduler(scheduler, T, beta_start, beta_end, s): Generate a schedule for beta values according to the specified type.
+    - forward_diffusion(x_0, t, timesteps scheduler, beta_start, beta_end, s): Simulate the forward diffusion process.
+    - beta_scheduler(scheduler, timesteps beta_start, beta_end, s): Generate a schedule for beta values according to the specified type.
 
     """
 
@@ -64,7 +64,7 @@ class DiffusionModel(tf.keras.Model):
         model: tf.keras.Model,
         img_size: int,
         num_classes: int,
-        T: int,
+        timesteps: int,
         beta_start: float,
         beta_end: float,
         s: float,
@@ -75,13 +75,13 @@ class DiffusionModel(tf.keras.Model):
         self.model = model
         self.img_size = img_size
         self.num_classes = num_classes
-        self.T = T
+        self.timesteps = timesteps
         self.scheduler = scheduler
         self.beta_start = beta_start
         self.beta_end = beta_end
         self.s = s
 
-        self.beta = self.beta_scheduler(scheduler, T, beta_start, beta_end, s)
+        self.beta = self.beta_scheduler(scheduler, timesteps, beta_start, beta_end, s)
         self.alpha = 1 - self.beta
         self.alpha_cumprod = tf.math.cumprod(self.alpha)
 
@@ -99,7 +99,7 @@ class DiffusionModel(tf.keras.Model):
         # Rename the variables for easier access
         loss_fn = self.loss
         optimizer = self.optimizer
-        T = self.T  # Total diffusion steps
+        timesteps = self.timesteps  # Total diffusion steps
         scheduler = self.scheduler
         beta_start = self.beta_start
         beta_end = self.beta_end
@@ -113,16 +113,16 @@ class DiffusionModel(tf.keras.Model):
 
         # 3: t ~ U(0, T)
         # Generate a random timestep for each image in the batch
-        t = tf.random.uniform(shape=(), minval=0, maxval=T, dtype=tf.int32)
+        t = tf.random.uniform(shape=(), minval=0, maxval=timesteps, dtype=tf.int32)
         normalized_t = tf.fill(
-            [tf.shape(input_data)[0], 1], tf.cast(t, tf.float32) / T
+            [tf.shape(input_data)[0], 1], tf.cast(t, tf.float32) / timesteps
         )  # TODO: CHECK THIS
 
         # 2: x_0 ~ q(x_0)
         x_t, x_0, per_noise = self.forward_diffusion(
             input_data,
             t,
-            T,
+            timesteps,
             scheduler,
             beta_start,
             beta_end,
@@ -172,7 +172,7 @@ class DiffusionModel(tf.keras.Model):
         """
 
         # Rename the variables for easier access
-        T = self.T
+        timesteps = self.timesteps
         alpha = self.alpha
         alpha_cumprod = self.alpha_cumprod
 
@@ -182,9 +182,11 @@ class DiffusionModel(tf.keras.Model):
         # Reverse the diffusion process
         # 2: for t = T − 1, . . . , 1 do
         time.sleep(0.4)
-        for t in tqdm(reversed(range(0, T)), desc="Sampling sprite", total=T - 1):
+        for t in tqdm(
+            reversed(range(0, timesteps)), desc="Sampling sprite", total=timesteps - 1
+        ):
             normalized_t = tf.fill(
-                [tf.shape(x_t)[0], 1], tf.cast(t, tf.float32) / T
+                [tf.shape(x_t)[0], 1], tf.cast(t, tf.float32) / timesteps
             )  # TODO: CHECK THIS
 
             # Sample z
@@ -276,18 +278,18 @@ class DiffusionModel(tf.keras.Model):
     def forward_diffusion(
         x_0: tf.Tensor,
         t: int,
-        T: int,
+        timesteps: int,
         scheduler: str,
         beta_start: float,
         beta_end: float,
-        s: float,  # **config["training_params"] TODO
+        s: float,
     ) -> tf.Tensor:
         """Simulate the forward diffusion process by adding noise to the input image.
 
         Args:
             x_0 (tf.Tensor): The initial image tensor.
             t (int): The current timestep.
-            T (int): The total number of diffusion timesteps.
+            timesteps(int): The total number of diffusion timesteps.
             scheduler (str): The type of noise schedule ('cosine' or 'linear').
             beta_start (float): The starting value of beta (noise level).
             beta_end (float): The ending value of beta (noise level).
@@ -298,7 +300,7 @@ class DiffusionModel(tf.keras.Model):
         """
         # Calculate the noise schedule for beta values
         beta = DiffusionModel.beta_scheduler(
-            scheduler=scheduler, T=T, beta_start=beta_start, beta_end=beta_end, s=s
+            scheduler, timesteps, beta_start, beta_end, s
         )
         alpha = 1.0 - beta
         alpha_cumprod = tf.math.cumprod(alpha)
@@ -316,22 +318,27 @@ class DiffusionModel(tf.keras.Model):
 
     @staticmethod
     def beta_scheduler(
-        scheduler: str, T: int, beta_start: float, beta_end: float, s: float
+        scheduler: str, timesteps: int, beta_start: float, beta_end: float, s: float
     ) -> tf.Tensor:
         """
         Generates a schedule for beta values according to the specified type ('linear' or 'cosine').
         """
 
         if scheduler == "linear":
-            beta = beta_start + (beta_end - beta_start) * np.arange(T) / (T - 1)
-            # beta = tf.linspace(beta_start, beta_end, T)
+            beta = beta_start + (beta_end - beta_start) * np.arange(timesteps) / (
+                timesteps - 1
+            )
+            # beta = tf.linspace(beta_start, beta_end, timesteps)
 
         elif scheduler == "cosine":
 
             def f(t):
-                return tf.cos((t / T + s) / (1 + s) * tf.constant(np.pi * 0.5)) ** 2
+                return (
+                    tf.cos((t / timesteps + s) / (1 + s) * tf.constant(np.pi * 0.5))
+                    ** 2
+                )
 
-            t = tf.range(T, dtype=tf.float32)
+            t = tf.range(timesteps, dtype=tf.float32)
             alphas_cumprod = f(t) / f(0)
             beta = 1 - alphas_cumprod[1:] / tf.maximum(alphas_cumprod[:-1], 0.999)
             beta = tf.clip_by_value(beta, 0.0001, 0.999)
@@ -340,68 +347,6 @@ class DiffusionModel(tf.keras.Model):
             raise ValueError(f"Unsupported scheduler: {scheduler}")
 
         return beta
-
-    # @staticmethod
-    # def beta_scheduler(
-    #     scheduler: str, T: int, beta_start: float, beta_end: float, s: float
-    # ) -> tf.Tensor:
-    #     """
-    #     Generates a schedule for beta values according to the specified type ('linear' or 'cosine').
-    #     """
-
-    #     if scheduler == "linear":
-    #         beta = tf.linspace(beta_start, beta_end, T)
-
-    #     elif scheduler == "cosine":
-
-    #         def f(t):
-    #             return tf.cos((t / T + s) / (1 + s) * tf.constant(np.pi * 0.5)) ** 2
-
-    #         t = tf.range(0, T + 1, dtype=tf.float32)  # TODO: CHECK THIS (T+1)
-    #         alphas_cumprod = f(t) / f(0)
-    #         beta = 1 - alphas_cumprod[1:] / tf.maximum(alphas_cumprod[:-1], 1e-10)
-    #         beta = tf.clip_by_value(beta, 0.0001, 0.999)
-
-    #     else:
-    #         raise ValueError(f"Unsupported scheduler: {scheduler}")
-
-    #     return beta
-
-    # @staticmethod
-    # def beta_scheduler(
-    #     scheduler: str, T: int, beta_start: float, beta_end: float, s: float
-    # ) -> tf.Tensor:
-    #     """
-    #     Generates a schedule for beta values according to the specified type ('linear' or 'cosine').
-
-    #     Args:
-    #         scheduler (str): The type of schedule to use. Options are "linear" or "cosine".
-    #         T (int): Total number of timesteps.
-    #         beta_start (float): Starting value of beta.
-    #         beta_end (float): Ending value of beta.
-    #         s (float): Scale factor for the variance curve, used in the 'cosine' scheduler.
-
-    #     Returns:
-    #         tf.Tensor: The beta values for each timestep.
-    #     """
-
-    #     if scheduler == "linear":
-    #         beta = tf.linspace(beta_start, beta_end, T)
-
-    #     elif scheduler == "cosine":
-
-    #         def f(t):  # TODO: CAMBIAR NP POR TF
-    #             return tf.cos((t / T + s) / (1 + s) * tf.constant(np.pi * 0.5)) ** 2
-
-    #         t = np.arange(0, T + 1)
-    #         alphas_cumprod = f(t) / f(0)
-    #         beta = 1 - alphas_cumprod[1:] / alphas_cumprod[:-1]
-    #         beta = tf.clip_by_value(beta, 0.0001, 0.999)
-
-    #     else:
-    #         raise ValueError(f"Unsupported scheduler: {scheduler}")
-
-    #     return beta
 
 
 # Custom Callback for the Diffusion Model
@@ -522,17 +467,16 @@ class DiffusionCallback(tf.keras.callbacks.Callback):
     """Custom Callback for the Diffusion Model that generates samples every 20 epochs.
 
     Attributes:
-        - diffusion_model (DiffusionModel): The diffusion model to generate samples from.
-        - frequency (int): The frequency at which to generate samples.
+        diffusion_model (DiffusionModel): The diffusion model to generate samples from.
+        frequency (int): The frequency at which to generate samples.
 
     Methods:
-        - on_epoch_end(epoch, logs): The method that is called at the end of each epoch.
+        on_epoch_end(epoch, logs): The method that is called at the end of each epoch.
 
     """
 
-    def __init__(self, diffusion_model: DiffusionModel, frequency=20, type=None):
+    def __init__(self, diffusion_model: DiffusionModel, frequency: int, type: str):
         super(DiffusionCallback, self).__init__()
-        # super().__init__()
         self.diffusion_model = diffusion_model
         self.frequency = frequency
         self.type = type
