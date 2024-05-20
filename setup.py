@@ -20,7 +20,6 @@ requirements = [
     "ipykernel",
     "numba",
     "pydot",
-    "gradio",
 ]
 
 setuptools.setup(
