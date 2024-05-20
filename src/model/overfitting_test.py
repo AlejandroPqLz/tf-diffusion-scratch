@@ -14,8 +14,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from src.utils.utils import string_to_onehot, onehot_to_string
-from src.utils.config import Config
-from src.utils import CONFIG_PATH
 
 
 class DiffusionModel(tf.keras.Model):
