@@ -14,7 +14,6 @@ import logging
 import glob
 from pathlib import Path
 from typing import List
-from src.utils.utils import DATA_PATH
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -24,7 +23,8 @@ logging.basicConfig(
 # class PathLoader
 # =====================================================================
 class PathLoader:
-    """A class to load and save file paths based on a given pattern.
+    """
+    A class to load and save file paths based on a given pattern.
 
     Attributes:
         load_pattern (str): The glob pattern to load the file paths.
@@ -40,7 +40,8 @@ class PathLoader:
         self.save_file = Path(save_file)
 
     def load_paths(self, save: bool = False) -> List[str]:
-        """Loads file paths based on the glob pattern and optionally saves them.
+        """
+        Loads file paths based on the glob pattern and optionally saves them.
 
         Args:
             save (bool): Whether to save the file paths. Defaults to False.
@@ -72,7 +73,8 @@ class PathLoader:
         return paths
 
     def save_paths(self, paths: List[str]) -> None:
-        """Saves the provided paths to a file.
+        """
+        Saves the provided paths to a file.
 
         Args:
             paths (List[str]): A list of file paths.
@@ -88,7 +90,8 @@ class PathLoader:
 
     @staticmethod
     def load_paths_from_file(save_file: Path) -> List[str]:
-        """Loads the paths from a file.
+        """
+        Loads the paths from a file.
 
         Args:
             save_file (Path): The path to the JSON file.
@@ -109,20 +112,3 @@ class PathLoader:
         except json.JSONDecodeError as e:
             logging.error("Invalid JSON format in %s: %s", save_file, e)
             return []
-
-
-# Main
-# =====================================================================
-def main() -> None:
-    """Main function to load the image paths from the dataset and save them."""
-
-    loader = PathLoader(
-        load_pattern=f"{DATA_PATH}/raw/sprites/**/front/**/*.png",
-        save_file=f"{DATA_PATH}/processed/save_file.json",
-    )
-    image_paths = loader.load_paths(save=True)
-    logging.info("Loaded %d image paths to %s", len(image_paths), loader.save_file)
-
-
-if __name__ == "__main__":
-    main()
