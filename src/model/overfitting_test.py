@@ -18,22 +18,6 @@ from src.utils.config import Config
 from src.utils import CONFIG_PATH
 
 
-# Set up
-# =====================================================================
-config = Config.from_config_file(CONFIG_PATH)
-
-IMG_SIZE = config.hyperparameters.img_size
-NUM_CLASSES = config.hyperparameters.num_classes
-BATCH_SIZE = config.hyperparameters.batch_size
-EPOCHS = config.hyperparameters.epochs
-
-TIMESTEPS = config.hyperparameters.timesteps
-SCHEDULER = config.hyperparameters.scheduler
-BETA_START = config.hyperparameters.beta_start
-BETA_END = config.hyperparameters.beta_end
-S = config.hyperparameters.s
-
-
 class DiffusionModel(tf.keras.Model):
     """
     DiffusionModel class
@@ -349,6 +333,7 @@ class DiffusionModel(tf.keras.Model):
         return beta
 
 
+# TODO: PUT THIS IN A SEPARATE FILE
 # Custom Callback for the Diffusion Model
 # =====================================================================
 class PlottingCallback(tf.keras.callbacks.Callback):
@@ -410,19 +395,8 @@ class PlottingCallback(tf.keras.callbacks.Callback):
                 ax.axis("off")
             plt.show()
 
-            # get the coordinates of the bottom left corner of the sprite
-            # if self.img_size == 64:
-            #     x = 60
-            #     y = 60
-            #     w = 50
-            #     h = 50
-            # elif self.img_size == 32:
-            #     x = 30
-            #     y = 30
-            #     w = 25
-            #     h = 25
-
-            x = 30  # TODO: CHECK THIS
+            # get the coordinates of the bottom left corner of the sprite (depends on the sprite size)
+            x = 30
             y = 30
             w = 25
             h = 25
