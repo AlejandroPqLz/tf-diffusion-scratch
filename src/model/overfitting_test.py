@@ -1,5 +1,5 @@
 """
-diffusion_model.py
+diffusion_functionality.py
 
 Functionality: This file contains the code to define the DiffusionModel class that adds the
 diffusion functionality to the defined model.

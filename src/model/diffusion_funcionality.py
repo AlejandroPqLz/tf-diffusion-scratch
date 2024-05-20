@@ -6,7 +6,7 @@ diffusion functionality to the defined model.
 
 """
 
-# Imports
+# Imports and setup
 # =====================================================================
 import time
 import tensorflow as tf
@@ -14,24 +14,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from src.utils.utils import string_to_onehot, onehot_to_string
-from src.utils.config import Config
 from src.utils import CONFIG_PATH
+from src.utils.config import Config
 
-
-# Set up
-# =====================================================================
+# Load the configuration
 config = Config.from_config_file(CONFIG_PATH)
 
-IMG_SIZE = config.hyperparameters.img_size
+# Constants
+# =====================================================================
 NUM_CLASSES = config.hyperparameters.num_classes
-BATCH_SIZE = config.hyperparameters.batch_size
-EPOCHS = config.hyperparameters.epochs
-
-TIMESTEPS = config.hyperparameters.timesteps
-SCHEDULER = config.hyperparameters.scheduler
-BETA_START = config.hyperparameters.beta_start
-BETA_END = config.hyperparameters.beta_end
-S = config.hyperparameters.s
 
 
 class DiffusionModel(tf.keras.Model):
