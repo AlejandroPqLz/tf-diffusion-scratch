@@ -4,6 +4,14 @@ visualize.py
 Functionality: This file contains the code to plot the data of the project.
 """
 
+# params = {k: str(v) for k, v in config[param_name].items()}
+
+# for k, v in params.items():
+#     v, type_ = v.split(",")
+#     v = type_(v)
+#     params[k] = v
+
+# return params
 # =====================================================================
 # Imports
 # =====================================================================

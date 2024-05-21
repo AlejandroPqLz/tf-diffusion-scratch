@@ -2,97 +2,77 @@
 config.py
 
 Functionality: This file contains the code to load the configuration of the project
-in a type-safe way using Pydantic.
+in a type-safe way.
 """
-
-# TODO: DO:
-# [hyperparameters]
-# img_size = 64, int
-# num_classes = 10, int
-# batch_size = 64, int
-# epochs = 10, int
-# timesteps = 10, int
-# scheduler = "cosine", str
-# beta_start = 0.0, float
-# beta_end = 1.0, float
-# s = 1.0, float
-
-# for config in config_file:
-#     config = config.split(", ")
-#     key = config[0]
-#     value = config[1]
-#     config_type = config[2]
-#     value = config_type(value)
 
 # Imports
 # =====================================================================
-from pathlib import Path
 import configparser
-from pydantic import BaseModel
+from typing import Dict, Any
+import ast
 
 
-class Hyperparameters(BaseModel):
+def load_config(config: configparser.ConfigParser, param_name: str) -> Dict[str, Any]:
     """
-    Hyperparameters class to store the hyperparameters of the model.
+    Load the configuration from a file.
 
-    Atributes:
-        img_size (int): The size of the images.
-        num_classes (int): The number of classes in the dataset.
-        batch_size (int): The batch size.
-        epochs (int): The number of epochs.
-        timesteps (int): The number of timesteps.
-        scheduler (str): The scheduler to use.
-        beta_start (float): The starting beta value.
-        beta_end (float): The ending beta value.
-        s (float): The s value.
+    Args:
+        config (configparser.ConfigParser): The configuration object.
+        param_name (str): The name of the section in the configuration file.
+
+    Returns:
+        Dict[str, Any]: The configuration of the project.
     """
 
-    img_size: int
-    num_classes: int
-    batch_size: int
-    epochs: int
-    timesteps: int
-    scheduler: str
-    beta_start: float
-    beta_end: float
-    s: float
+    if param_name not in config:
+        raise ValueError(f"Section {param_name} not found in the configuration file.")
+
+    section = config[param_name]
+    parsed_config = {}
+
+    for key, value in section.items():
+        value_str, value_type = value.rsplit(",", 1)
+        value_str = value_str.strip()
+        value_type = value_type.strip()
+
+        try:
+            if value_type == "str":
+                # Special handling for string values
+                parsed_value = value_str
+            else:
+                # Evaluate the value using the type as a function
+                parsed_value = ast.literal_eval(value_str)
+            parsed_config[key] = parsed_value
+        except Exception as e:
+            raise ValueError(
+                f"Error parsing {key} with value {value_str} as {value_type}: {e}"
+            ) from e
+
+    return parsed_config
 
 
-class Config(BaseModel):
+# Custom parsers
+def parse_str(value: str) -> str:
     """
-    Config class to store the configuration of the project.
+    Parse a string value.
 
-    Atributes:
-        hyperparameters (Hyperparameters): The hyperparameters of the model.
+    Args:
+        value (str): The string value to parse.
 
-    Methods:
-        from_config_file(path: Path) -> Config: Load the configuration from a file.
+    Returns:
+        str: The parsed string value.
     """
+    return value.strip('"')
 
-    hyperparameters: Hyperparameters
 
-    @classmethod
-    def from_config_file(cls, path: Path):
-        """
-        Load the configuration from a file.
+def parse_list_or_tuple(value: str) -> Any:
+    """
+    Parse a list or tuple value.
 
-        Args:
-            path (Path): The path to the configuration file.
+    Args:
+        value (str): The list or tuple value to parse.
 
-        Returns:
-            Config: The configuration of the project.
-        """
-        config = configparser.ConfigParser()
-        config.read(path)
-
-        hyperparams = {key: value for key, value in config["hyperparameters"].items()}
-        # Convert to appropriate types
-        hyperparams_converted = {
-            k: (
-                int(v)
-                if v.isdigit()
-                else float(v) if v.replace(".", "", 1).isdigit() else v
-            )
-            for k, v in hyperparams.items()
-        }
-        return cls(hyperparameters=Hyperparameters(**hyperparams_converted))
+    Returns:
+        Any: The parsed list or tuple value.
+    """
+    return ast.literal_eval(value)
