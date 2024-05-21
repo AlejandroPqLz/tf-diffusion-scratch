@@ -9,58 +9,61 @@ diffusion functionality to the defined model.
 # Imports and setup
 # =====================================================================
 import time
+import configparser
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from src.utils.utils import string_to_onehot, onehot_to_string
 from src.utils import CONFIG_PATH
-from src.utils.config import Config
+from src.utils.config import parse_config
 
 # Load the configuration
-config = Config.from_config_file(CONFIG_PATH)
+config = configparser.ConfigParser()
+config.read(CONFIG_PATH)
+hyperparameters = parse_config(config, "hyperparameters")
 
 # Constants
 # =====================================================================
-NUM_CLASSES = config.hyperparameters.num_classes
+NUM_CLASSES = hyperparameters["num_classes"]
 
-TODO: CONSIDERING TO INTRODUCE EVERYTHING AS AN ARG SO INSTEAD OF:
-    
-    def __init__(
-        self,
-        model: tf.keras.Model,
-        img_size: int,
-        num_classes: int,
-        timesteps: int,
-        beta_start: float,
-        beta_end: float,
-        s: float,
-        scheduler: str,
-    ):
+# TODO: CONSIDERING TO INTRODUCE EVERYTHING AS AN ARG SO INSTEAD OF:
 
-WE HAVE:
-    
-    def __init__(
-        self,
-        model: tf.keras.Model,
-        args: dict,):
-    
-        self.img_size = args["img_size"]
-        self.num_classes = args["num_classes"]
-        self.timesteps = args["timesteps"]
-        self.beta_start = args["beta_start"]
-        self.beta_end = args["beta_end"]
-        self.s = args["s"]
-        self.scheduler = args["scheduler"]
-        
-        # global variables (TODO: VIEW GLOABL VARIABLES IN PYTHON)
-        self.beta = self.beta_scheduler(args)
-        self.alpha = 1 - self.beta
-        self.alpha_cumprod = tf.math.cumprod(self.alpha)
-    
-    def beta_scheduler(self, args):
-        _, _, timesteps, beta_start, beta_end, s = args
-    
+#     def __init__(
+#         self,
+#         model: tf.keras.Model,
+#         img_size: int,
+#         num_classes: int,
+#         timesteps: int,
+#         beta_start: float,
+#         beta_end: float,
+#         s: float,
+#         scheduler: str,
+#     ):
+
+# WE HAVE:
+
+#     def __init__(
+#         self,
+#         model: tf.keras.Model,
+#         args: dict,):
+
+#         self.img_size = args["img_size"]
+#         self.num_classes = args["num_classes"]
+#         self.timesteps = args["timesteps"]
+#         self.beta_start = args["beta_start"]
+#         self.beta_end = args["beta_end"]
+#         self.s = args["s"]
+#         self.scheduler = args["scheduler"]
+
+#         # global variables (TODO: VIEW GLOABL VARIABLES IN PYTHON)
+#         self.beta = self.beta_scheduler(args)
+#         self.alpha = 1 - self.beta
+#         self.alpha_cumprod = tf.math.cumprod(self.alpha)
+
+#     def beta_scheduler(self, args):
+#         _, _, timesteps, beta_start, beta_end, s = args
+
 
 class DiffusionModel(tf.keras.Model):
     """

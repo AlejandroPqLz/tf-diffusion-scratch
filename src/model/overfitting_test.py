@@ -9,20 +9,23 @@ diffusion functionality to the defined model.
 # Imports and setup
 # =====================================================================
 import time
+import configparser
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from src.utils.utils import string_to_onehot, onehot_to_string
 from src.utils import CONFIG_PATH
-from src.utils.config import Config
+from src.utils.config import parse_config
 
 # Load the configuration
-config = Config.from_config_file(CONFIG_PATH)
+config = configparser.ConfigParser()
+config.read(CONFIG_PATH)
+hyperparameters = parse_config(config, "hyperparameters")
 
 # Constants
 # =====================================================================
-NUM_CLASSES = config.hyperparameters.num_classes
+NUM_CLASSES = hyperparameters["num_classes"]
 
 
 TODO: CONSIDERING TO INTRODUCE EVERYTHING AS AN ARG SO INSTEAD OF:

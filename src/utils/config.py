@@ -12,9 +12,9 @@ from typing import Dict, Any
 import ast
 
 
-def load_config(config: configparser.ConfigParser, param_name: str) -> Dict[str, Any]:
+def parse_config(config: configparser.ConfigParser, param_name: str) -> Dict[str, Any]:
     """
-    Load the configuration from a file.
+    Parse the configuration of the project in a type-safe way.
 
     Args:
         config (configparser.ConfigParser): The configuration object.
