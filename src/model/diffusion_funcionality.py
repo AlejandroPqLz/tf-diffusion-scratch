@@ -64,22 +64,21 @@ class DiffusionModel(tf.keras.Model):
         self.alpha = 1 - self.beta
         self.alpha_cumprod = tf.cast(tf.math.cumprod(self.alpha), tf.float32)
 
-        self.loss_fn = tf.keras.losses.MeanSquaredError()
+        self.compute_loss = tf.keras.losses.MeanSquaredError()
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
 
-    def compile(
-        self, optimizer: tf.keras.optimizers.Optimizer, loss: tf.keras.losses.Loss
-    ):
+    def compile(self, loss, optimizer, **kwargs):
         """
-        Compiles the model with the specified optimizer and loss function.
+        Compile the model with the specified loss and optimizer.
 
         Args:
-            optimizer (tf.keras.optimizers.Optimizer): The optimizer to use for training.
             loss (tf.keras.losses.Loss): The loss function to use for training.
+            optimizer (tf.keras.optimizers.Optimizer): The optimizer to use for training.
+            **kwargs: Additional arguments to pass to the model's compile method.
         """
-        super(DiffusionModel, self).compile()
+        super().compile(**kwargs)
+        self.compute_loss = loss
         self.optimizer = optimizer
-        self.loss_fn = loss
 
     def train_step(self, data: tuple) -> dict:
         """
@@ -96,7 +95,8 @@ class DiffusionModel(tf.keras.Model):
 
         # 1: repeat ------
 
-        # 3: t ~ U(0, T) Generate a random timestep for each image in the batch
+        # Generate a random timestep for each image in the batch
+        # 3: t ~ U(0, T)
         t = tf.random.uniform(shape=(), minval=0, maxval=self.timesteps, dtype=tf.int32)
         normalized_t = tf.fill(
             [tf.shape(input_data)[0], 1], tf.cast(t, tf.float32) / self.timesteps
@@ -116,13 +116,22 @@ class DiffusionModel(tf.keras.Model):
             predicted_noise = self.model(
                 [x_t, input_label, normalized_t], training=True
             )
-            loss = self.loss_fn(target_noise, predicted_noise)
+            loss = self.compute_loss(target_noise, predicted_noise)
 
-        gradients = tape.gradient(loss, self.trainable_variables)
-        self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
+        trainable_vars = self.trainable_variables
+        gradients = tape.gradient(loss, trainable_vars)
+        self.optimizer.apply_gradients(zip(gradients, trainable_vars))
 
         # 6: until convergence ------
-        return {"loss": loss}
+
+        # Update the metrics
+        for metric in self.metrics:
+            if metric.name == "loss":
+                metric.update_state(loss)
+            else:
+                metric.update_state(target_noise, predicted_noise)
+
+        return {m.name: m.result() for m in self.metrics}
 
     def predict_step(self, data: tuple) -> tf.Tensor:
         """
@@ -135,13 +144,14 @@ class DiffusionModel(tf.keras.Model):
             tf.Tensor: The final denoised image.
         """
         # Starting from pure noise
-        x_t, y_t = data  # 1: x_T ~ N(0, I)
+        # 1: x_T ~ N(0, I)
+        x_t, y_t = data
 
         # Reverse the diffusion process
-        # 2: for t = T − 1, . . . , 1 do
+        # 2: for t = T, . . . , 1 do
         time.sleep(0.4)
-        inv_process = reversed(range(0, self.timesteps))
-        for t in tqdm(inv_process, "Sampling sprite", self.timesteps - 1):
+        inv_process = reversed(range(0, self.timesteps - 1))  # TODO: CHECK THIS
+        for t in tqdm(inv_process, "Sampling sprite", self.timesteps):
             normalized_t = tf.fill(
                 [tf.shape(x_t)[0], 1], tf.cast(t, tf.float32) / self.timesteps
             )  # TODO: CHECK THIS
@@ -166,8 +176,8 @@ class DiffusionModel(tf.keras.Model):
             x_t = (
                 x_t - (1 - alpha_t) / tf.sqrt(1 - alpha_cumprod_t) * predicted_noise
             ) / tf.sqrt(alpha_t) + sigma_t * z
-
         # 5: end for
+
         return x_t  # 6: return x_0
 
     def forward_diffusion(self, x_0: tf.Tensor, t: int) -> tf.Tensor:
