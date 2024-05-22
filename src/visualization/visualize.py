@@ -20,7 +20,7 @@ from src.utils.utils import onehot_to_string
 from src.utils.config import parse_config
 from src.utils import DATA_PATH, CONFIG_PATH
 
-# Set config file
+# Set config file and GPU use
 # =====================================================================
 config = configparser.ConfigParser()
 config.read(CONFIG_PATH)
@@ -29,6 +29,11 @@ hyperparameters = parse_config(config, "hyperparameters")
 
 IMG_SIZE = hyperparameters["img_size"]
 NUM_CLASSES = hyperparameters["num_classes"]
+
+# ------
+gpus_list = tf.config.list_physical_devices("GPU")
+gpu = gpus_list[0]
+tf.config.experimental.set_memory_growth(gpu, True)
 
 # Create the architecture of the model
 u_net = build_unet(IMG_SIZE, NUM_CLASSES)

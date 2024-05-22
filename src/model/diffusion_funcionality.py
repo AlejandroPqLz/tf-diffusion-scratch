@@ -64,6 +64,23 @@ class DiffusionModel(tf.keras.Model):
         self.alpha = 1 - self.beta
         self.alpha_cumprod = tf.cast(tf.math.cumprod(self.alpha), tf.float32)
 
+        self.loss_fn = tf.keras.losses.MeanSquaredError()
+        self.optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
+
+    def compile(
+        self, optimizer: tf.keras.optimizers.Optimizer, loss: tf.keras.losses.Loss
+    ):
+        """
+        Compiles the model with the specified optimizer and loss function.
+
+        Args:
+            optimizer (tf.keras.optimizers.Optimizer): The optimizer to use for training.
+            loss (tf.keras.losses.Loss): The loss function to use for training.
+        """
+        super(DiffusionModel, self).compile()
+        self.optimizer = optimizer
+        self.loss_fn = loss
+
     def train_step(self, data: tuple) -> dict:
         """
         Algorithm 1: The training step for the diffusion model.
@@ -79,8 +96,7 @@ class DiffusionModel(tf.keras.Model):
 
         # 1: repeat ------
 
-        # 3: t ~ U(0, T)
-        # Generate a random timestep for each image in the batch
+        # 3: t ~ U(0, T) Generate a random timestep for each image in the batch
         t = tf.random.uniform(shape=(), minval=0, maxval=self.timesteps, dtype=tf.int32)
         normalized_t = tf.fill(
             [tf.shape(input_data)[0], 1], tf.cast(t, tf.float32) / self.timesteps
@@ -100,7 +116,7 @@ class DiffusionModel(tf.keras.Model):
             predicted_noise = self.model(
                 [x_t, input_label, normalized_t], training=True
             )
-            loss = self.compiled_loss(target_noise, predicted_noise)
+            loss = self.loss_fn(target_noise, predicted_noise)
 
         gradients = tape.gradient(loss, self.trainable_variables)
         self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
@@ -142,9 +158,9 @@ class DiffusionModel(tf.keras.Model):
             # Calculate x_{t-1}
             # 4: x_{t-1} = (x_t - (1 - alpha_t) / sqrt(1 - alpha_cumprod_t) * eps_theta) / sqrt(alpha_t) + sigma_t * z
             # TODO: CHECK sigma_t:
-            sigma_t = tf.cast(tf.sqrt(1 - self.alpha[t], tf.float32))
             alpha_t = self.alpha[t]
             alpha_cumprod_t = self.alpha_cumprod[t]
+            sigma_t = tf.cast(tf.sqrt(1 - alpha_t), tf.float32)
 
             # TODO: CHECK THIS:
             x_t = (
