@@ -15,55 +15,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from src.utils.utils import string_to_onehot, onehot_to_string
-from src.utils import CONFIG_PATH
-from src.utils.config import parse_config
-
-# Load the configuration
-config = configparser.ConfigParser()
-config.read(CONFIG_PATH)
-hyperparameters = parse_config(config, "hyperparameters")
-
-# Constants
-# =====================================================================
-NUM_CLASSES = hyperparameters["num_classes"]
-
-
-TODO: CONSIDERING TO INTRODUCE EVERYTHING AS AN ARG SO INSTEAD OF:
-    
-    def __init__(
-        self,
-        model: tf.keras.Model,
-        img_size: int,
-        num_classes: int,
-        timesteps: int,
-        beta_start: float,
-        beta_end: float,
-        s: float,
-        scheduler: str,
-    ):
-
-WE HAVE:
-    
-    def __init__(
-        self,
-        model: tf.keras.Model,
-        args: dict,):
-    
-        self.img_size = args["img_size"]
-        self.num_classes = args["num_classes"]
-        self.timesteps = args["timesteps"]
-        self.beta_start = args["beta_start"]
-        self.beta_end = args["beta_end"]
-        self.s = args["s"]
-        self.scheduler = args["scheduler"]
-        
-        # global variables (TODO: VIEW GLOABL VARIABLES IN PYTHON)
-        self.beta = self.beta_scheduler(args)
-        self.alpha = 1 - self.beta
-        self.alpha_cumprod = tf.math.cumprod(self.alpha)
-    
-    def beta_scheduler(self, args):
-        _, _, timesteps, beta_start, beta_end, s = args
 
 
 class DiffusionModel(tf.keras.Model):
@@ -84,8 +35,8 @@ class DiffusionModel(tf.keras.Model):
         train_step(data): The training step for the diffusion model.
         predict_step(data): The prediction step for the diffusion model.
         plot_samples(num_samples, poke_type): Generate and plot samples from the diffusion model.
-        forward_diffusion(x_0, t, timesteps, scheduler, beta_start, beta_end, s): Simulate the forward diffusion process.
-        beta_scheduler(scheduler, timesteps, beta_start, beta_end, s): Generate a schedule for beta values according to the specified type.
+        forward_diffusion(x_0, t): Simulate the forward diffusion process.
+        beta_scheduler(): Generate a schedule for beta values according to the specified type.
     """
 
     def __init__(
@@ -105,14 +56,14 @@ class DiffusionModel(tf.keras.Model):
         self.img_size = img_size
         self.num_classes = num_classes
         self.timesteps = timesteps
-        self.scheduler = scheduler
         self.beta_start = beta_start
         self.beta_end = beta_end
         self.s = s
+        self.scheduler = scheduler
 
-        self.beta = self.beta_scheduler(scheduler, timesteps, beta_start, beta_end, s)
+        self.beta = self.beta_scheduler()
         self.alpha = 1 - self.beta
-        self.alpha_cumprod = tf.math.cumprod(self.alpha)
+        self.alpha_cumprod = tf.cast(tf.math.cumprod(self.alpha), tf.float32)
 
     def train_step(self, data: tuple) -> dict:
         """
@@ -137,29 +88,20 @@ class DiffusionModel(tf.keras.Model):
         )  # TODO: CHECK THIS
 
         # 2: x_0 ~ q(x_0)
-        x_t = self.forward_diffusion(
-            input_data,
-            t,
-            self.timesteps,
-            self.scheduler,
-            self.beta_start,
-            self.beta_end,
-            self.s,
+        x_t = self.forward_diffusion(input_data, t)
+
+        # 4: eps_t ~ N(0, I) # TODO: CHECK THIS
+        alpha_cumprod_t = self.alpha_cumprod[t]
+        target_noise = (x_t - tf.sqrt(alpha_cumprod_t) * input_data) / tf.sqrt(
+            1 - alpha_cumprod_t
         )
-
-        alpha_cumprod = tf.cast(self.alpha_cumprod, tf.float32)
-
-        # 4: eps_t ~ N(0, I)
-        target_noise = (x_t - tf.sqrt(alpha_cumprod[t]) * input_data) / tf.sqrt(
-            1 - alpha_cumprod[t]
-        )  # TODO: CHECK THIS
 
         # 5: Take a gradient descent step on
         with tf.GradientTape() as tape:
             predicted_noise = self.model(
                 [x_t, input_label, normalized_t], training=True
             )
-            loss = self.loss_fn(target_noise, predicted_noise)
+            loss = self.compiled_loss(target_noise, predicted_noise)
 
         gradients = tape.gradient(loss, self.trainable_variables)
         self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
@@ -200,24 +142,69 @@ class DiffusionModel(tf.keras.Model):
 
             # Calculate x_{t-1}
             # 4: x_{t-1} = (x_t - (1 - alpha_t) / sqrt(1 - alpha_cumprod_t) * eps_theta) / sqrt(alpha_t) + sigma_t * z
-            sigma_t = tf.sqrt(1 - self.alpha[t])  # TODO: CHECK THIS
+            # TODO: CHECK sigma_t:
+            sigma_t = tf.cast(tf.sqrt(1 - self.alpha[t], tf.float32))
+            alpha_t = self.alpha[t]
+            alpha_cumprod_t = self.alpha_cumprod[t]
 
-            sigma_t = tf.cast(sigma_t, tf.float32)
-            alpha = tf.cast(self.alpha, tf.float32)
-            alpha_cumprod = tf.cast(self.alpha_cumprod, tf.float32)
-
-            # print(
-            #     f"x_t: {x_t.dtype}, alpha: {alpha[t].dtype}, alpha_cumprod: {alpha_cumprod[t].dtype}, predicted_noise: {predicted_noise.dtype}, sigma_t: {sigma_t.dtype}, z: {z.dtype}"
-            # )
-
+            # TODO: CHECK THIS:
             x_t = (
-                x_t - (1 - alpha[t]) / tf.sqrt(1 - alpha_cumprod[t]) * predicted_noise
-            ) / tf.sqrt(
-                alpha[t]
-            ) + sigma_t * z  # TODO: CHECK THIS
+                x_t - (1 - alpha_t) / tf.sqrt(1 - alpha_cumprod_t) * predicted_noise
+            ) / tf.sqrt(alpha_t) + sigma_t * z
 
         # 5: end for
         return x_t  # 6: return x_0
+
+    def forward_diffusion(self, x_0: tf.Tensor, t: int) -> tf.Tensor:
+        """
+        Simulate the forward diffusion process by adding noise to the input image.
+
+        Args:
+            x_0 (tf.Tensor): The initial image tensor.
+            t (int): The current timestep.
+
+        Returns:
+            tf.Tensor: The diffused image tensor at timestep t.
+        """
+        # Apply the diffusion process: x_t = sqrt(alpha_cumprod_t) * x_0 + sqrt(1-alpha_cumprod_t) * noise
+        alpha_cumprod_t = self.alpha_cumprod[t]
+        noise = tf.random.normal(shape=tf.shape(x_0), dtype=tf.float32)
+        # TODO: CHECK x_t
+        x_t = tf.sqrt(alpha_cumprod_t) * x_0 + tf.sqrt(1 - alpha_cumprod_t) * noise
+
+        per_noise = tf.sqrt(1 - alpha_cumprod_t) * noise  # TODO: CHECK THIS
+        x_0 = (x_t - per_noise) / tf.sqrt(alpha_cumprod_t)  # TODO: CHECK THIS
+
+        return x_t
+
+    def beta_scheduler(self) -> tf.Tensor:
+        """
+        Generates a schedule for beta values according to the specified type ('linear' or 'cosine').
+
+        Returns:
+            tf.Tensor: The beta values for each timestep (the beta scheduler)
+        """
+        if self.scheduler == "linear":
+            beta = tf.linspace(self.beta_start, self.beta_end, self.timesteps)
+
+        elif self.scheduler == "cosine":
+
+            def f(t):
+                pi = tf.constant(np.pi)
+                return (
+                    tf.cos((t / self.timesteps + self.s) / (1 + self.s) * (pi * 0.5))
+                    ** 2
+                )
+
+            t = tf.range(self.timesteps, dtype=tf.float32)
+            alphas_cumprod = f(t) / f(0)
+            beta = 1 - alphas_cumprod[1:] / tf.maximum(alphas_cumprod[:-1], 0.999)
+            beta = tf.clip_by_value(beta, 0.0001, 0.999)
+
+        else:
+            raise ValueError(f"Unsupported scheduler: {self.scheduler}")
+
+        return beta
 
     def plot_samples(
         self, num_samples: int = 3, poke_type: str = None, process: bool = False
@@ -245,21 +232,22 @@ class DiffusionModel(tf.keras.Model):
             tqdm.write(f"Generating sample {i + 1}/{num_samples}")
 
             # Start with random noise as input that follows N(0, I)
-            start_noise = tf.random.normal(
-                shape=(1, self.img_size, self.img_size, 3)
-            )  # TODO: CHECK THIS
+            # TODO: CHECK THIS
+            start_noise = tf.random.normal(shape=(1, self.img_size, self.img_size, 3))
 
             # Set the label for the sample(s)
             y_label = (
                 string_to_onehot(poke_type)
                 if poke_type is not None
                 else tf.one_hot(
-                    tf.random.uniform(shape=[], maxval=NUM_CLASSES, dtype=tf.int32),
-                    NUM_CLASSES,
+                    tf.random.uniform(
+                        shape=[], maxval=self.num_classes, dtype=tf.int32
+                    ),
+                    self.num_classes,
                 )
             )
 
-            y_label = tf.reshape(y_label, [1, NUM_CLASSES])
+            y_label = tf.reshape(y_label, [1, self.num_classes])
 
             # Generate the sample
             sample = self.predict_step((start_noise, y_label))
@@ -277,98 +265,3 @@ class DiffusionModel(tf.keras.Model):
         plt.show()
 
         return None
-
-    # @staticmethod
-    # def forward_diffusion(
-    #     x_0: tf.Tensor,
-    #     t: int,
-    #     timesteps: int,
-    #     scheduler: str,
-    #     beta_start: float,
-    #     beta_end: float,
-    #     s: float,
-    # ) -> tf.Tensor:
-    
-    @staticmethod
-    def forward_diffusion(x_0: tf.Tensor,t: int,args: dict) -> tf.Tensor:
-        
-        """
-        Simulate the forward diffusion process by adding noise to the input image.
-
-        Args:
-            x_0 (tf.Tensor): The initial image tensor.
-            t (int): The current timestep.
-            timesteps(int): The total number of diffusion timesteps.
-            scheduler (str): The type of noise schedule ('cosine' or 'linear').
-            beta_start (float): The starting value of beta (noise level).
-            beta_end (float): The ending value of beta (noise level).
-            s (float): The scale factor for the variance curve in the 'cosine' scheduler.
-
-        Returns:
-            tuple: The diffused image tensor at timestep t.
-        """
-        _, _, timesteps, scheduler, beta_start, beta_end, s = args # TODO: CHECK THIS
-        
-        # Calculate the noise schedule for beta values
-        beta = DiffusionModel.beta_scheduler(
-            scheduler, timesteps, beta_start, beta_end, s
-        )
-        alpha = 1.0 - beta
-        alpha_cumprod = tf.math.cumprod(alpha)
-        alpha_cumprod = tf.cast(alpha_cumprod, tf.float32)
-
-        # Apply the diffusion process: x_t = sqrt(alpha_cumprod_t) * x_0 + sqrt(1-alpha_cumprod_t) * noise
-        noise = tf.random.normal(shape=tf.shape(x_0), dtype=tf.float32)
-        x_t = (
-            tf.sqrt(alpha_cumprod[t]) * x_0 + tf.sqrt(1 - alpha_cumprod[t]) * noise
-        )  # TODO: CHECK THIS
-        per_noise = tf.sqrt(1 - alpha_cumprod[t]) * noise  # TODO: CHECK THIS
-        x_0 = (x_t - per_noise) / tf.sqrt(alpha_cumprod[t])  # TODO: CHECK THIS
-
-        return x_t
-
-    # @staticmethod
-    # def beta_scheduler(
-    #     scheduler: str, timesteps: int, beta_start: float, beta_end: float, s: float
-    # ) -> tf.Tensor:
-        
-    @staticmethod
-    def beta_scheduler(args: dict) -> tf.Tensor:
-        """
-        Generates a schedule for beta values according to the specified type ('linear' or 'cosine').
-
-        Args:
-            scheduler (str): The type of noise schedule ('linear' or 'cosine').
-            timesteps (int): The total number of diffusion timesteps.
-            beta_start (float): The starting value of beta (noise level).
-            beta_end (float): The ending value of beta (noise level).
-            s (float): The scale factor for the variance curve in the 'cosine' scheduler.
-
-        Returns:
-            tf.Tensor: The beta schedule.
-        """
-        _, _, timesteps, beta_start, beta_end, s, scheduler = args # TODO: CHECK THIS
-
-        if scheduler == "linear":
-            beta = beta_start + (beta_end - beta_start) * np.arange(timesteps) / (
-                timesteps - 1
-            )
-            # beta = tf.linspace(beta_start, beta_end, timesteps)
-
-        elif scheduler == "cosine":
-
-            def f(t):
-                return (
-                    tf.cos((t / timesteps + s) / (1 + s) * tf.constant(np.pi * 0.5))
-                    ** 2
-                )
-
-            t = tf.range(timesteps, dtype=tf.float32)
-            alphas_cumprod = f(t) / f(0)
-            beta = 1 - alphas_cumprod[1:] / tf.maximum(alphas_cumprod[:-1], 0.999)
-            beta = tf.clip_by_value(beta, 0.0001, 0.999)
-
-        else:
-            raise ValueError(f"Unsupported scheduler: {scheduler}")
-
-        return beta
