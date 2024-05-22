@@ -9,7 +9,6 @@ diffusion functionality to the defined model.
 # Imports and setup
 # =====================================================================
 import time
-import configparser
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt

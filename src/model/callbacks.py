@@ -22,14 +22,19 @@ class DiffusionCallback(tf.keras.callbacks.Callback):
 
     Attributes:
         diffusion_model (DiffusionModel): The diffusion model to generate samples from.
-        frequency (int): The frequency at which to generate samples.
-        poke_type (str): The type of Pokemon to generate samples for.
+        frequency (int): The frequency at which to generate samples. Defaults to 20.
+        poke_type (str): The type of Pokemon to generate samples for. Defaults to None.
 
     Methods:
         on_epoch_end(epoch, logs): The method that is called at the end of each epoch.
     """
 
-    def __init__(self, diffusion_model: DiffusionModel, frequency: int, poke_type: str):
+    def __init__(
+        self,
+        diffusion_model: DiffusionModel,
+        frequency: int = 20,
+        poke_type: str = None,
+    ):
         super(DiffusionCallback, self).__init__()
         self.diffusion_model = diffusion_model
         self.frequency = frequency

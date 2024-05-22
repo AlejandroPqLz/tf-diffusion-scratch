@@ -9,7 +9,6 @@ diffusion functionality to the defined model.
 # Imports and setup
 # =====================================================================
 import time
-import configparser
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -155,7 +154,7 @@ class DiffusionModel(tf.keras.Model):
         # 5: end for
         return x_t  # 6: return x_0
 
-    def forward_diffusion(self, x_0: tf.Tensor, t: int, args: dict) -> tf.Tensor:
+    def forward_diffusion(self, x_0: tf.Tensor, t: int) -> tf.Tensor:
         """
         Simulate the forward diffusion process by adding noise to the input image.
 
@@ -164,7 +163,7 @@ class DiffusionModel(tf.keras.Model):
             t (int): The current timestep.
 
         Returns:
-            tuple: The diffused image tensor at timestep t.
+            tf.Tensor: The diffused image tensor at timestep t.
         """
         # Apply the diffusion process: x_t = sqrt(alpha_cumprod_t) * x_0 + sqrt(1-alpha_cumprod_t) * noise
         alpha_cumprod_t = self.alpha_cumprod[t]
