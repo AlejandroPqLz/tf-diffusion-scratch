@@ -198,7 +198,7 @@ class DiffusionModel(tf.keras.Model):
             t = tf.range(self.timesteps, dtype=tf.float32)
             alphas_cumprod = f(t) / f(0)
             beta = 1 - alphas_cumprod[1:] / tf.maximum(alphas_cumprod[:-1], 0.999)
-            beta = tf.clip_by_value(beta, 0.0001, 0.999)
+            beta = tf.clip_by_value(beta, 0.0001, 0.999)  # for numerical stability
 
         else:
             raise ValueError(f"Unsupported scheduler: {self.scheduler}")

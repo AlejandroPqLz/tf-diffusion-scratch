@@ -49,30 +49,3 @@ def parse_config(config: configparser.ConfigParser, param_name: str) -> Dict[str
             ) from e
 
     return parsed_config
-
-
-# Custom parsers
-def parse_str(value: str) -> str:
-    """
-    Parse a string value.
-
-    Args:
-        value (str): The string value to parse.
-
-    Returns:
-        str: The parsed string value.
-    """
-    return value.strip('"')
-
-
-def parse_list_or_tuple(value: str) -> Any:
-    """
-    Parse a list or tuple value.
-
-    Args:
-        value (str): The list or tuple value to parse.
-
-    Returns:
-        Any: The parsed list or tuple value.
-    """
-    return ast.literal_eval(value)

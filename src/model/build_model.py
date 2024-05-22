@@ -24,16 +24,33 @@ def build_unet(
     img_size: int,
     num_classes: int,
     initial_channels: int = 64,
-    channel_multiplier: list = [1, 2, 4, 8],
-    has_attention: list = [False, False, True, True],
+    channel_multiplier: list = None,
+    has_attention: list = None,
 ):
+    """Build the U-Net like architecture with diffusion blocks
+
+    Args:
+        img_size (int): The size of the input images
+        num_classes (int): The number of classes in the dataset
+        initial_channels (int): The number of initial channels. Defaults to 64.
+        channel_multiplier (list): The channel multiplier for each block. Defaults to None.
+        has_attention (list): Whether to apply attention in each block. Defaults to None.
+
+    Returns:
+        model: The custom U-Net model
+    """
+    if channel_multiplier is None:
+        channel_multiplier = [1, 2, 4, 8]
+    if has_attention is None:
+        has_attention = [False, False, True, True]
+
     # ----- Input -----
     inputs = layers.Input(shape=(img_size, img_size, 3), name="x_input")
     labels = layers.Input(shape=(num_classes,), name="y_input")
     timesteps = layers.Input(shape=(1,), name="t_input")
 
     # ----- Embeddings -----
-    label_emb = process_block(labels, initial_channels)
+    label_emb = input_block(labels, initial_channels)
     time_emb = SinusoidalTimeEmbeddingLayer(initial_channels * 2)(timesteps)
 
     # ----- Encoder -----
@@ -71,14 +88,18 @@ def build_unet(
 # Auxiliary Classes
 # =====================================================================
 class SinusoidalTimeEmbeddingLayer(layers.Layer):
-    """The sinusoidal time embedding layer"""
+    """The sinusoidal time embedding layer
+
+    This layer computes the sinusoidal time embeddings for the time steps.
+
+    Args:
+        embedding_dim: The embedding dimension
+
+    Methods:
+        call: Compute the sinusoidal time embeddings
+    """
 
     def __init__(self, embedding_dim, **kwargs):
-        """Initialize the sinusoidal time embedding layer
-
-        Args:
-            embedding_dim: The embedding dimension
-        """
         super(SinusoidalTimeEmbeddingLayer, self).__init__(**kwargs)
         self.embedding_dim = embedding_dim
 
@@ -113,14 +134,18 @@ class SinusoidalTimeEmbeddingLayer(layers.Layer):
 
 
 class SelfAttentionLayer(layers.Layer):
-    """The self-attention layer"""
+    """The self-attention layer
+
+    This layer computes the self-attention mechanism for the input tensor.
+
+    Args:
+        channels: The number of channels
+
+    Methods:
+        call: Compute the self-attention
+    """
 
     def __init__(self, channels, **kwargs):
-        """Initialize the self-attention layer
-
-        Args:
-            channels: The number of channels
-        """
         super(SelfAttentionLayer, self).__init__(**kwargs)
         self.channels = channels
         self.norm = layers.GroupNormalization()
@@ -161,7 +186,7 @@ class SelfAttentionLayer(layers.Layer):
 
 # Auxiliary Functions
 # =====================================================================
-def process_block(input_tensor, embedding_dim):
+def input_block(input_tensor, embedding_dim):
     """
     Process the time steps or label input tensor
 
@@ -193,7 +218,7 @@ def encoder_block(x, label_emb, time_emb, channels, attention=False, pooling=Tru
         x: The processed tensor
         x: The skipped tensor
     """
-    x = skip = residual_block(x, label_emb, time_emb, channels, attention)
+    x = skip = process_block(x, label_emb, time_emb, channels, attention)
     x = layers.MaxPooling2D(pool_size=(2, 2))(x) if pooling else x
     return x, skip
 
@@ -210,8 +235,8 @@ def bottleneck_block(x, label_emb, time_emb, channels):
     Returns:
         x: The processed tensor
     """
-    x = residual_block(x, label_emb, time_emb, channels, attention=True)
-    x = residual_block(x, label_emb, time_emb, channels)
+    x = process_block(x, label_emb, time_emb, channels, attention=True)
+    x = process_block(x, label_emb, time_emb, channels)
     return x
 
 
@@ -239,15 +264,13 @@ def decoder_block(
         x: The processed tensor
     """
     x = layers.Concatenate()([x, skip])
-    x = residual_block(x, time_emb, label_emb, channels, attention)
+    x = process_block(x, time_emb, label_emb, channels, attention)
     x = layers.UpSampling2D(size=(2, 2))(x) if upsampling else x
     return x
 
 
-def residual_block(
-    x_img, label_emb, time_emb, channels, attention=False
-):  # TODO: porcess/weighting block
-    """The residual block of the diffusion model
+def process_block(x_img, label_emb, time_emb, channels, attention=False):
+    """The process block of the diffusion model
 
     Args:
         x_img: The image tensor
