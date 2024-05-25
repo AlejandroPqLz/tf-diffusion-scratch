@@ -102,6 +102,7 @@ class DiffusionModel(tf.keras.Model):
         # 1: repeat ------
 
         # 3: t ~ U(0, T): Generate a random timestep for each image in the batch
+        # TODO; check if t = [0, T] or [1, T]
         t = tf.random.uniform(
             shape=(batch_size,), minval=0, maxval=self.timesteps, dtype=tf.int32
         )  # TODO: CHECK shape (batch_size, 1) or (batch_size,)
@@ -154,7 +155,7 @@ class DiffusionModel(tf.keras.Model):
 
         # 2: for t = T, . . . , 1 do: Reverse the diffusion process
         time.sleep(0.4)
-        inv_process = reversed(range(self.timesteps))  # TODO: CHECK THIS
+        inv_process = reversed(range(self.timesteps))
         for t in tqdm(inv_process, desc="Sampling sprite...", total=self.timesteps):
             normalized_t = tf.cast(t, tf.float32) / self.timesteps
             normalized_t = tf.fill([batch_size, 1], normalized_t)
@@ -168,7 +169,6 @@ class DiffusionModel(tf.keras.Model):
             alpha_cumprod_t = self.gather(self.alpha_cumprod, t)
             sigma_t = tf.cast(tf.sqrt(1 - alpha_t), tf.float32)
 
-            # TODO: CHECK THIS:
             x_t = (
                 x_t - (1 - alpha_t) / tf.sqrt(1 - alpha_cumprod_t) * predicted_noise
             ) / tf.sqrt(alpha_t) + sigma_t * z
@@ -255,6 +255,7 @@ class DiffusionModel(tf.keras.Model):
         """
         # TODO: ADD PROCCES PLOT SO IT PLOT EVERY 100 STEPS HAVING A SUBPLOT OF
         # TIMESTEPS/100 OR DO A GIF FUNCTION OR BOTH
+        generate_process = process
 
         _, axs = plt.subplots(1, num_samples, figsize=(num_samples * 2, 3))
 
