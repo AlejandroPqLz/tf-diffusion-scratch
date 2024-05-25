@@ -135,18 +135,12 @@ def plot_noise_levels(timesteps: int, beta_start: float, beta_end: float, s: flo
     # Variance scheduler for noise level
     beta_linear = linear_model.beta_scheduler()
     beta_cosine = cosine_model.beta_scheduler()
-    print(f"beta_linear shape: {beta_linear.shape}")
-    print(f"beta_cosine shape: {beta_cosine.shape}")
 
     alpha_linear = 1.0 - beta_linear
     alpha_cosine = 1.0 - beta_cosine
 
     aplha_cumprod_linear = tf.math.cumprod(alpha_linear)
     aplha_cumprod_cosine = tf.math.cumprod(alpha_cosine)
-
-    print(f"aplha_cumprod_linear shape: {aplha_cumprod_linear.shape}")
-    print(f"aplha_cumprod_cosine shape: {aplha_cumprod_cosine.shape}")
-    print(f"normalized_steps shape: {normalized_steps.shape}")
 
     # Plot each scheduler in subplots
     plt.figure(figsize=(10, 7))
