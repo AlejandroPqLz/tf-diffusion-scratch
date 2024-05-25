@@ -112,11 +112,7 @@ def plot_images_batch(
 
 # Plot forward diffusion pass
 # =====================================================================
-
-
-def plot_noise_levels(
-    timesteps: int, beta_start: float, beta_end: float, s: float
-) -> None:
+def plot_noise_levels(timesteps: int, beta_start: float, beta_end: float, s: float):
     """
     Plots the noise levels for linear and cosine beta schedules.
 
@@ -139,12 +135,18 @@ def plot_noise_levels(
     # Variance scheduler for noise level
     beta_linear = linear_model.beta_scheduler()
     beta_cosine = cosine_model.beta_scheduler()
+    print(f"beta_linear shape: {beta_linear.shape}")
+    print(f"beta_cosine shape: {beta_cosine.shape}")
 
     alpha_linear = 1.0 - beta_linear
     alpha_cosine = 1.0 - beta_cosine
 
     aplha_cumprod_linear = tf.math.cumprod(alpha_linear)
     aplha_cumprod_cosine = tf.math.cumprod(alpha_cosine)
+
+    print(f"aplha_cumprod_linear shape: {aplha_cumprod_linear.shape}")
+    print(f"aplha_cumprod_cosine shape: {aplha_cumprod_cosine.shape}")
+    print(f"normalized_steps shape: {normalized_steps.shape}")
 
     # Plot each scheduler in subplots
     plt.figure(figsize=(10, 7))
@@ -167,7 +169,7 @@ def plot_forward_diffusion(
     beta_start: float,
     beta_end: float,
     s: float,
-) -> None:
+):
     """
     Plot the forward diffusion function in 10 different ascending time_steps for the same image.
 
@@ -194,8 +196,7 @@ def plot_forward_diffusion(
 
         diffused_img_tensor = model.forward_diffusion(img_tensor, t)
         clipped_img = np.clip(diffused_img_tensor * 0.5 + 0.5, a_min=0.0, a_max=1.0)
-
-        plt.imshow(clipped_img)
+        plt.imshow(tf.squeeze(clipped_img))
 
         if t == 0:
             plt.title(f"{scheduler}\nt:{t}")

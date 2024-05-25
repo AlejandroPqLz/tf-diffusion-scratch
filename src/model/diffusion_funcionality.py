@@ -67,7 +67,12 @@ class DiffusionModel(tf.keras.Model):
         self.compute_loss = tf.keras.losses.MeanSquaredError()
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
 
-    def compile(self, loss, optimizer, **kwargs):
+    def compile(
+        self,
+        loss: tf.keras.losses.Loss,
+        optimizer: tf.keras.optimizers.Optimizer,
+        **kwargs,
+    ):
         """
         Compile the model with the specified loss and optimizer.
 
@@ -88,25 +93,25 @@ class DiffusionModel(tf.keras.Model):
             data (tuple): A tuple containing the input data and labels.
 
         Returns:
-            dict: A dictionary containing the training loss.
+            dict: A dictionary containing the updated metrics.
         """
         # Unpack the data
         input_data, input_label = data
+        batch_size = tf.shape(input_data)[0]
 
         # 1: repeat ------
 
-        # Generate a random timestep for each image in the batch
-        # 3: t ~ U(0, T)
-        t = tf.random.uniform(shape=(), minval=0, maxval=self.timesteps, dtype=tf.int32)
-        normalized_t = tf.fill(
-            [tf.shape(input_data)[0], 1], tf.cast(t, tf.float32) / self.timesteps
-        )  # TODO: CHECK THIS
+        # 3: t ~ U(0, T): Generate a random timestep for each image in the batch
+        t = tf.random.uniform(
+            shape=(batch_size,), minval=0, maxval=self.timesteps, dtype=tf.int32
+        )  # TODO: CHECK shape (batch_size, 1) or (batch_size,)
+        normalized_t = tf.cast(t, tf.float32) / self.timesteps
 
         # 2: x_0 ~ q(x_0)
         x_t = self.forward_diffusion(input_data, t)
 
-        # 4: eps_t ~ N(0, I) # TODO: CHECK THIS
-        alpha_cumprod_t = self.alpha_cumprod[t]
+        # 4: ε_t ~ N(0, I) # TODO: CHECK THIS
+        alpha_cumprod_t = self.gather(self.alpha_cumprod, t)
         target_noise = (x_t - tf.sqrt(alpha_cumprod_t) * input_data) / tf.sqrt(
             1 - alpha_cumprod_t
         )
@@ -143,33 +148,24 @@ class DiffusionModel(tf.keras.Model):
         Returns:
             tf.Tensor: The final denoised image.
         """
-        # Starting from pure noise
-        # 1: x_T ~ N(0, I)
+        # 1: x_T ~ N(0, I): Starting from pure noise
         x_t, y_t = data
+        batch_size = tf.shape(x_t)[0]
 
-        # Reverse the diffusion process
-        # 2: for t = T, . . . , 1 do
+        # 2: for t = T, . . . , 1 do: Reverse the diffusion process
         time.sleep(0.4)
-        inv_process = reversed(range(0, self.timesteps - 1))  # TODO: CHECK THIS
-        for t in tqdm(inv_process, "Sampling sprite", self.timesteps):
-            normalized_t = tf.fill(
-                [tf.shape(x_t)[0], 1], tf.cast(t, tf.float32) / self.timesteps
-            )  # TODO: CHECK THIS
+        inv_process = reversed(range(self.timesteps))  # TODO: CHECK THIS
+        for t in tqdm(inv_process, desc="Sampling sprite...", total=self.timesteps):
+            normalized_t = tf.cast(t, tf.float32) / self.timesteps
+            normalized_t = tf.fill([batch_size, 1], normalized_t)
 
-            # Sample z
             # 3: z ~ N(0, I) if t > 1, else z = 0
-            z = (
-                tf.random.normal(shape=tf.shape(x_t)) if t > 1 else tf.zeros_like(x_t)
-            )  # TODO: CHECK THIS
+            z = tf.random.normal(shape=tf.shape(x_t)) if t > 1 else tf.zeros_like(x_t)
 
-            # Calculate the predicted noise
+            # 4: x_{t-1} = (x_t - (1 - α_t) / sqrt(1 - α_cumprod_t) * ε_θ) / sqrt(α_t) + σ_t * z
             predicted_noise = self.model([x_t, y_t, normalized_t], training=False)
-
-            # Calculate x_{t-1}
-            # 4: x_{t-1} = (x_t - (1 - alpha_t) / sqrt(1 - alpha_cumprod_t) * eps_theta) / sqrt(alpha_t) + sigma_t * z
-            # TODO: CHECK sigma_t:
-            alpha_t = self.alpha[t]
-            alpha_cumprod_t = self.alpha_cumprod[t]
+            alpha_t = self.gather(self.alpha, t)
+            alpha_cumprod_t = self.gather(self.alpha_cumprod, t)
             sigma_t = tf.cast(tf.sqrt(1 - alpha_t), tf.float32)
 
             # TODO: CHECK THIS:
@@ -182,7 +178,7 @@ class DiffusionModel(tf.keras.Model):
 
     def forward_diffusion(self, x_0: tf.Tensor, t: int) -> tf.Tensor:
         """
-        Simulate the forward diffusion process by adding noise to the input image.
+        Diffuse the data by adding noise to the input image.
 
         Args:
             x_0 (tf.Tensor): The initial image tensor.
@@ -191,14 +187,13 @@ class DiffusionModel(tf.keras.Model):
         Returns:
             tf.Tensor: The diffused image tensor at timestep t.
         """
-        # Apply the diffusion process: x_t = sqrt(alpha_cumprod_t) * x_0 + sqrt(1-alpha_cumprod_t) * noise
-        alpha_cumprod_t = self.alpha_cumprod[t]
         noise = tf.random.normal(shape=tf.shape(x_0), dtype=tf.float32)
-        # TODO: CHECK x_t
-        x_t = tf.sqrt(alpha_cumprod_t) * x_0 + tf.sqrt(1 - alpha_cumprod_t) * noise
+        alpha_cumprod_t = self.gather(self.alpha_cumprod, t)
 
-        per_noise = tf.sqrt(1 - alpha_cumprod_t) * noise  # TODO: CHECK THIS
-        x_0 = (x_t - per_noise) / tf.sqrt(alpha_cumprod_t)  # TODO: CHECK THIS
+        mean = tf.sqrt(alpha_cumprod_t) * x_0
+        variance = 1 - alpha_cumprod_t
+
+        x_t = mean + tf.sqrt(variance) * noise
 
         return x_t
 
@@ -222,14 +217,29 @@ class DiffusionModel(tf.keras.Model):
                 )
 
             t = tf.range(self.timesteps, dtype=tf.float32)
-            alphas_cumprod = f(t) / f(0)
-            beta = 1 - alphas_cumprod[1:] / tf.maximum(alphas_cumprod[:-1], 0.999)
+            alphas_cumprod_t = f(t) / f(0)
+            alphas_cumprod_tprev = f(t - 1) / f(0)
+            beta = 1 - alphas_cumprod_t / alphas_cumprod_tprev
             beta = tf.clip_by_value(beta, 0.0001, 0.999)  # for numerical stability
 
         else:
             raise ValueError(f"Unsupported scheduler: {self.scheduler}")
 
         return beta
+
+    def gather(self, tensor, index):
+        """
+        Gather the tensor values according to the index and batch size.
+
+        Args:
+            tensor (tf.Tensor): The tensor to gather values from.
+            index (int): The index to gather values for.
+
+        Returns:
+            tf.Tensor: The gathered tensor values.
+        """
+        tensor_t = tf.gather(tensor, index)
+        return tf.reshape(tensor_t, [-1, 1, 1, 1])
 
     def plot_samples(
         self, num_samples: int = 3, poke_type: str = None, process: bool = False
@@ -257,20 +267,16 @@ class DiffusionModel(tf.keras.Model):
             tqdm.write(f"Generating sample {i + 1}/{num_samples}")
 
             # Start with random noise as input that follows N(0, I)
-            # TODO: CHECK THIS
             start_noise = tf.random.normal(shape=(1, self.img_size, self.img_size, 3))
 
             # Set the label for the sample(s)
-            y_label = (
-                string_to_onehot(poke_type)
-                if poke_type is not None
-                else tf.one_hot(
-                    tf.random.uniform(
-                        shape=[], maxval=self.num_classes, dtype=tf.int32
-                    ),
-                    self.num_classes,
+            if poke_type is not None:
+                y_label = string_to_onehot(poke_type)
+            else:
+                index = tf.random.uniform(
+                    shape=[], maxval=self.num_classes, dtype=tf.int32
                 )
-            )
+                y_label = tf.one_hot(index, self.num_classes)
 
             y_label = tf.reshape(y_label, [1, self.num_classes])
 
