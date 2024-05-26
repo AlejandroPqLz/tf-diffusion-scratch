@@ -31,11 +31,13 @@ class DiffusionModel(tf.keras.Model):
         scheduler (str): The type of noise schedule ('cosine' or 'linear').
 
     Methods:
+        compile(loss, optimizer, **kwargs): Compile the model with the specified loss and optimizer.
         train_step(data): The training step for the diffusion model.
-        predict_step(data): The prediction step for the diffusion model.
+        sampling_step(data): The sampling step for the diffusion model.
+        forward_diffusion(x_0, t): Diffuse the data by adding noise to the input image.
+        beta_scheduler(): Generates a schedule for beta values according to the specified type.
+        gather(tensor, index): Extract the value at the specified index from the tensor.
         plot_samples(num_samples, poke_type): Generate and plot samples from the diffusion model.
-        forward_diffusion(x_0, t): Simulate the forward diffusion process.
-        beta_scheduler(): Generate a schedule for beta values according to the specified type.
     """
 
     def __init__(
@@ -107,14 +109,8 @@ class DiffusionModel(tf.keras.Model):
         )
         normalized_t = tf.cast(t, tf.float32) / self.timesteps
 
-        # 2: x_0 ~ q(x_0)
-        x_t = self.forward_diffusion(input_data, t)
-
-        # 4: ε_t ~ N(0, I) # TODO: CHECK THIS
-        alpha_cumprod_t = self.gather(self.alpha_cumprod, t)
-        target_noise = (x_t - tf.sqrt(alpha_cumprod_t) * input_data) / tf.sqrt(
-            1 - alpha_cumprod_t
-        )
+        # 2: x_0 ~ q(x_0), 4: ε_t ~ N(0, I)
+        x_t, target_noise = self.forward_diffusion(input_data, t)
 
         # 5: Take a gradient descent step on
         with tf.GradientTape() as tape:
@@ -129,7 +125,7 @@ class DiffusionModel(tf.keras.Model):
 
         # 6: until convergence ------
 
-        # Update the metrics
+        # Update the metrics # TODO: check this
         for metric in self.metrics:
             if metric.name == "loss":
                 metric.update_state(loss)
@@ -138,9 +134,9 @@ class DiffusionModel(tf.keras.Model):
 
         return {m.name: m.result() for m in self.metrics}
 
-    def predict_step(self, data: tuple) -> tf.Tensor:
+    def sampling_step(self, data: tuple) -> tf.Tensor:
         """
-        Algorithm 2: (sampling) The prediction step for the diffusion model.
+        Algorithm 2: (sampling) The sampling step for the diffusion model.
 
         Args:
             data (tuple): A tuple containing the input noised data and label.
@@ -185,6 +181,7 @@ class DiffusionModel(tf.keras.Model):
 
         Returns:
             tf.Tensor: The diffused image tensor at timestep t.
+            noise (tf.Tensor): The noise added to the image.
         """
         noise = tf.random.normal(shape=tf.shape(x_0), dtype=tf.float32)
         alpha_cumprod_t = self.gather(self.alpha_cumprod, t)
@@ -194,7 +191,7 @@ class DiffusionModel(tf.keras.Model):
 
         x_t = mean + tf.sqrt(variance) * noise
 
-        return x_t
+        return x_t, noise
 
     def beta_scheduler(self) -> tf.Tensor:
         """
@@ -278,7 +275,7 @@ class DiffusionModel(tf.keras.Model):
             y_label = tf.reshape(y_label, [1, self.num_classes])
 
             # Generate the sample(s)
-            sample = self.predict_step((start_noise, y_label))
+            sample = self.sampling_step((start_noise, y_label))
             sample = tf.squeeze(sample)  # remove the batch dimension
 
             # Scale to [0, 1] for plotting

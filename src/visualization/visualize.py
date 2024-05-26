@@ -188,7 +188,7 @@ def plot_forward_diffusion(
     for i, t in enumerate(n_timesteps):
         plt.subplot(1, len(n_timesteps), i + 1)
 
-        diffused_img_tensor = model.forward_diffusion(img_tensor, t)
+        diffused_img_tensor, _ = model.forward_diffusion(img_tensor, t)
         clipped_img = np.clip(diffused_img_tensor * 0.5 + 0.5, a_min=0.0, a_max=1.0)
         plt.imshow(tf.squeeze(clipped_img))
 
