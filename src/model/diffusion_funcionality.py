@@ -62,9 +62,10 @@ class DiffusionModel(tf.keras.Model):
         self.s = s
         self.scheduler = scheduler
 
-        self.beta = self.beta_scheduler()
-        self.alpha = 1 - self.beta
-        self.alpha_cumprod = tf.cast(tf.math.cumprod(self.alpha), tf.float32)
+        self.beta = tf.constant(self.beta_scheduler(), tf.float32)
+        self.alpha = tf.constant(1 - self.beta, tf.float32)
+        self.alpha_cumprod = tf.constant(tf.math.cumprod(self.alpha), tf.float32)
+        self.sigma = tf.constant(tf.sqrt(self.beta), tf.float32)
 
         self.compute_loss = tf.keras.losses.MeanSquaredError()
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
@@ -162,7 +163,7 @@ class DiffusionModel(tf.keras.Model):
             predicted_noise = self.model([x_t, y_t, normalized_t], training=False)
             alpha_t = self.gather(self.alpha, t)
             alpha_cumprod_t = self.gather(self.alpha_cumprod, t)
-            sigma_t = tf.cast(tf.sqrt(1 - alpha_t), tf.float32)  # σ_t = sqrt(β_t)
+            sigma_t = self.gather(self.sigma, t)
 
             x_t = (
                 x_t - (1 - alpha_t) / tf.sqrt(1 - alpha_cumprod_t) * predicted_noise
