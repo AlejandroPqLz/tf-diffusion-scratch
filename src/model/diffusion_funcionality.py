@@ -102,10 +102,9 @@ class DiffusionModel(tf.keras.Model):
         # 1: repeat ------
 
         # 3: t ~ U(0, T): Generate a random timestep for each image in the batch
-        # TODO; check if t = [0, T] or [1, T]
         t = tf.random.uniform(
             shape=(batch_size,), minval=0, maxval=self.timesteps, dtype=tf.int32
-        )  # TODO: CHECK shape (batch_size, 1) or (batch_size,)
+        )
         normalized_t = tf.cast(t, tf.float32) / self.timesteps
 
         # 2: x_0 ~ q(x_0)
@@ -153,15 +152,15 @@ class DiffusionModel(tf.keras.Model):
         x_t, y_t = data
         batch_size = tf.shape(x_t)[0]
 
-        # 2: for t = T, . . . , 1 do: Reverse the diffusion process
+        # 2: for t = T, . . . , 0 do: Reverse the diffusion process
         time.sleep(0.4)
-        inv_process = reversed(range(self.timesteps))  # TODO: 1, T or 0, T
+        inv_process = reversed(range(0, self.timesteps))
         for t in tqdm(inv_process, desc="Sampling sprite...", total=self.timesteps):
             normalized_t = tf.cast(t, tf.float32) / self.timesteps
-            normalized_t = tf.fill([batch_size, 1], normalized_t)
+            normalized_t = tf.fill(batch_size, normalized_t)  # shape = (batch_size,)
 
-            # 3: z ~ N(0, I) if t > 1, else z = 0
-            z = tf.random.normal(shape=tf.shape(x_t)) if t > 1 else tf.zeros_like(x_t)
+            # 3: z ~ N(0, I) if t > 0, else z = 0: Sample noise, except at the first timestep
+            z = tf.random.normal(shape=tf.shape(x_t)) if t > 0 else tf.zeros_like(x_t)
 
             # 4: x_{t-1} = (x_t - (1 - α_t) / sqrt(1 - α_cumprod_t) * ε_θ) / sqrt(α_t) + σ_t * z
             predicted_noise = self.model([x_t, y_t, normalized_t], training=False)
@@ -205,7 +204,10 @@ class DiffusionModel(tf.keras.Model):
             tf.Tensor: The beta values for each timestep (the beta scheduler)
         """
         if self.scheduler == "linear":
-            beta = tf.linspace(self.beta_start, self.beta_end, self.timesteps)
+            scale = 1000 / self.timesteps
+            beta_start = self.beta_start * scale
+            beta_end = self.beta_end * scale
+            beta = tf.linspace(beta_start, beta_end, self.timesteps)
 
         elif self.scheduler == "cosine":
 
@@ -218,9 +220,9 @@ class DiffusionModel(tf.keras.Model):
 
             t = tf.range(self.timesteps, dtype=tf.float32)
             alphas_cumprod_t = f(t) / f(0)
-            alphas_cumprod_tprev = f(t - 1) / f(0)
-            beta_t = 1 - alphas_cumprod_t / alphas_cumprod_tprev
-            beta_t = tf.clip_by_value(beta_t, 0.0001, 0.999)  # for numerical stability
+            alphas_cumprod_t_prev = f(t - 1) / f(0)
+            beta_t = 1 - alphas_cumprod_t / alphas_cumprod_t_prev
+            beta = tf.clip_by_value(beta_t, 0.0001, 0.999)  # for numerical stability
 
         else:
             raise ValueError(f"Unsupported scheduler: {self.scheduler}")
