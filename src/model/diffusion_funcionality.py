@@ -147,7 +147,7 @@ class DiffusionModel(tf.keras.Model):
             data (tuple): A tuple containing the input noised data and label.
 
         Returns:
-            tf.Tensor: The final denoised image.
+            tf.Tensor: The final denoised image or the intermediate steps if process is True.
         """
         # 1: x_T ~ N(0, I): Starting from pure noise
         x_t, y_t = data
@@ -155,7 +155,7 @@ class DiffusionModel(tf.keras.Model):
 
         # 2: for t = T, . . . , 1 do: Reverse the diffusion process
         time.sleep(0.4)
-        inv_process = reversed(range(self.timesteps))
+        inv_process = reversed(range(self.timesteps))  # TODO: 1, T or 0, T
         for t in tqdm(inv_process, desc="Sampling sprite...", total=self.timesteps):
             normalized_t = tf.cast(t, tf.float32) / self.timesteps
             normalized_t = tf.fill([batch_size, 1], normalized_t)
@@ -167,13 +167,13 @@ class DiffusionModel(tf.keras.Model):
             predicted_noise = self.model([x_t, y_t, normalized_t], training=False)
             alpha_t = self.gather(self.alpha, t)
             alpha_cumprod_t = self.gather(self.alpha_cumprod, t)
-            sigma_t = tf.cast(tf.sqrt(1 - alpha_t), tf.float32)
+            sigma_t = tf.cast(tf.sqrt(1 - alpha_t), tf.float32)  # σ_t = sqrt(β_t)
 
             x_t = (
                 x_t - (1 - alpha_t) / tf.sqrt(1 - alpha_cumprod_t) * predicted_noise
             ) / tf.sqrt(alpha_t) + sigma_t * z
-        # 5: end for
 
+        # 5: end for
         return x_t  # 6: return x_0
 
     def forward_diffusion(self, x_0: tf.Tensor, t: int) -> tf.Tensor:
@@ -219,8 +219,8 @@ class DiffusionModel(tf.keras.Model):
             t = tf.range(self.timesteps, dtype=tf.float32)
             alphas_cumprod_t = f(t) / f(0)
             alphas_cumprod_tprev = f(t - 1) / f(0)
-            beta = 1 - alphas_cumprod_t / alphas_cumprod_tprev
-            beta = tf.clip_by_value(beta, 0.0001, 0.999)  # for numerical stability
+            beta_t = 1 - alphas_cumprod_t / alphas_cumprod_tprev
+            beta_t = tf.clip_by_value(beta_t, 0.0001, 0.999)  # for numerical stability
 
         else:
             raise ValueError(f"Unsupported scheduler: {self.scheduler}")
@@ -229,7 +229,7 @@ class DiffusionModel(tf.keras.Model):
 
     def gather(self, tensor, index):
         """
-        Gather the tensor values according to the index and batch size.
+        Extract the value at the specified index from the tensor.
 
         Args:
             tensor (tf.Tensor): The tensor to gather values from.
@@ -241,9 +241,7 @@ class DiffusionModel(tf.keras.Model):
         tensor_t = tf.gather(tensor, index)
         return tf.reshape(tensor_t, [-1, 1, 1, 1])
 
-    def plot_samples(
-        self, num_samples: int = 3, poke_type: str = None, process: bool = False
-    ) -> None:
+    def plot_samples(self, num_samples: int = 3, poke_type: str = None) -> None:
         """
         Generate and plot samples from the diffusion model.
 
@@ -251,11 +249,7 @@ class DiffusionModel(tf.keras.Model):
             num_samples (int): The number of samples to generate and plot.
             poke_type (str): The type of Pokemon to generate samples for.
             If None, a random type is chosen.
-            process (bool): Whether to show the diffusion process or not (every 100 steps).
         """
-        # TODO: ADD PROCCES PLOT SO IT PLOT EVERY 100 STEPS HAVING A SUBPLOT OF
-        # TIMESTEPS/100 OR DO A GIF FUNCTION OR BOTH
-        generate_process = process
 
         _, axs = plt.subplots(1, num_samples, figsize=(num_samples * 2, 3))
 
@@ -281,7 +275,7 @@ class DiffusionModel(tf.keras.Model):
 
             y_label = tf.reshape(y_label, [1, self.num_classes])
 
-            # Generate the sample
+            # Generate the sample(s)
             sample = self.predict_step((start_noise, y_label))
             sample = tf.squeeze(sample)  # remove the batch dimension
 
@@ -294,6 +288,7 @@ class DiffusionModel(tf.keras.Model):
             axs[i].imshow(sample)
             axs[i].title.set_text(onehot_to_string(y_label))
             axs[i].axis("off")
+
         plt.show()
 
         return None
