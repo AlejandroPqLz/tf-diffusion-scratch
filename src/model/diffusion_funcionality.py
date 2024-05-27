@@ -108,7 +108,9 @@ class DiffusionModel(tf.keras.Model):
         t = tf.random.uniform(
             shape=(batch_size,), minval=0, maxval=self.timesteps, dtype=tf.int32
         )
-        normalized_t = tf.cast(t, tf.float32) / self.timesteps
+        normalized_t = (
+            tf.cast(t, tf.float32) / self.timesteps
+        )  # TODO: CHECK IF ITS NECESSARY
 
         # 2: x_0 ~ q(x_0), 4: ε_t ~ N(0, I)
         x_t, target_noise = self.forward_diffusion(input_data, t)
@@ -153,7 +155,9 @@ class DiffusionModel(tf.keras.Model):
         time.sleep(0.4)
         inv_process = reversed(range(0, self.timesteps))
         for t in tqdm(inv_process, desc="Sampling sprite...", total=self.timesteps):
-            normalized_t = tf.cast(t, tf.float32) / self.timesteps
+            normalized_t = (
+                tf.cast(t, tf.float32) / self.timesteps
+            )  # TODO: CHECK IF ITS NECESSARY
             normalized_t = tf.fill(batch_size, normalized_t)  # shape = (batch_size,)
 
             # 3: z ~ N(0, I) if t > 0, else z = 0: Sample noise, except at the first timestep
