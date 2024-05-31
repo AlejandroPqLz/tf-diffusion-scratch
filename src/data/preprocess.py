@@ -30,6 +30,9 @@ def img_preprocess(image_path: str, buffer: int = 1, size: int = 64) -> tf.Tenso
 
     Returns:
         tf.Tensor: The preprocessed image tensor.
+
+    Example:
+        >>> img_preprocess("data/raw/images/1.jpg", buffer=1, size=64)
     """
 
     # Load the image and convert it to a tensor
@@ -87,6 +90,9 @@ def label_preprocess(
 
     Returns:
         List[tf.Tensor]: The preprocessed labels in a one-hot list.
+
+    Example:
+        >>> label_preprocess(["fire", "water", "grass"], {"data/raw/images/1.jpg": "fire", "data/raw/images/2.jpg": "grass"})
     """
     try:
         label_mapper = label_mapping(dict_dataset)

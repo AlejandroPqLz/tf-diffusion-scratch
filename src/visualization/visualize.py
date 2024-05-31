@@ -57,8 +57,9 @@ def plot_image_paths(image_paths: Union[List[str], Dict[str, str]], n: int = 6) 
         image_paths (Union[List[str], Dict[str, str]]): A list or dictionary of image paths.
         n (int): The number of images to plot. Defaults to 6.
 
-    Raises:
-        ValueError: If image_paths is neither a list nor a dictionary.
+    Example:
+        >>> plot_image_paths(image_paths=["path1", "path2", "path3"], n=3)
+        >>> plot_image_paths(image_paths={"path1": "type1", "path2": "type2"}, n=2)
     """
     plt.figure(figsize=(20, 3))
 
@@ -71,7 +72,7 @@ def plot_image_paths(image_paths: Union[List[str], Dict[str, str]], n: int = 6) 
     elif isinstance(image_paths, dict):
         for i in range(n):
             plt.subplot(1, n, i + 1)
-            r = random.choice(list(image_paths.items()))
+            r = random.choice(list(image_paths.items() - 1))
             img = mpimg.imread(r[0])  # The image path
             plt.imshow(img)
             plt.title(r[1])  # The pokemon type
@@ -95,6 +96,9 @@ def plot_images_batch(
         dataset_tf (tf.data.Dataset): The tensorflow dataset with the images and labels.
         n (int): The number of images to plot. Defaults to 6.
         df (pd.DataFrame): The dataframe with the pokemon data.
+
+    Example:
+        >>> plot_images_batch(dataset_tf, df, n=6)
     """
     plt.figure(figsize=(20, 3))
 
@@ -121,6 +125,9 @@ def plot_noise_levels(timesteps: int, beta_start: float, beta_end: float, s: flo
         beta_start (float): The starting value of beta.
         beta_end (float): The ending value of beta.
         s (float): The scale factor for the variance curve.
+
+    Example:
+        >>> plot_noise_levels(timesteps=1000, beta_start=0.01, beta_end=0.1, s=0.1)
     """
     normalized_steps = np.linspace(0, 1, timesteps)  # diffusion step (t/T)
 
@@ -139,15 +146,15 @@ def plot_noise_levels(timesteps: int, beta_start: float, beta_end: float, s: flo
     alpha_linear = 1.0 - beta_linear
     alpha_cosine = 1.0 - beta_cosine
 
-    aplha_cumprod_linear = tf.math.cumprod(alpha_linear)
-    aplha_cumprod_cosine = tf.math.cumprod(alpha_cosine)
+    alpha_cumprod_linear = tf.math.cumprod(alpha_linear)
+    alpha_cumprod_cosine = tf.math.cumprod(alpha_cosine)
 
     # Plot each scheduler in subplots
     plt.figure(figsize=(10, 7))
 
     # Noise levels
-    plt.plot(normalized_steps, aplha_cumprod_linear, label="linear")
-    plt.plot(normalized_steps, aplha_cumprod_cosine, label="cosine")
+    plt.plot(normalized_steps, alpha_cumprod_linear, label="linear")
+    plt.plot(normalized_steps, alpha_cumprod_cosine, label="cosine")
 
     plt.title(r"$\alpha_t$")
     plt.xlabel("diffusion step (t/T)")
@@ -176,8 +183,8 @@ def plot_forward_diffusion(
         beta_end (float): The ending value of beta.
         s (float): The scale factor for the variance curve.
 
-    Returns:
-        None
+    Example:
+        >>> plot_forward_diffusion(img_tensor, scheduler="linear", n=10, timesteps=1000, beta_start=0.01, beta_end=0.1, s=0.1)
     """
     plt.figure(figsize=(20, 7))
     n_timesteps = np.linspace(0, timesteps - 1, n, dtype=np.int32)
