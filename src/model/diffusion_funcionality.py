@@ -245,7 +245,9 @@ class DiffusionModel(tf.keras.Model):
         tensor_t = tf.gather(tensor, index)
         return tf.reshape(tensor_t, [-1, 1, 1, 1])
 
-    def plot_samples(self, num_samples: int = 3, poke_type: str = None) -> None:
+    def plot_samples(
+        self, num_samples: int = 1, poke_type: str = None, start_noise: tf.Tensor = None
+    ) -> None:
         """
         Generate and plot samples from the diffusion model.
 
@@ -253,6 +255,8 @@ class DiffusionModel(tf.keras.Model):
             num_samples (int): The number of samples to generate and plot.
             poke_type (str): The type of Pokemon to generate samples for.
             If None, a random type is chosen.
+            start_noise (tf.Tensor): The starting noise tensor. If None, random noise is used.
+
         """
 
         _, axs = plt.subplots(1, num_samples, figsize=(num_samples * 2, 3))
@@ -266,7 +270,17 @@ class DiffusionModel(tf.keras.Model):
             tqdm.write(f"Generating sample {i + 1}/{num_samples}")
 
             # Start with random noise as input that follows N(0, I)
-            start_noise = tf.random.normal(shape=(1, self.img_size, self.img_size, 3))
+            if start_noise is None:
+                start_noise = tf.random.normal(
+                    shape=(1, self.img_size, self.img_size, 3)
+                )
+
+            else:
+                # check if the start_noise has the correct shape
+                if start_noise.shape != (1, self.img_size, self.img_size, 3):
+                    raise ValueError(
+                        f"start_noise should have shape (1, {self.img_size}, {self.img_size}, 3)"
+                    )
 
             # Set the label for the sample(s)
             if poke_type is not None:

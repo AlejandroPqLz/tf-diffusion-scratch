@@ -5,12 +5,23 @@ callbacks.py: Custom Callbacks for the Diffusion Model.
 
 # Imports
 # =====================================================================
+import configparser
 import tensorflow as tf
 from src.model.diffusion_funcionality import DiffusionModel
+from src.utils.config import parse_config
+from src.utils import CONFIG_PATH
+
+# Set config file
+# =====================================================================
+config = configparser.ConfigParser()
+config.read(CONFIG_PATH)
+
+hyperparameters = parse_config(config, "hyperparameters")
+
+IMG_SIZE = hyperparameters["img_size"]
 
 
 # TODO: ADD SAVE FUNCTIONALITY TO THE CALLBACKS
-# TODO: WHEN PLOTTING SAMPLES, ADD THE OPTION TO SAMPLE THE DIFF PROCESS (FROM NOISE TO IMAGE)
 # TODO: ADD LOGS FOR TRAINING METRICS
 
 
@@ -50,4 +61,7 @@ class DiffusionCallback(tf.keras.callbacks.Callback):
         """
         if (epoch + 1) % self.frequency == 0:
             print(f"Epoch {epoch+1}: Generating samples.")
-            self.diffusion_model.plot_samples(num_samples=1, poke_type=self.poke_type)
+            same_noise = tf.random.normal(shape=(1, IMG_SIZE, IMG_SIZE, 3), seed=42)
+            self.diffusion_model.plot_samples(
+                num_samples=1, poke_type=self.poke_type, start_noise=same_noise
+            )

@@ -26,7 +26,7 @@ def parse_config(config: configparser.ConfigParser, param_name: str) -> Dict[str
     Example:
         >>> config = configparser.ConfigParser()
         >>> config.read("config.ini")
-        >>> parse_config(config, "model")
+        >>> parse_config(config, "param_section")
         {"int_param": 1, "float_param": 1.0, "str_param": "string"}
     """
 

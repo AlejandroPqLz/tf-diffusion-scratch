@@ -66,13 +66,15 @@ def plot_image_paths(image_paths: Union[List[str], Dict[str, str]], n: int = 6) 
     if isinstance(image_paths, list):
         for i in range(n):
             plt.subplot(1, n, i + 1)
-            plt.imshow(mpimg.imread(image_paths[random.randint(0, len(image_paths))]))
+            plt.imshow(
+                mpimg.imread(image_paths[random.randint(0, len(image_paths) - 1)])
+            )
         plt.show()
 
     elif isinstance(image_paths, dict):
         for i in range(n):
             plt.subplot(1, n, i + 1)
-            r = random.choice(list(image_paths.items() - 1))
+            r = random.choice(list(image_paths.items()))
             img = mpimg.imread(r[0])  # The image path
             plt.imshow(img)
             plt.title(r[1])  # The pokemon type
@@ -153,8 +155,8 @@ def plot_noise_levels(timesteps: int, beta_start: float, beta_end: float, s: flo
     plt.figure(figsize=(10, 7))
 
     # Noise levels
-    plt.plot(normalized_steps, alpha_cumprod_linear, label="linear")
-    plt.plot(normalized_steps, alpha_cumprod_cosine, label="cosine")
+    plt.plot(normalized_steps, alpha_cumprod_linear, label="linear", color="royalblue")
+    plt.plot(normalized_steps, alpha_cumprod_cosine, label="cosine", color="green")
 
     plt.title(r"$\alpha_t$")
     plt.xlabel("diffusion step (t/T)")
