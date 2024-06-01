@@ -15,10 +15,13 @@ from src.utils import CONFIG_PATH
 # =====================================================================
 config = configparser.ConfigParser()
 config.read(CONFIG_PATH)
-
 hyperparameters = parse_config(config, "hyperparameters")
 
+# Constants
+# =====================================================================
 IMG_SIZE = hyperparameters["img_size"]
+tf.random.set_seed(42)
+SAME_NOISE = tf.random.normal(shape=(1, IMG_SIZE, IMG_SIZE, 3))
 
 
 # TODO: ADD SAVE FUNCTIONALITY TO THE CALLBACKS
@@ -61,7 +64,6 @@ class DiffusionCallback(tf.keras.callbacks.Callback):
         """
         if (epoch + 1) % self.frequency == 0:
             print(f"Epoch {epoch+1}: Generating samples.")
-            same_noise = tf.random.normal(shape=(1, IMG_SIZE, IMG_SIZE, 3), seed=42)
             self.diffusion_model.plot_samples(
-                num_samples=1, poke_type=self.poke_type, start_noise=same_noise
+                num_samples=1, poke_type=self.poke_type, start_noise=SAME_NOISE
             )

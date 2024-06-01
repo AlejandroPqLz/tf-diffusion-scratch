@@ -44,14 +44,22 @@ def build_unet(
     if has_attention is None:
         has_attention = [False, False, True, True]
 
+    # Validate inputs
+    if len(channel_multiplier) != len(has_attention):
+        raise ValueError(
+            "channel_multiplier and has_attention must have the same length."
+        )
+
     # ----- Input -----
     inputs = layers.Input(shape=(img_size, img_size, 3), name="x_input")
     labels = layers.Input(shape=(num_classes,), name="y_input")
-    timesteps = layers.Input(shape=(1,), name="t_input")
+    timesteps = layers.Input(shape=(), name="t_input")  # broadcasts the scalar
 
     # ----- Embeddings -----
-    label_emb = input_block(labels, initial_channels)
-    time_emb = SinusoidalTimeEmbeddingLayer(initial_channels * 2)(timesteps)
+    emb_mult = channel_multiplier[-2]
+    label_emb = input_block(labels, initial_channels * emb_mult)
+    time_emb = SinusoidalTimeEmbeddingLayer(initial_channels * emb_mult)(timesteps)
+    time_emb = input_block(time_emb, initial_channels * emb_mult)
 
     # ----- Encoder -----
     x = inputs
@@ -72,7 +80,7 @@ def build_unet(
         x = decoder_block(x, skips[i], label_emb, time_emb, ch, attn, upsampling)
 
     # ----- Output -----
-    x = layers.GroupNormalization()(x)
+    x = layers.GroupNormalization(8)(x)
     x = layers.Activation(activations.silu)(x)
     outputs = layers.Conv2D(3, 1, padding="same")(x)
     model = tf.keras.Model(inputs=[inputs, labels, timesteps], outputs=outputs)
@@ -102,6 +110,9 @@ class SinusoidalTimeEmbeddingLayer(layers.Layer):
     def __init__(self, embedding_dim, **kwargs):
         super(SinusoidalTimeEmbeddingLayer, self).__init__(**kwargs)
         self.embedding_dim = embedding_dim
+        self.half_dim = embedding_dim // 2
+        self.emb = np.log(10000) / (self.half_dim - 1)
+        self.emb = tf.exp(tf.range(self.half_dim, dtype=tf.float32) * -self.emb)
 
     def call(self, timesteps):
         """Compute the sinusoidal time embeddings
@@ -112,24 +123,10 @@ class SinusoidalTimeEmbeddingLayer(layers.Layer):
         Returns:
             embeddings: The computed embeddings
         """
-        # Ensure timesteps are integers for tf.range
-        timesteps = tf.cast(timesteps, dtype=tf.int32)
-        timesteps = tf.squeeze(
-            timesteps, axis=-1
-        )  # Make sure it's the correct shape for tf.range
-        position = tf.range(tf.shape(timesteps)[0], dtype=tf.float32)[:, tf.newaxis]
-        div_term = tf.exp(
-            tf.range(0, self.embedding_dim, 2, dtype=tf.float32)
-            * -(np.log(10000.0) / self.embedding_dim)
-        )
-
-        embeddings = tf.concat(
-            [
-                tf.sin(position * div_term),
-                tf.cos(position * div_term)[:, : self.embedding_dim // 2],
-            ],
-            axis=1,
-        )
+        timesteps = tf.cast(timesteps, dtype=tf.float32)
+        # embeddings = timesteps[:, None] * self.emb[None, :]
+        embeddings = tf.einsum("i,j->ij", timesteps, self.emb)
+        embeddings = tf.concat([tf.sin(embeddings), tf.cos(embeddings)], axis=-1)
         return embeddings
 
 
@@ -148,7 +145,7 @@ class SelfAttentionLayer(layers.Layer):
     def __init__(self, channels, **kwargs):
         super(SelfAttentionLayer, self).__init__(**kwargs)
         self.channels = channels
-        self.norm = layers.GroupNormalization()
+        self.norm = layers.GroupNormalization(8)
         self.query = layers.Conv2D(self.channels, 1, padding="same")
         self.key = layers.Conv2D(self.channels, 1, padding="same")
         self.value = layers.Conv2D(self.channels, 1, padding="same")
@@ -198,7 +195,7 @@ def input_block(input_tensor, embedding_dim):
         x: The processed tensor
     """
     x = layers.Dense(embedding_dim, activation=activations.silu)(input_tensor)
-    x = layers.GroupNormalization()(x)
+    x = layers.GroupNormalization(8)(x)
     x = layers.Activation(activations.silu)(x)
     return x
 
@@ -283,7 +280,7 @@ def process_block(x_img, label_emb, time_emb, channels, attention=False):
         x_out: The processed tensor
     """
     x_parameter = layers.Conv2D(channels, 3, padding="same")(x_img)
-    x_parameter = layers.GroupNormalization()(x_parameter)
+    x_parameter = layers.GroupNormalization(8)(x_parameter)
     x_parameter = layers.Activation(activations.silu)(x_parameter)
 
     label_parameter = layers.Dense(channels)(label_emb)
@@ -302,7 +299,7 @@ def process_block(x_img, label_emb, time_emb, channels, attention=False):
     if attention:
         x_out = SelfAttentionLayer(channels)(x_out)
 
-    x_out = layers.GroupNormalization()(x_out)
+    x_out = layers.GroupNormalization(8)(x_out)
     x_out = layers.Activation(activations.silu)(x_out)
 
     return x_out
