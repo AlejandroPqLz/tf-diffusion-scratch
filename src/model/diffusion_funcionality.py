@@ -65,7 +65,7 @@ class DiffusionModel(tf.keras.Model):
         self.beta = tf.constant(self.beta_scheduler(), tf.float32)
         self.alpha = tf.constant(1 - self.beta, tf.float32)
         self.alpha_cumprod = tf.constant(tf.math.cumprod(self.alpha), tf.float32)
-        self.sigma = tf.constant(tf.sqrt(self.beta), tf.float32)
+        self.sigma = tf.constant(tf.sqrt(self.beta), tf.float32)  # σ_t = sqrt(β_t)
 
         self.compute_loss = tf.keras.losses.MeanSquaredError()
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)

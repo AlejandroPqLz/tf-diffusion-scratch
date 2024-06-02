@@ -25,7 +25,6 @@ SAME_NOISE = tf.random.normal(shape=(1, IMG_SIZE, IMG_SIZE, 3))
 
 
 # TODO: ADD SAVE FUNCTIONALITY TO THE CALLBACKS
-# TODO: ADD LOGS FOR TRAINING METRICS
 
 
 # Custom Callback for the Diffusion Model
@@ -63,7 +62,11 @@ class DiffusionCallback(tf.keras.callbacks.Callback):
             logs (dict): The logs containing the training metrics.
         """
         if (epoch + 1) % self.frequency == 0:
+            # Generate samples
             print(f"Epoch {epoch+1}: Generating samples.")
             self.diffusion_model.plot_samples(
                 num_samples=1, poke_type=self.poke_type, start_noise=SAME_NOISE
             )
+
+            # Save the model
+            self.diffusion_model.save_model()
