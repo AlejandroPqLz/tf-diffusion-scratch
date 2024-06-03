@@ -146,14 +146,17 @@ class DiffusionModel(tf.keras.Model):
         x_t, y_t = data
         shape_x_t = tf.shape(x_t)
 
-        # 2: for t = T, . . . , 0 do: Reverse the diffusion process
+        # 2: for t = T, . . . , 1 do: Reverse the diffusion process
         time.sleep(0.4)
-        inv_process = reversed(range(0, self.timesteps))
+        interim = []
+        n_samples = self.timesteps // 100
+        inv_process = reversed(range(1, self.timesteps))
         for t in tqdm(inv_process, desc="Sampling sprite...", total=self.timesteps):
             t = tf.cast(tf.fill(shape_x_t[0], t), tf.int32)  # shape = (batch_size,)
 
-            # 3: z ~ N(0, I) if t > 0, else z = 0: Sample noise, except at the first timestep
-            z = tf.random.normal(shape=shape_x_t) if t > 0 else tf.zeros_like(x_t)
+            # 3: z ~ N(0, I) if t > 1, else z = 0:
+            # Sample noise, except for last image (t=1, x_t-1 = x_0)
+            z = tf.random.normal(shape=shape_x_t) if t > 1 else tf.zeros_like(x_t)
 
             # 4: x_{t-1} = (x_t - (1 - α_t) / sqrt(1 - α_cumprod_t) * ε_θ) / sqrt(α_t) + σ_t * z
             predicted_noise = self.model([x_t, y_t, t], training=False)
@@ -165,8 +168,12 @@ class DiffusionModel(tf.keras.Model):
                 x_t - (1 - alpha_t) / tf.sqrt(1 - alpha_cumprod_t) * predicted_noise
             ) / tf.sqrt(alpha_t) + sigma_t * z
 
+            # Save the intermediate steps
+            if t % n_samples == 0:
+                interim.append(x_t)
+
         # 5: end for
-        return x_t  # 6: return x_0
+        return x_t, interim  # 6: return x_0
 
     def forward_diffusion(self, x_0: tf.Tensor, t: int) -> tf.Tensor:
         """
@@ -239,7 +246,11 @@ class DiffusionModel(tf.keras.Model):
         return tf.reshape(tensor_t, [-1, 1, 1, 1])
 
     def plot_samples(
-        self, num_samples: int = 1, poke_type: str = None, start_noise: tf.Tensor = None
+        self,
+        num_samples: int = 1,
+        poke_type: str = None,
+        start_noise: tf.Tensor = None,
+        plot_interim: bool = False,
     ) -> None:
         """
         Generate and plot samples from the diffusion model.
@@ -249,6 +260,7 @@ class DiffusionModel(tf.keras.Model):
             poke_type (str): The type of Pokemon to generate samples for.
             If None, a random type is chosen.
             start_noise (tf.Tensor): The starting noise tensor. If None, random noise is used.
+            plot_interim (bool): Whether to plot the intermediate steps of the diffusion process.
 
         """
 
@@ -286,18 +298,36 @@ class DiffusionModel(tf.keras.Model):
             y_label = tf.reshape(y_label, [1, self.num_classes])
 
             # Generate the sample(s)
-            sample = self.sampling_step((start_noise, y_label))
-            sample = tf.squeeze(sample)  # remove the batch dimension
+            sample, interim = self.sampling_step((start_noise, y_label))
 
-            # Scale to [0, 1] for plotting
-            sample = (sample - tf.reduce_min(sample)) / (
-                tf.reduce_max(sample) - tf.reduce_min(sample)
-            )
+            # Plot
+            if plot_interim:
+                interim = [tf.squeeze(step) for step in interim]
+                interim = [
+                    step
+                    - tf.reduce_min(step) / (tf.reduce_max(step) - tf.reduce_min(step))
+                    for step in interim
+                ]
 
-            # Plot the sample
-            axs[i].imshow(sample)
-            axs[i].title.set_text(onehot_to_string(y_label))
-            axs[i].axis("off")
+                _, axs_interim = plt.subplots(
+                    1, len(interim), figsize=(len(interim) * 2, 3)
+                )
+                for j, step in enumerate(interim):
+                    axs_interim[j].imshow(step)
+                    axs_interim[j].axis("off")
+
+            else:
+                sample = tf.squeeze(sample)  # remove the batch dimension
+
+                # Scale to [0, 1] for plotting
+                sample = (sample - tf.reduce_min(sample)) / (
+                    tf.reduce_max(sample) - tf.reduce_min(sample)
+                )
+
+                # Plot the sample
+                axs[i].imshow(sample)
+                axs[i].title.set_text(onehot_to_string(y_label))
+                axs[i].axis("off")
 
         plt.show()
 
