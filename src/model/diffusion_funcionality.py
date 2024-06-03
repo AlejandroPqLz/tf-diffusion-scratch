@@ -70,6 +70,21 @@ class DiffusionModel(tf.keras.Model):
         self.compute_loss = tf.keras.losses.MeanSquaredError()
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
 
+    def _gather(self, tensor: tf.Tensor, index: int) -> tf.Tensor:
+        """
+        Extract the value at the specified index from the tensor,
+        then reshape to [batch_size, 1, 1, 1] for broadcasting.
+
+        Args:
+            tensor (tf.Tensor): The tensor to gather values from.
+            index (int): The index to gather values for.
+
+        Returns:
+            tf.Tensor: The gathered tensor values reshaped for broadcasting.
+        """
+        tensor_t = tf.gather(tensor, index)
+        return tf.reshape(tensor_t, [-1, 1, 1, 1])
+
     def compile(
         self,
         loss: tf.keras.losses.Loss,
@@ -87,6 +102,61 @@ class DiffusionModel(tf.keras.Model):
         super().compile(**kwargs)
         self.compute_loss = loss
         self.optimizer = optimizer
+
+    def beta_scheduler(self) -> tf.Tensor:
+        """
+        Generates a schedule for beta values according to the specified type ('linear' or 'cosine').
+
+        Returns:
+            tf.Tensor: The beta values for each timestep (the beta scheduler)
+        """
+        if self.scheduler == "linear":
+            scale = 1000 / self.timesteps
+            beta_start = self.beta_start * scale
+            beta_end = self.beta_end * scale
+            beta = tf.linspace(beta_start, beta_end, self.timesteps)
+
+        elif self.scheduler == "cosine":
+
+            def f(t):
+                pi = tf.constant(np.pi)
+                return (
+                    tf.cos((t / self.timesteps + self.s) / (1 + self.s) * (pi * 0.5))
+                    ** 2
+                )
+
+            t = tf.range(self.timesteps, dtype=tf.float32)
+            alphas_cumprod_t = f(t) / f(0)
+            alphas_cumprod_t_prev = f(t - 1) / f(0)
+            beta_t = 1 - alphas_cumprod_t / alphas_cumprod_t_prev
+            beta = tf.clip_by_value(beta_t, 0.0001, 0.999)  # for numerical stability
+
+        else:
+            raise ValueError(f"Unsupported scheduler: {self.scheduler}")
+
+        return beta
+
+    def forward_diffusion(self, x_0: tf.Tensor, t: int) -> tf.Tensor:
+        """
+        Diffuse the data by adding noise to the input image.
+
+        Args:
+            x_0 (tf.Tensor): The initial image tensor.
+            t (int): The current timestep.
+
+        Returns:
+            tf.Tensor: The diffused image tensor at timestep t.
+            noise (tf.Tensor): The noise added to the image.
+        """
+        noise = tf.random.normal(shape=tf.shape(x_0), dtype=tf.float32)
+        alpha_cumprod_t = self._gather(self.alpha_cumprod, t)
+
+        mean = tf.sqrt(alpha_cumprod_t) * x_0
+        variance = 1 - alpha_cumprod_t
+
+        x_t = mean + tf.sqrt(variance) * noise
+
+        return x_t, noise
 
     def train_step(self, data: tuple) -> dict:
         """
@@ -168,82 +238,12 @@ class DiffusionModel(tf.keras.Model):
                 x_t - (1 - alpha_t) / tf.sqrt(1 - alpha_cumprod_t) * predicted_noise
             ) / tf.sqrt(alpha_t) + sigma_t * z
 
-            # Save the intermediate steps
-            if t % n_samples == 0:
+            # Save the intermediate steps for later plotting
+            if t % (self.timesteps // n_samples) == 0:
                 interim.append(x_t)
 
         # 5: end for
         return x_t, interim  # 6: return x_0
-
-    def forward_diffusion(self, x_0: tf.Tensor, t: int) -> tf.Tensor:
-        """
-        Diffuse the data by adding noise to the input image.
-
-        Args:
-            x_0 (tf.Tensor): The initial image tensor.
-            t (int): The current timestep.
-
-        Returns:
-            tf.Tensor: The diffused image tensor at timestep t.
-            noise (tf.Tensor): The noise added to the image.
-        """
-        noise = tf.random.normal(shape=tf.shape(x_0), dtype=tf.float32)
-        alpha_cumprod_t = self._gather(self.alpha_cumprod, t)
-
-        mean = tf.sqrt(alpha_cumprod_t) * x_0
-        variance = 1 - alpha_cumprod_t
-
-        x_t = mean + tf.sqrt(variance) * noise
-
-        return x_t, noise
-
-    def beta_scheduler(self) -> tf.Tensor:
-        """
-        Generates a schedule for beta values according to the specified type ('linear' or 'cosine').
-
-        Returns:
-            tf.Tensor: The beta values for each timestep (the beta scheduler)
-        """
-        if self.scheduler == "linear":
-            scale = 1000 / self.timesteps
-            beta_start = self.beta_start * scale
-            beta_end = self.beta_end * scale
-            beta = tf.linspace(beta_start, beta_end, self.timesteps)
-
-        elif self.scheduler == "cosine":
-
-            def f(t):
-                pi = tf.constant(np.pi)
-                return (
-                    tf.cos((t / self.timesteps + self.s) / (1 + self.s) * (pi * 0.5))
-                    ** 2
-                )
-
-            t = tf.range(self.timesteps, dtype=tf.float32)
-            alphas_cumprod_t = f(t) / f(0)
-            alphas_cumprod_t_prev = f(t - 1) / f(0)
-            beta_t = 1 - alphas_cumprod_t / alphas_cumprod_t_prev
-            beta = tf.clip_by_value(beta_t, 0.0001, 0.999)  # for numerical stability
-
-        else:
-            raise ValueError(f"Unsupported scheduler: {self.scheduler}")
-
-        return beta
-
-    def _gather(self, tensor: tf.Tensor, index: int) -> tf.Tensor:
-        """
-        Extract the value at the specified index from the tensor,
-        then reshape to [batch_size, 1, 1, 1] for broadcasting.
-
-        Args:
-            tensor (tf.Tensor): The tensor to gather values from.
-            index (int): The index to gather values for.
-
-        Returns:
-            tf.Tensor: The gathered tensor values reshaped for broadcasting.
-        """
-        tensor_t = tf.gather(tensor, index)
-        return tf.reshape(tensor_t, [-1, 1, 1, 1])
 
     def plot_samples(
         self,
@@ -263,11 +263,6 @@ class DiffusionModel(tf.keras.Model):
             plot_interim (bool): Whether to plot the intermediate steps of the diffusion process.
 
         """
-
-        _, axs = plt.subplots(1, num_samples, figsize=(num_samples * 2, 3))
-
-        if num_samples == 1:
-            axs = [axs]  # Make axs iterable when plotting only one sample
 
         # Generate and plot the samples
         # =====================================================================
@@ -301,7 +296,24 @@ class DiffusionModel(tf.keras.Model):
             sample, interim = self.sampling_step((start_noise, y_label))
 
             # Plot
-            if plot_interim:
+            if not plot_interim:
+                sample = tf.squeeze(sample)  # remove the batch dimension
+                # Scale to [0, 1] for plotting
+                sample = (sample - tf.reduce_min(sample)) / (
+                    tf.reduce_max(sample) - tf.reduce_min(sample)
+                )
+
+                # Plot the samples
+                _, axs = plt.subplots(1, num_samples, figsize=(num_samples * 2, 3))
+                if num_samples == 1:
+                    axs = [axs]  # Make axs iterable when plotting only one sample
+
+                axs[i].imshow(sample)
+                axs[i].title.set_text(onehot_to_string(y_label))
+                axs[i].axis("off")
+
+            else:
+                print(len(interim))
                 interim = [tf.squeeze(step) for step in interim]
                 interim = [
                     step
@@ -309,25 +321,16 @@ class DiffusionModel(tf.keras.Model):
                     for step in interim
                 ]
 
-                _, axs_interim = plt.subplots(
-                    1, len(interim), figsize=(len(interim) * 2, 3)
-                )
+                # Plot the interim steps
+                print(len(interim))
+                _, axs = plt.subplots(1, len(interim), figsize=(len(interim) * 2, 3))
+                if len(interim) == 1:
+                    axs = [axs]
+
                 for j, step in enumerate(interim):
-                    axs_interim[j].imshow(step)
-                    axs_interim[j].axis("off")
-
-            else:
-                sample = tf.squeeze(sample)  # remove the batch dimension
-
-                # Scale to [0, 1] for plotting
-                sample = (sample - tf.reduce_min(sample)) / (
-                    tf.reduce_max(sample) - tf.reduce_min(sample)
-                )
-
-                # Plot the sample
-                axs[i].imshow(sample)
-                axs[i].title.set_text(onehot_to_string(y_label))
-                axs[i].axis("off")
+                    axs[j].imshow(step)
+                    axs[j].title.set_text(onehot_to_string(y_label))
+                    axs[j].axis("off")
 
         plt.show()
 

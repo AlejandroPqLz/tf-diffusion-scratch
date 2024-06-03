@@ -65,7 +65,10 @@ class DiffusionCallback(tf.keras.callbacks.Callback):
             # Generate samples
             print(f"Epoch {epoch+1}: Generating samples.")
             self.diffusion_model.plot_samples(
-                num_samples=1, poke_type=self.poke_type, start_noise=SAME_NOISE
+                num_samples=1,
+                poke_type=self.poke_type,
+                start_noise=SAME_NOISE,
+                plot_interim=True,
             )
 
             # Save the model
