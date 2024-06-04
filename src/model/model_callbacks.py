@@ -72,4 +72,4 @@ class DiffusionCallback(tf.keras.callbacks.Callback):
             )
 
             # Save the model
-            self.diffusion_model.save_model()
+            # self.diffusion_model.save_model()
