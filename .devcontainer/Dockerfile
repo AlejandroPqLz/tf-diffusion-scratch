@@ -30,7 +30,7 @@ WORKDIR /home/${USER_NAME}
 # Install Python packages using pip (add or remove packages as needed)
 RUN pip install --upgrade pip && \
     pip install ipykernel keras==3.1 matplotlib mlflow numba numpy pandas pexpect \
-    tabulate typing tqdm --no-cache-dir --no-warn-script-location
+    pydot tabulate typing tqdm --no-cache-dir --no-warn-script-location
 
 # Set the default command or entry point for the container
 CMD ["bash"]

@@ -218,11 +218,10 @@ class DiffusionModel(tf.keras.Model):
 
         # 2: for t = T, . . . , 1 do: Reverse the diffusion process
         time.sleep(0.4)
-        interim = []
-        n_samples = self.timesteps // 100
+        interim = dict()
         inv_process = reversed(range(1, self.timesteps))
-        for t in tqdm(inv_process, desc="Sampling sprite...", total=self.timesteps):
-            t = tf.cast(tf.fill(shape_x_t[0], t), tf.int32)  # shape = (batch_size,)
+        for t_ in tqdm(inv_process, desc="Sampling sprite...", total=self.timesteps):
+            t = tf.cast(tf.fill(shape_x_t[0], t_), tf.int32)  # shape = (batch_size,)
 
             # 3: z ~ N(0, I) if t > 1, else z = 0:
             # Sample noise, except for last image (t=1, x_t-1 = x_0)
@@ -239,8 +238,8 @@ class DiffusionModel(tf.keras.Model):
             ) / tf.sqrt(alpha_t) + sigma_t * z
 
             # Save the intermediate steps for later plotting
-            if t % (self.timesteps // n_samples) == 0:
-                interim.append(x_t)
+            if t_ % 100 == 0 or t_ == 1:
+                interim[t_] = x_t
 
         # 5: end for
         return x_t, interim  # 6: return x_0
@@ -313,23 +312,23 @@ class DiffusionModel(tf.keras.Model):
                 axs[i].axis("off")
 
             else:
-                print(len(interim))
-                interim = [tf.squeeze(step) for step in interim]
-                interim = [
-                    step
-                    - tf.reduce_min(step) / (tf.reduce_max(step) - tf.reduce_min(step))
-                    for step in interim
-                ]
+
+                for t, step in interim.items():
+                    interim[t] = tf.squeeze(step)
+
+                for t, step in interim.items():
+                    interim[t] = (step - tf.reduce_min(step)) / (
+                        tf.reduce_max(step) - tf.reduce_min(step)
+                    )
 
                 # Plot the interim steps
-                print(len(interim))
                 _, axs = plt.subplots(1, len(interim), figsize=(len(interim) * 2, 3))
                 if len(interim) == 1:
                     axs = [axs]
 
-                for j, step in enumerate(interim):
+                for j, (t, step) in enumerate(interim.items()):
                     axs[j].imshow(step)
-                    axs[j].title.set_text(onehot_to_string(y_label))
+                    axs[j].title.set_text(f"{onehot_to_string(y_label)}: t={t}")
                     axs[j].axis("off")
 
         plt.show()
