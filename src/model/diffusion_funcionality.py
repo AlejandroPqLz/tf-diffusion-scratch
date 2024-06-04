@@ -214,6 +214,7 @@ class DiffusionModel(tf.keras.Model):
         """
         # 1: x_T ~ N(0, I): Starting from pure noise
         x_t, y_t = data
+        x_T = x_t
         shape_x_t = tf.shape(x_t)
 
         # 2: for t = T, . . . , 1 do: Reverse the diffusion process
@@ -238,8 +239,10 @@ class DiffusionModel(tf.keras.Model):
             ) / tf.sqrt(alpha_t) + sigma_t * z
 
             # Save the intermediate steps for later plotting
+            if t_ == self.timesteps - 1:
+                interim[t_] = x_T
             if t_ % 100 == 0 or t_ == 1:
-                interim[t_] = x_t
+                interim[t_ - 1] = x_t  # x_t = x_{t-1}
 
         # 5: end for
         return x_t, interim  # 6: return x_0
