@@ -10,6 +10,7 @@ import tensorflow as tf
 from src.model.diffusion_funcionality import DiffusionModel
 from src.utils.config import parse_config
 from src.utils import CONFIG_PATH
+from src.visualization import visualize
 
 # Set config file
 # =====================================================================

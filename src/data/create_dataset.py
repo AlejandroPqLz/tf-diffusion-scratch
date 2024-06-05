@@ -82,7 +82,7 @@ def dataset_tf(
 
     # Apply transformations to the dataset
     dataset = (
-        dataset.shuffle(buffer_size=len(image_paths))
+        dataset.shuffle(buffer_size=len(image_paths), reshuffle_each_iteration=True)
         .batch(batch_size, drop_remainder=True)
         .prefetch(tf.data.AUTOTUNE)
     )
