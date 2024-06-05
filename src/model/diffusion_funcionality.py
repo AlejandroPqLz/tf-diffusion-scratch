@@ -221,7 +221,7 @@ class DiffusionModel(tf.keras.Model):
         time.sleep(0.4)
         interim = dict()
         inv_process = reversed(range(1, self.timesteps))
-        for t_ in tqdm(inv_process, desc="Sampling sprite...", total=self.timesteps):
+        for t_ in tqdm(inv_process, "Sampling sprite...", total=self.timesteps - 1):
             t = tf.cast(tf.fill(shape_x_t[0], t_), tf.int32)  # shape = (batch_size,)
 
             # 3: z ~ N(0, I) if t > 1, else z = 0:
@@ -265,6 +265,10 @@ class DiffusionModel(tf.keras.Model):
             plot_interim (bool): Whether to plot the intermediate steps of the diffusion process.
 
         """
+        if not plot_interim:
+            _, axs = plt.subplots(1, num_samples, figsize=(num_samples * 2, 3))
+            if num_samples == 1:
+                axs = [axs]  # Make axs iterable when plotting only one sample
 
         # Generate and plot the samples
         # =====================================================================
@@ -297,7 +301,8 @@ class DiffusionModel(tf.keras.Model):
             # Generate the sample(s)
             sample, interim = self.sampling_step((start_noise, y_label))
 
-            # Plot
+            # Plot the samples or the interim steps
+            # =====================================================================
             if not plot_interim:
                 sample = tf.squeeze(sample)  # remove the batch dimension
                 # Scale to [0, 1] for plotting
@@ -306,10 +311,6 @@ class DiffusionModel(tf.keras.Model):
                 )
 
                 # Plot the samples
-                _, axs = plt.subplots(1, num_samples, figsize=(num_samples * 2, 3))
-                if num_samples == 1:
-                    axs = [axs]  # Make axs iterable when plotting only one sample
-
                 axs[i].imshow(sample)
                 axs[i].title.set_text(onehot_to_string(y_label))
                 axs[i].axis("off")
