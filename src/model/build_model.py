@@ -146,10 +146,10 @@ class SelfAttentionLayer(layers.Layer):
         super(SelfAttentionLayer, self).__init__(**kwargs)
         self.channels = channels
         self.norm = layers.GroupNormalization(8)
-        self.query = layers.Conv2D(self.channels, 1, padding="same")
-        self.key = layers.Conv2D(self.channels, 1, padding="same")
-        self.value = layers.Conv2D(self.channels, 1, padding="same")
-        self.outputs = layers.Conv2D(self.channels, 1, padding="same")
+        self.query = layers.Dense(self.channels)
+        self.key = layers.Dense(self.channels)
+        self.value = layers.Dense(self.channels)
+        self.outputs = layers.Dense(self.channels)
 
     def call(self, inputs):
         """Compute the self-attention
@@ -177,7 +177,7 @@ class SelfAttentionLayer(layers.Layer):
         attn_score = tf.reshape(attn_score, [batch_size, height, width, height, width])
 
         attended_features = tf.einsum("bhwHW,bHWc->bhwc", attn_score, v)
-        out = self.outputs(attended_features)
+        out = inputs + self.outputs(attended_features)
         return out
 
 
