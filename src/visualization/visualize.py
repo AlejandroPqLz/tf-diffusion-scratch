@@ -89,7 +89,7 @@ def plot_image_paths(image_paths: Union[List[str], Dict[str, str]], n: int = 6) 
 # Plot a batch of images from a dataset
 # =====================================================================
 def plot_images_batch(
-    dataset_tf: tf.data.Dataset, df: pd.DataFrame = poke_df, n: int = 6
+    dataset_tf: tf.data.Dataset, n: int = 6, df: pd.DataFrame = poke_df
 ) -> None:
     """
     Plots a batch of images with their labels, if the time_steps are given plot them too.
