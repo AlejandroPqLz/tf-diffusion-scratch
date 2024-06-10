@@ -10,6 +10,7 @@ Diffsuion study.pdf
 *.egg-info
 __pycache__
 *.keras
+*.h5
 
 # dags
 *_dag_params.py
