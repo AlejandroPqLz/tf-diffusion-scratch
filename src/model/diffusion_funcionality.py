@@ -67,23 +67,8 @@ class DiffusionModel(tf.keras.Model):
         self.alpha_cumprod = tf.constant(tf.math.cumprod(self.alpha), tf.float32)
         self.sigma = tf.constant(tf.sqrt(self.beta), tf.float32)  # σ_t = sqrt(β_t)
 
-        self.compute_loss = tf.keras.losses.MeanSquaredError()
+        self.compiled_loss = tf.keras.losses.MeanSquaredError()
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
-
-    def _gather(self, tensor: tf.Tensor, index: int) -> tf.Tensor:
-        """
-        Extract the value at the specified index from the tensor,
-        then reshape to [batch_size, 1, 1, 1] for broadcasting.
-
-        Args:
-            tensor (tf.Tensor): The tensor to gather values from.
-            index (int): The index to gather values for.
-
-        Returns:
-            tf.Tensor: The gathered tensor values reshaped for broadcasting.
-        """
-        tensor_t = tf.gather(tensor, index)
-        return tf.reshape(tensor_t, [-1, 1, 1, 1])
 
     def compile(
         self,
@@ -100,8 +85,23 @@ class DiffusionModel(tf.keras.Model):
             **kwargs: Additional arguments to pass to the model's compile method.
         """
         super().compile(**kwargs)
-        self.compute_loss = loss
+        self.compiled_loss = loss
         self.optimizer = optimizer
+
+    def _gather(self, tensor: tf.Tensor, index: int) -> tf.Tensor:
+        """
+        Extract the value at the specified index from the tensor,
+        then reshape to [batch_size, 1, 1, 1] for broadcasting.
+
+        Args:
+            tensor (tf.Tensor): The tensor to gather values from.
+            index (int): The index to gather values for.
+
+        Returns:
+            tf.Tensor: The gathered tensor values reshaped for broadcasting.
+        """
+        tensor_t = tf.gather(tensor, index)
+        return tf.reshape(tensor_t, [-1, 1, 1, 1])
 
     def beta_scheduler(self) -> tf.Tensor:
         """
@@ -185,13 +185,48 @@ class DiffusionModel(tf.keras.Model):
         # 5: Take a gradient descent step on
         with tf.GradientTape() as tape:
             predicted_noise = self.model([x_t, input_label, t], training=True)
-            loss = self.compute_loss(target_noise, predicted_noise)
+            loss = self.compiled_loss(target_noise, predicted_noise)
 
         trainable_vars = self.trainable_variables
         gradients = tape.gradient(loss, trainable_vars)
         self.optimizer.apply_gradients(zip(gradients, trainable_vars))
 
         # 6: until convergence ------
+
+        # Update the metrics
+        for metric in self.metrics:
+            if metric.name == "loss":
+                metric.update_state(loss)
+            else:
+                metric.update_state(target_noise, predicted_noise)
+
+        return {m.name: m.result() for m in self.metrics}
+
+    def test_step(self, data: tuple) -> dict:
+        """
+        The validation step for the diffusion model.
+
+        Args:
+            data (tuple): A tuple containing the input data and labels.
+
+        Returns:
+            dict: A dictionary containing the updated metrics.
+        """
+        # Unpack the data
+        input_data, input_label = data
+        batch_size = tf.shape(input_data)[0]
+
+        # Generate a random timestep for each image in the batch
+        t = tf.random.uniform(
+            shape=(batch_size,), minval=0, maxval=self.timesteps, dtype=tf.int32
+        )
+
+        # Forward diffusion to get the noisy image and target noise
+        x_t, target_noise = self.forward_diffusion(input_data, t)
+
+        # Predict the noise
+        predicted_noise = self.model([x_t, input_label, t], training=False)
+        loss = self.compiled_loss(target_noise, predicted_noise)
 
         # Update the metrics
         for metric in self.metrics:
@@ -338,3 +373,47 @@ class DiffusionModel(tf.keras.Model):
         plt.show()
 
         return None
+
+    @staticmethod
+    def load_model(
+        model_path: str,
+        base_model: tf.keras.Model,
+        img_size: int,
+        num_classes: int,
+        timesteps: int,
+        beta_start: float,
+        beta_end: float,
+        s: float,
+        scheduler: str,
+    ) -> tf.keras.Model:
+        """
+        Load a trained model from a file.
+
+        Args:
+            model_path (str): The path to the model file.
+            base_model (tf.keras.Model): The base model to which the diffusion process is added.
+            img_size (int): The size of the input images.
+            num_classes (int): The number of classes in the dataset.
+            timesteps (int): The total number of diffusion steps.
+            beta_start (float): The starting value of beta (noise level).
+            beta_end (float): The ending value of beta (noise level).
+            s (float): The scale factor for the variance curve in the 'cosine' scheduler.
+            scheduler (str): The type of noise schedule ('cosine' or 'linear').
+
+        Returns:
+            model: The trained model with the diffusion functionality.
+        """
+        model = DiffusionModel(
+            model=base_model,
+            img_size=img_size,
+            num_classes=num_classes,
+            timesteps=timesteps,
+            beta_start=beta_start,
+            beta_end=beta_end,
+            s=s,
+            scheduler=scheduler,
+        )
+
+        model.load_weights(model_path)
+
+        return model

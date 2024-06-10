@@ -207,3 +207,42 @@ def plot_forward_diffusion(
             plt.title(f"t:{t}")
         plt.axis("off")
     plt.show()
+
+
+# Plot the training and test loss and metrics
+# =====================================================================
+def plot_history(h: tf.keras.callbacks.History) -> None:
+    """
+    Plot the training and test loss and metrics.
+
+    Args:
+        h (tf.keras.callbacks.History): The history object from the model training.
+
+    Example:
+        >>> plot_his(h)
+    """
+    metrics = h.history
+
+    loss = metrics["loss"]
+    val_loss = metrics["val_loss"]
+    mae = metrics["mae"]
+    val_mae = metrics["val_mae"]
+
+    epochs = range(0, len(loss))
+    _, axs = plt.subplots(1, 2, figsize=(17, 5))
+
+    # plot loss
+    axs[0].plot(epochs, loss, label="loss")
+    axs[0].plot(epochs, val_loss, label="val_loss")
+    axs[0].set_title("Train and test Loss")
+    axs[0].set_xlabel("Epochs")
+    axs[0].set_ylabel("Loss")
+    axs[0].legend()
+
+    # plot mae
+    axs[1].plot(epochs, mae, label="mae")
+    axs[1].plot(epochs, val_mae, label="val_mae")
+    axs[1].set_title("Train and test MAE")
+    axs[1].set_xlabel("Epochs")
+    axs[1].set_ylabel("MAE")
+    axs[1].legend()

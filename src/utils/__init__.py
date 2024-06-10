@@ -11,3 +11,4 @@ from pathlib import Path
 PROJECT_DIR = Path(__file__).resolve().parents[2]
 DATA_PATH = PROJECT_DIR / "data"
 CONFIG_PATH = PROJECT_DIR / "config.ini"
+MODELS_PATH = PROJECT_DIR / "model_weights"
