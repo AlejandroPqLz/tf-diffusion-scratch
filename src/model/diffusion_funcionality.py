@@ -172,6 +172,14 @@ class DiffusionModel(tf.keras.Model):
         input_data, input_label = data
         batch_size = tf.shape(input_data)[0]
 
+        # Randomly mask out input_label
+        mask = tf.random.uniform(
+            shape=(batch_size, self.num_classes), minval=0, maxval=1
+        )
+        mask = tf.cast(mask > 0.1, tf.float32)  # 10% of the labels are masked
+        input_label = tf.cast(input_label, tf.float32)
+        y = tf.cast(input_label * mask, tf.int32)
+
         # 1: repeat ------
 
         # 3: t ~ U(0, T): Generate a random timestep for each image in the batch
@@ -184,7 +192,7 @@ class DiffusionModel(tf.keras.Model):
 
         # 5: Take a gradient descent step on
         with tf.GradientTape() as tape:
-            predicted_noise = self.model([x_t, input_label, t], training=True)
+            predicted_noise = self.model([x_t, y, t], training=True)
             loss = self.compiled_loss(target_noise, predicted_noise)
 
         trainable_vars = self.trainable_variables
@@ -216,6 +224,14 @@ class DiffusionModel(tf.keras.Model):
         input_data, input_label = data
         batch_size = tf.shape(input_data)[0]
 
+        # Randomly mask out input_label
+        mask = tf.random.uniform(
+            shape=(batch_size, self.num_classes), minval=0, maxval=1
+        )
+        mask = tf.cast(mask < 0.1, tf.float32)  # 10% of the labels are masked
+        input_label = tf.cast(input_label, tf.float32)
+        y = tf.cast(input_label * mask, tf.int32)
+
         # Generate a random timestep for each image in the batch
         t = tf.random.uniform(
             shape=(batch_size,), minval=0, maxval=self.timesteps, dtype=tf.int32
@@ -225,7 +241,7 @@ class DiffusionModel(tf.keras.Model):
         x_t, target_noise = self.forward_diffusion(input_data, t)
 
         # Predict the noise
-        predicted_noise = self.model([x_t, input_label, t], training=False)
+        predicted_noise = self.model([x_t, y, t], training=False)
         loss = self.compiled_loss(target_noise, predicted_noise)
 
         # Update the metrics

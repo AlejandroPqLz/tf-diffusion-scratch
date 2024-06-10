@@ -9,8 +9,7 @@ import configparser
 import tensorflow as tf
 from src.model.diffusion_funcionality import DiffusionModel
 from src.utils.config import parse_config
-from src.utils import CONFIG_PATH
-from src.visualization import visualize
+from src.utils import CONFIG_PATH, MODELS_PATH
 
 # Set config file
 # =====================================================================
@@ -20,12 +19,11 @@ hyperparameters = parse_config(config, "hyperparameters")
 
 # Constants
 # =====================================================================
+EPOCHS = hyperparameters["epochs"]
+BATCH_SIZE = hyperparameters["batch_size"]
 IMG_SIZE = hyperparameters["img_size"]
 tf.random.set_seed(42)
 SAME_NOISE = tf.random.normal(shape=(1, IMG_SIZE, IMG_SIZE, 3))
-
-
-# TODO: ADD SAVE FUNCTIONALITY TO THE CALLBACKS
 
 
 # Custom Callback for the Diffusion Model
@@ -62,8 +60,8 @@ class DiffusionCallback(tf.keras.callbacks.Callback):
             epoch (int): The current epoch number.
             logs (dict): The logs containing the training metrics.
         """
+        # Generate samples
         if (epoch + 1) % self.frequency == 0:
-            # Generate samples
             print(f"Epoch {epoch+1}: Generating samples.")
             self.diffusion_model.plot_samples(
                 num_samples=1,
@@ -72,5 +70,8 @@ class DiffusionCallback(tf.keras.callbacks.Callback):
                 plot_interim=True,
             )
 
-            # Save the model
-            # self.diffusion_model.save_model()
+        # Save interim model weights
+        if (epoch + 1) % 100 == 0:
+            self.diffusion_model.save_weights(
+                f"{MODELS_PATH}/interim/diffusion_{IMG_SIZE}x{IMG_SIZE}_batch{BATCH_SIZE}_epochs_{epoch+1}.weights.h5"
+            )
