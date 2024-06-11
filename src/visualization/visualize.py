@@ -96,11 +96,11 @@ def plot_images_batch(
 
     Args:
         dataset_tf (tf.data.Dataset): The tensorflow dataset with the images and labels.
-        n (int): The number of images to plot. Defaults to 6.
         df (pd.DataFrame): The dataframe with the pokemon data.
+        n (int): The number of images to plot. Defaults to 6.
 
     Example:
-        >>> plot_images_batch(dataset_tf, df, n=6)
+        >>> plot_images_batch(dataset_tf, n=6, df=poke_df)
     """
     plt.figure(figsize=(20, 3))
 
