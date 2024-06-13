@@ -452,6 +452,8 @@ Before diving into the notebooks, take a look at the [config.ini](./config.ini) 
 
 - [04-Training-Diffusion-Model.ipynb](./notebooks/04-Training-Diffusion-Model.ipynb): Defines and explains the training diffusion process and trains the model with the dataset created in the `01-Dataset-Creation.ipynb` notebook.
 
+- [`05-Evaluate-Diffusion-Samples.ipynb`]():  
+
 ## :books: Resources
 
 - Resources and tutorials that have been found useful for this project are located in the [/docs](./docs) folder.
