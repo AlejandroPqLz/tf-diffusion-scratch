@@ -30,10 +30,6 @@ def label_mapping(dict_dataset: Dict[str, str]) -> Dict[str, int]:
 
     Returns:
         Dict[str, int]: Dictionary mapping label strings to integer indices
-
-    Example:
-        >>> label_mapping({"a": "type1", "b": "type2", "c": "type1"})
-        {"type1": 0, "type2": 1}
     """
     types = sorted(list(set(dict_dataset.values())))
     return {type_: idx for idx, type_ in enumerate(types)}
@@ -49,10 +45,6 @@ def onehot_to_string(one_hot_label: tf.Tensor, df: pd.DataFrame = poke_df) -> st
 
     Returns:
         str: The string label
-
-    Example:
-        >>> onehot_to_string(tf.constant([0, 1, 0]), poke_df)
-        "type2"
     """
     dict_df = df.set_index("pokedex_id")["type1"].to_dict()
     label_index = (
@@ -76,10 +68,6 @@ def string_to_onehot(label: str, df: pd.DataFrame = poke_df) -> tf.Tensor:
 
     Returns:
         tf.Tensor: The one-hot encoded label
-
-    Example:
-        >>> string_to_onehot("type2", poke_df)
-        tf.Tensor([0, 1, 0], shape=(3,), dtype=int32)
     """
     dict_df = df.set_index("pokedex_id")["type1"].to_dict()
     len_dict = len(set(dict_df.values()))

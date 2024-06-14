@@ -56,10 +56,6 @@ def plot_image_paths(image_paths: Union[List[str], Dict[str, str]], n: int = 6) 
     Args:
         image_paths (Union[List[str], Dict[str, str]]): A list or dictionary of image paths.
         n (int): The number of images to plot. Defaults to 6.
-
-    Example:
-        >>> plot_image_paths(image_paths=["path1", "path2", "path3"], n=3)
-        >>> plot_image_paths(image_paths={"path1": "type1", "path2": "type2"}, n=2)
     """
     plt.figure(figsize=(20, 3))
 
@@ -98,9 +94,6 @@ def plot_images_batch(
         dataset_tf (tf.data.Dataset): The tensorflow dataset with the images and labels.
         df (pd.DataFrame): The dataframe with the pokemon data.
         n (int): The number of images to plot. Defaults to 6.
-
-    Example:
-        >>> plot_images_batch(dataset_tf, n=6, df=poke_df)
     """
     plt.figure(figsize=(20, 3))
 
@@ -127,9 +120,6 @@ def plot_noise_levels(timesteps: int, beta_start: float, beta_end: float, s: flo
         beta_start (float): The starting value of beta.
         beta_end (float): The ending value of beta.
         s (float): The scale factor for the variance curve.
-
-    Example:
-        >>> plot_noise_levels(timesteps=1000, beta_start=0.01, beta_end=0.1, s=0.1)
     """
     normalized_steps = np.linspace(0, 1, timesteps)  # diffusion step (t/T)
 
@@ -184,9 +174,6 @@ def plot_forward_diffusion(
         beta_start (float): The starting value of beta.
         beta_end (float): The ending value of beta.
         s (float): The scale factor for the variance curve.
-
-    Example:
-        >>> plot_forward_diffusion(img_tensor, scheduler="linear", n=10, timesteps=1000, beta_start=0.01, beta_end=0.1, s=0.1)
     """
     plt.figure(figsize=(20, 7))
     n_timesteps = np.linspace(0, timesteps - 1, n, dtype=np.int32)
@@ -217,9 +204,6 @@ def plot_history(h: tf.keras.callbacks.History) -> None:
 
     Args:
         h (tf.keras.callbacks.History): The history object from the model training.
-
-    Example:
-        >>> plot_his(h)
     """
     metrics = h.history
 
@@ -228,7 +212,7 @@ def plot_history(h: tf.keras.callbacks.History) -> None:
     mae = metrics["mae"]
     val_mae = metrics["val_mae"]
 
-    epochs = range(0, len(loss))
+    epochs = range(0, len(loss))  # len(loss) = number of epochs
     _, axs = plt.subplots(1, 2, figsize=(17, 5))
 
     # plot loss

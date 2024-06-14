@@ -22,12 +22,6 @@ def parse_config(config: configparser.ConfigParser, param_name: str) -> Dict[str
 
     Returns:
         Dict[str, Any]: The configuration of the project.
-
-    Example:
-        >>> config = configparser.ConfigParser()
-        >>> config.read("config.ini")
-        >>> parse_config(config, "param_section")
-        {"int_param": 1, "float_param": 1.0, "str_param": "string"}
     """
 
     if param_name not in config:

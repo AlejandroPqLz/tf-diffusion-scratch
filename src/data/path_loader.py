@@ -53,10 +53,6 @@ class PathLoader:
 
         Returns:
             List[str]: A list of file paths.
-
-        Example:
-            >>> pl = PathLoader("./data/**/*.jpg")
-            >>> paths = pl.load_paths(save=True)
         """
         if self.save_file.exists():
             saved_paths = PathLoader.load_paths_from_file(self.save_file)
@@ -87,11 +83,6 @@ class PathLoader:
 
         Args:
             paths (List[str]): A list of file paths.
-
-        Exmaple:
-            >>> pl = PathLoader("./data/**/*.jpg")
-            >>> paths = pl.load_paths()
-            >>> pl.save_paths(paths)
         """
         try:
             with self.save_file.open("w", encoding="utf-8") as file:
@@ -112,9 +103,6 @@ class PathLoader:
 
         Returns:
             List[str]: A list of paths loaded from the file.
-
-        Example:
-            >>> paths = PathLoader.load_paths_from_file(Path("./image_paths.json"))
         """
         try:
             with save_file.open("r", encoding="utf-8") as file:

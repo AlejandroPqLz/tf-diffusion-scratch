@@ -56,9 +56,6 @@ def dataset_tf(
 
     Returns:
         tf.data.Dataset: The preprocessed dataset ready for training.
-
-    Example:
-        >>> dataset_tf(dict_dataset, batch_size=32, img_size=64, buffer=1, save=True, save_path="./datasets/dataset_tf/")
     """
     if dict_dataset is None and (image_paths is not None and df is not None):
         dict_dataset = dataset_dict(image_paths, df)
@@ -119,9 +116,6 @@ def dataset_dict(
 
     Returns:
         Dict[str, str]: A dictionary with the image paths as keys and the pokemon type as values.
-
-    Example:
-        >>> dataset_dict(image_paths, df, save=True, save_path="./datasets/dataset_dict.json")
     """
     data_dict = {}
 
