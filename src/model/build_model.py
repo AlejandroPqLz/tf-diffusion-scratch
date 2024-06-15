@@ -87,12 +87,6 @@ def build_unet(
     return model
 
 
-# Example
-# =====================================================================
-# model = build_ddpm_unet(32, 18, initial_channels=64)
-# model.summary()
-
-
 # Auxiliary Classes
 # =====================================================================
 class SinusoidalTimeEmbeddingLayer(layers.Layer):
