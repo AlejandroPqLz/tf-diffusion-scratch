@@ -20,8 +20,8 @@ hyperparameters = parse_config(config, "hyperparameters")
 # Constants
 # =====================================================================
 EPOCHS = hyperparameters["epochs"]
-BATCH_SIZE = hyperparameters["batch_size"] = 64
-IMG_SIZE = hyperparameters["img_size"] = 32
+BATCH_SIZE = hyperparameters["batch_size"]
+IMG_SIZE = hyperparameters["img_size"]
 tf.random.set_seed(42)
 SAME_NOISE = tf.random.normal(shape=(1, IMG_SIZE, IMG_SIZE, 3))
 
