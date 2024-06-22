@@ -15,13 +15,13 @@ requirements = [
     "tqdm",
     "tensorflow == 2.16.1",
     "keras == 3.1",
-    "mlflow",
     "pexpect",
     "ipykernel",
     "numba",
     "pydot",
     "tabulate",
     "typing",
+    "streamlit",
 ]
 
 setuptools.setup(
