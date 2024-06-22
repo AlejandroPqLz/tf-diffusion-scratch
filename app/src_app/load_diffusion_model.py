@@ -7,9 +7,9 @@
 import configparser
 import tensorflow as tf
 from src.model.build_model import build_unet
-from src.utils import *
+from src.utils import CONFIG_PATH, MODELS_PATH
 from src.utils.config import parse_config
-from src.model.diffusion_funcionality import *
+from src.model.diffusion_funcionality import DiffusionModel
 
 # Use the GPU
 # =====================================================================
