@@ -386,9 +386,7 @@ class DiffusionModel(tf.keras.Model):
                     axs[j].title.set_text(f"{onehot_to_string(y_label)}: t={t}")
                     axs[j].axis("off")
 
-        plt.show()
-
-        return None
+        return plt.gcf()
 
     @staticmethod
     def load_model(
