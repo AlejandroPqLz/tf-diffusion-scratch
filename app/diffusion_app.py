@@ -44,5 +44,7 @@ type_selection = st.selectbox("Select a Pokémon type", pokemon_types)
 num_samples = st.number_input("Number of Pokémon to generate", 1, 6, 1)
 
 if st.button("Generate Pokémon"):
-    ddpm_model.plot_samples(type_selection, num_samples)
-    st.image("pokemon_samples.png", width=300 * num_samples, use_column_width=False)
+    with st.spinner(f"Generating {num_samples} Pokémon of type {type_selection}..."):
+        ddpm_model.plot_samples(num_samples, type_selection)
+        st.image("pokemon_samples.png")
+        st.success("Pokémons generated successfully! 🎉")
