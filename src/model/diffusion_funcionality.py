@@ -304,7 +304,7 @@ class DiffusionModel(tf.keras.Model):
         poke_type: str = None,
         start_noise: tf.Tensor = None,
         plot_interim: bool = False,
-    ) -> None:
+    ) -> plt.Figure:
         """
         Generate and plot samples from the diffusion model.
 
@@ -315,6 +315,8 @@ class DiffusionModel(tf.keras.Model):
             start_noise (tf.Tensor): The starting noise tensor. If None, random noise is used.
             plot_interim (bool): Whether to plot the intermediate steps of the diffusion process.
 
+        Returns:
+            plt.Figure: The figure containing the generated samples.
         """
         if not plot_interim:
             _, axs = plt.subplots(1, num_samples, figsize=(num_samples * 2, 3))
