@@ -56,12 +56,23 @@ ddpm_model = app_ddpm_model(int(size_selection.split("x")[0]))
 # Generate Pokémon
 if st.button("Generate Pokémon"):
     with st.spinner(f"Generating {num_samples} {type_selection} type Pokémon..."):
-        st.warning("⚠️ The generation process may take a while.")
-        poke_samples = (
-            ddpm_model.plot_samples(num_samples)
-            if type_selection == "Random"
-            else ddpm_model.plot_samples(num_samples, type_selection)
+        st.warning(
+            "⚠️ The generation process may take a while. (Aprroximately 1-2 minutes per Pokémon sample)"
         )
+        if num_samples == 1 and show_steps:
+            poke_samples = (
+                ddpm_model.plot_samples(num_samples, plot_interim=True)
+                if type_selection == "Random"
+                else ddpm_model.plot_samples(
+                    num_samples, type_selection, plot_interim=True
+                )
+            )
+        else:
+            poke_samples = (
+                ddpm_model.plot_samples(num_samples)
+                if type_selection == "Random"
+                else ddpm_model.plot_samples(num_samples, type_selection)
+            )
 
         # Save the figure and the image
         buf = io.BytesIO()
