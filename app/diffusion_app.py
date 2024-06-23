@@ -10,40 +10,39 @@ and the number of Pokémon to generate.
 # =====================================================================
 import io
 import streamlit as st
-from src_app import pokemon_types
+from src_app import APP_FIGURES_DIR, pokemon_types
 from src_app.icon_loader import add_github_icon, image_to_base64
 from src_app.load_diffusion_model import app_ddpm_model
-from src.utils import PROJECT_DIR
 
-# Define the project directory and image path
-TITLE_IMAGE_PATH = PROJECT_DIR / "figures" / "app_figures" / "master-ball.png"
+# Load images
+# =====================================================================
+pokeball_img = image_to_base64(APP_FIGURES_DIR / "pokeball.png")
+ultraball_img = image_to_base64(APP_FIGURES_DIR / "ultraball.png")
+exp_share_img = image_to_base64(APP_FIGURES_DIR / "exp_share.png")
 
 # Streamlit app
 # =====================================================================
 
 # App config and GitHub icon
-st.set_page_config(layout="wide", page_icon="🎨", page_title="DDPM Pokémon Generator")
+st.set_page_config(
+    layout="wide",
+    page_icon=f"data:image/png;base64,{ultraball_img}",
+    page_title="DDPM Pokémon Generator",
+)
 add_github_icon()
 
-# Title with local image
-title_image_base64 = image_to_base64(TITLE_IMAGE_PATH)
+# Title and subtitle
 st.markdown(
     f"""
     <h1>
         DDPM Pokémon Generator
-        <img src="data:image/png;base64,{title_image_base64}" alt="DDPM Pokémon Generator" width="42" height="42">
+        <img src="data:image/png;base64,{pokeball_img}" alt="exp_share" width="42" height="42">
+        <img src="data:image/png;base64,{exp_share_img}" alt="exp_share" width="42" height="42">
     </h1>
     """,
     unsafe_allow_html=True,
 )
 
-# # Streamlit app
-# # =====================================================================
-
-# # App config, title and description
-# st.set_page_config(layout="wide", page_icon="🎨", page_title="DDPM Pokémon Generator")
-# add_github_icon()
-# st.title("DDPM Pokémon Generator 🎨👾")
 st.subheader(
     "Generate a Pokémon using Denoised Diffusion Probabilistic Models (DDPM) conditioned on the Pokémon type",
     divider="grey",

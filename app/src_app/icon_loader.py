@@ -8,14 +8,28 @@ Funtionality: This script contains a function to add a GitHub icon and link to t
 # =====================================================================
 import base64
 import streamlit as st
-from src.utils import PROJECT_DIR
+from src_app import APP_FIGURES_DIR
 
 # Define the project directory and image path
-GITHUB_ICON_PATH = PROJECT_DIR / "figures" / "app_figures" / "github_icon.png"
+GITHUB_ICON_PATH = APP_FIGURES_DIR / "github_icon.png"
 
 
 # Functions
 # =====================================================================
+def image_to_base64(image_path: str) -> str:
+    """
+    Converts an image to a base64 string.
+
+    Args:
+        image_path (str): The path to the image file.
+
+    Returns:
+        str: The base64 string.
+    """
+    with open(image_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
+
+
 def add_github_icon():
     """
     Adds a GitHub icon and link to the Streamlit app.
@@ -48,17 +62,3 @@ def add_github_icon():
         """,
         unsafe_allow_html=True,
     )
-
-
-def image_to_base64(image_path: str) -> str:
-    """
-    Converts an image to a base64 string.
-
-    Args:
-        image_path (str): The path to the image file.
-
-    Returns:
-        str: The base64 string.
-    """
-    with open(image_path, "rb") as img_file:
-        return base64.b64encode(img_file.read()).decode()
