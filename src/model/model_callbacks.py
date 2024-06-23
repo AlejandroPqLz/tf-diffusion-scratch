@@ -73,5 +73,5 @@ class DiffusionCallback(tf.keras.callbacks.Callback):
         # Save interim model weights
         if (epoch + 1) % 100 == 0:
             self.diffusion_model.save_weights(
-                f"{MODELS_PATH}/interim/diffusion_{IMG_SIZE}x{IMG_SIZE}_batch{BATCH_SIZE}_epochs_{epoch+1}.weights.h5"
+                f"{MODELS_PATH}/interim/diffusion_{IMG_SIZE}x{IMG_SIZE}_batch{BATCH_SIZE}_epochs{epoch+1}.weights.h5"
             )
