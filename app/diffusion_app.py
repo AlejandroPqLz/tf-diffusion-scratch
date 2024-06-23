@@ -12,7 +12,7 @@ import io
 import streamlit as st
 from src_app import APP_FIGURES_DIR, pokemon_types
 from src_app.icon_loader import add_github_icon, image_to_base64
-from src_app.load_diffusion_model import app_ddpm_model
+from app.src_app.model_loader import app_ddpm_model
 
 # Load images
 # =====================================================================
