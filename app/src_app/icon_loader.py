@@ -1,7 +1,7 @@
 """
 git_icon.py
 
-Funtionality: This script contains a function to add a GitHub icon and link to the Streamlit app.
+Functionality: This script contains a function to add a GitHub icon and link to the Streamlit app.
 """
 
 # Imports
@@ -9,9 +9,6 @@ Funtionality: This script contains a function to add a GitHub icon and link to t
 import base64
 import streamlit as st
 from src_app import APP_FIGURES_DIR
-
-# Define the project directory and image path
-GITHUB_ICON_PATH = APP_FIGURES_DIR / "github_icon.png"
 
 
 # Functions
@@ -34,27 +31,27 @@ def add_github_icon():
     """
     Adds a GitHub icon and link to the Streamlit app.
     """
-    github_icon_base64 = image_to_base64(GITHUB_ICON_PATH)
+    github_icon_base64 = image_to_base64(APP_FIGURES_DIR / "github_icon.png")
     st.markdown(
         f"""
         <style>
-        .github-icon-container {{
+        .sidebar .github-icon {{
             position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 1000;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
         }}
-        .github-icon-container a {{
+        .github-icon a {{
             display: block;
             width: 33px;
             height: 33px;
         }}
-        .github-icon-container img {{
+        .github-icon img {{
             width: 100%;
             height: 100%;
         }}
         </style>
-        <div class="github-icon-container">
+        <div class="github-icon">
             <a href="https://github.com/AlejandroPqLz/tf-diffusion-scratch" target="_blank">
                 <img src="data:image/png;base64,{github_icon_base64}" alt="GitHub">
             </a>
