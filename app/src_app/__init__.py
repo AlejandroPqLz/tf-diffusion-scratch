@@ -55,11 +55,6 @@ CUSTOM_CSS = """
         max-height: auto;
         object-fit: contain;
     }
-    .placeholder-img {
-        max-width: 100px;
-        max-height: 100px;
-        object-fit: contain;
-    }
     </style>
 """
 

@@ -147,7 +147,10 @@ if st.button("Generate Pokémon"):
         st.session_state["poke_samples"] = buf
 
         with image_box:
-            st.image(buf, use_column_width=False)
+            if show_steps or num_samples >= 7:
+                st.image(buf, use_column_width=True)
+            else:
+                st.image(buf, use_column_width=False)
 
         st.success(
             f"Successfully generated {num_samples} {type_selection} type new Pokémon! 🎉"
