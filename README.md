@@ -309,7 +309,7 @@ And finally, set the environment variables to use the CUDA and cuDNN libraries e
 Once the environment is activated, you can install the [external dependencies](./setup.py) by running the following command:
     
 ```bash
-pip install -e.
+pip install -e .
 ```
 And you are ready to go!
 
@@ -381,7 +381,7 @@ This will pull the `tensorflow-gpu-jupyter` image if not pulled before and build
 In order to avoid possible issues with the container not detecting some versions of the libraries, just run the following command in the container terminal to install the external dependencies declared in the [setup.py](./setup.py) file:
 
 ```bash
-pip install -e.
+pip install -e .
 ```
 
 Finally, when running any Jupyter notebook, choose the python version that matches the one the image was built with. To check the python version, just run the following command in container terminal:
@@ -417,7 +417,7 @@ We will follow the same first steps as in the [Windows Subsystem for Linux (WSL2
     conda activate diffusion_env
 
     # Install external dependencies
-    pip install -e.
+    pip install -e .
 ```
 
 #### 4.2 TensorFlow for MacOS
