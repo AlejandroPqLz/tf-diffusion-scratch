@@ -6,6 +6,7 @@ callbacks.py: Custom Callbacks for the Diffusion Model.
 # Imports
 # =====================================================================
 import configparser
+import time
 import tensorflow as tf
 from src.model.diffusion_funcionality import DiffusionModel
 from src.utils.config import parse_config
@@ -62,13 +63,16 @@ class DiffusionCallback(tf.keras.callbacks.Callback):
         """
         # Generate samples
         if (epoch + 1) % self.frequency == 0:
-            print(f"Epoch {epoch+1}: Generating samples.")
+            print(f"\nEpoch {epoch+1}: Generating samples.")
             self.diffusion_model.plot_samples(
                 num_samples=1,
                 poke_type=self.poke_type,
                 start_noise=SAME_NOISE,
                 plot_interim=True,
             )
+        
+        # # Wait 2 seconds
+        # time.sleep(2)
 
         # Save interim model weights
         if (epoch + 1) % 100 == 0:

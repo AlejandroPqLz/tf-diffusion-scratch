@@ -304,6 +304,7 @@ class DiffusionModel(tf.keras.Model):
         poke_type: str = None,
         start_noise: tf.Tensor = None,
         plot_interim: bool = False,
+        app: bool = False,
     ) -> plt.Figure:
         """
         Generate and plot samples from the diffusion model.
@@ -314,6 +315,7 @@ class DiffusionModel(tf.keras.Model):
             If None, a random type is chosen.
             start_noise (tf.Tensor): The starting noise tensor. If None, random noise is used.
             plot_interim (bool): Whether to plot the intermediate steps of the diffusion process.
+            app (bool): Whether to return the figure for the Streamlit app.
 
         Returns:
             plt.Figure: The figure containing the generated samples.
@@ -388,7 +390,7 @@ class DiffusionModel(tf.keras.Model):
                     axs[j].title.set_text(f"{onehot_to_string(y_label)}: t={t}")
                     axs[j].axis("off")
 
-        return plt.gcf()
+        return plt.gcf() if app else plt.show()
 
     @staticmethod
     def load_model(

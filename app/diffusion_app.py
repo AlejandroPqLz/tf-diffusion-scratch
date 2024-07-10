@@ -126,17 +126,17 @@ if st.button("Generate Pokémon"):
 
         if num_samples == 1 and show_steps:
             poke_samples = (
-                ddpm_model.plot_samples(num_samples, plot_interim=True)
+                ddpm_model.plot_samples(num_samples, plot_interim=True, app=True)
                 if type_selection == "Random"
                 else ddpm_model.plot_samples(
-                    num_samples, type_selection, plot_interim=True
+                    num_samples, type_selection, plot_interim=True, app=True
                 )
             )
         else:
             poke_samples = (
-                ddpm_model.plot_samples(num_samples)
+                ddpm_model.plot_samples(num_samples, app=True)
                 if type_selection == "Random"
-                else ddpm_model.plot_samples(num_samples, type_selection)
+                else ddpm_model.plot_samples(num_samples, type_selection, app=True)
             )
 
         buf = io.BytesIO()
