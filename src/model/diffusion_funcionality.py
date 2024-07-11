@@ -22,6 +22,7 @@ class DiffusionModel(tf.keras.Model):
 
     Attributes:
         model (tf.keras.Model): The base model to which the diffusion process is added.
+        ema_model (tf.keras.Model): The model used to store the EMA weights.
         img_size (int): The size of the input images.
         num_classes (int): The number of classes in the dataset.
         timesteps (int): The total number of diffusion steps.
@@ -29,6 +30,7 @@ class DiffusionModel(tf.keras.Model):
         beta_end (float): The ending value of beta (noise level).
         s (float): The scale factor for the variance curve in the 'cosine' scheduler.
         scheduler (str): The type of noise schedule ('cosine' or 'linear').
+        ema (float): The exponential moving average factor.
 
     Methods:
         compile(loss, optimizer, **kwargs): Compile the model with the specified loss and optimizer.
@@ -43,6 +45,7 @@ class DiffusionModel(tf.keras.Model):
     def __init__(
         self,
         model: tf.keras.Model,
+        ema_model: tf.keras.Model,
         img_size: int,
         num_classes: int,
         timesteps: int,
@@ -50,10 +53,12 @@ class DiffusionModel(tf.keras.Model):
         beta_end: float,
         s: float,
         scheduler: str,
+        ema: float = 0.999,
     ):
 
         super().__init__()
         self.model = model
+        self.ema_model = ema_model
         self.img_size = img_size
         self.num_classes = num_classes
         self.timesteps = timesteps
@@ -61,6 +66,7 @@ class DiffusionModel(tf.keras.Model):
         self.beta_end = beta_end
         self.s = s
         self.scheduler = scheduler
+        self.ema = ema
 
         self.beta = tf.constant(self.beta_scheduler(), tf.float32)
         self.alpha = tf.constant(1 - self.beta, tf.float32)
@@ -199,6 +205,10 @@ class DiffusionModel(tf.keras.Model):
         gradients = tape.gradient(loss, trainable_vars)
         self.optimizer.apply_gradients(zip(gradients, trainable_vars))
 
+        # Updates the weight values for the network with EMA weights
+        for weight, ema_weight in zip(self.model.weights, self.ema_model.weights):
+            ema_weight.assign(self.ema * ema_weight + (1 - self.ema) * weight)
+
         # 6: until convergence ------
 
         # Update the metrics
@@ -280,7 +290,7 @@ class DiffusionModel(tf.keras.Model):
             z = tf.random.normal(shape=shape_x_t) if t > 1 else tf.zeros_like(x_t)
 
             # 4: x_{t-1} = (x_t - (1 - α_t) / sqrt(1 - α_cumprod_t) * ε_θ) / sqrt(α_t) + σ_t * z
-            predicted_noise = self.model([x_t, y_t, t], training=False)
+            predicted_noise = self.ema_model([x_t, y_t, t], training=False)
             alpha_t = self._gather(self.alpha, t)
             alpha_cumprod_t = self._gather(self.alpha_cumprod, t)
             sigma_t = self._gather(self.sigma, t)
@@ -396,6 +406,7 @@ class DiffusionModel(tf.keras.Model):
     def load_model(
         model_path: str,
         base_model: tf.keras.Model,
+        ema_model: tf.keras.Model,
         img_size: int,
         num_classes: int,
         timesteps: int,
@@ -403,6 +414,7 @@ class DiffusionModel(tf.keras.Model):
         beta_end: float,
         s: float,
         scheduler: str,
+        ema: float = 0.999,
     ) -> tf.keras.Model:
         """
         Load a trained model from a file.
@@ -410,6 +422,7 @@ class DiffusionModel(tf.keras.Model):
         Args:
             model_path (str): The path to the model file.
             base_model (tf.keras.Model): The base model to which the diffusion process is added.
+            ema_model (tf.keras.Model): The model used to store the EMA weights.
             img_size (int): The size of the input images.
             num_classes (int): The number of classes in the dataset.
             timesteps (int): The total number of diffusion steps.
@@ -417,12 +430,14 @@ class DiffusionModel(tf.keras.Model):
             beta_end (float): The ending value of beta (noise level).
             s (float): The scale factor for the variance curve in the 'cosine' scheduler.
             scheduler (str): The type of noise schedule ('cosine' or 'linear').
+            ema (float): The exponential moving average factor.
 
         Returns:
             model: The trained model with the diffusion functionality.
         """
         model = DiffusionModel(
             model=base_model,
+            ema_model=ema_model,
             img_size=img_size,
             num_classes=num_classes,
             timesteps=timesteps,
@@ -430,6 +445,7 @@ class DiffusionModel(tf.keras.Model):
             beta_end=beta_end,
             s=s,
             scheduler=scheduler,
+            ema=ema,
         )
 
         model.load_weights(model_path)

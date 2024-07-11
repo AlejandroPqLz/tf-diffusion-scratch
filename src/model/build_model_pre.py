@@ -26,7 +26,6 @@ def build_unet(
     initial_channels: int = 64,
     channel_multiplier: list = None,
     has_attention: list = None,
-    num_group_norm: int = 16
 ):
     """Build the U-Net like architecture with diffusion blocks
 
@@ -36,7 +35,6 @@ def build_unet(
         initial_channels (int): The number of initial channels. Defaults to 64.
         channel_multiplier (list): The channel multiplier for each block. Defaults to None.
         has_attention (list): Whether to apply attention in each block. Defaults to None.
-        num_group_norm (int): The number of groups for group normalization. Defaults to 16.
 
     Returns:
         model: The custom U-Net model
@@ -60,9 +58,9 @@ def build_unet(
 
     # ----- Embeddings -----
     emb_mult = channel_multiplier[-2]
-    label_emb = input_block(labels, initial_channels * emb_mult, num_group_norm)
+    label_emb = input_block(labels, initial_channels * emb_mult)
     time_emb = SinusoidalTimeEmbeddingLayer(initial_channels * emb_mult)(timesteps)
-    time_emb = input_block(time_emb, initial_channels * emb_mult, num_group_norm)
+    time_emb = input_block(time_emb, initial_channels * emb_mult)
 
     # ----- Encoder -----
     x = inputs
@@ -70,20 +68,20 @@ def build_unet(
     channels = [initial_channels * m for m in channel_multiplier]
     for i, (ch, attn) in enumerate(zip(channels, has_attention)):
         pooling = True if i < len(channels) - 1 else False
-        x, skip = encoder_block(x, label_emb, time_emb, ch, attn, pooling, num_group_norm)
+        x, skip = encoder_block(x, label_emb, time_emb, ch, attn, pooling)
         skips.append(skip)
 
     # ----- Bottleneck -----
-    x = bottleneck_block(x, label_emb, time_emb, channels[-1], num_group_norm)
+    x = bottleneck_block(x, label_emb, time_emb, channels[-1])
 
     # ----- Decoder -----
     skips.reverse()
     for i, (ch, attn) in enumerate(zip(channels[::-1], has_attention[::-1])):
         upsampling = True if i < len(channels) - 1 else False
-        x = decoder_block(x, skips[i], label_emb, time_emb, ch, attn, upsampling, num_group_norm)
+        x = decoder_block(x, skips[i], label_emb, time_emb, ch, attn, upsampling)
 
     # ----- Output -----
-    x = layers.GroupNormalization(num_group_norm)(x)
+    x = layers.GroupNormalization(8)(x)
     x = layers.Activation(activations.silu)(x)
     outputs = layers.Conv2D(3, 1, padding="same")(x)
     model = tf.keras.Model(inputs=[inputs, labels, timesteps], outputs=outputs)
@@ -121,7 +119,7 @@ class SinusoidalTimeEmbeddingLayer(layers.Layer):
             embeddings: The computed embeddings
         """
         timesteps = tf.cast(timesteps, dtype=tf.float32)
-        # embeddings = timesteps[:, None] * self.emb[None, :] same as below
+        # embeddings = timesteps[:, None] * self.emb[None, :]
         embeddings = tf.einsum("i,j->ij", timesteps, self.emb)
         embeddings = tf.concat([tf.sin(embeddings), tf.cos(embeddings)], axis=-1)
         return embeddings
@@ -134,16 +132,15 @@ class SelfAttentionLayer(layers.Layer):
 
     Args:
         channels: The number of channels
-        num_group_norm: The number of groups for group normalization
 
     Methods:
         call: Compute the self-attention
     """
 
-    def __init__(self, channels, num_group_norm, **kwargs):
+    def __init__(self, channels, **kwargs):
         super(SelfAttentionLayer, self).__init__(**kwargs)
         self.channels = channels
-        self.norm = layers.GroupNormalization(num_group_norm)
+        self.norm = layers.GroupNormalization(8)
         self.query = layers.Dense(self.channels)
         self.key = layers.Dense(self.channels)
         self.value = layers.Dense(self.channels)
@@ -181,25 +178,24 @@ class SelfAttentionLayer(layers.Layer):
 
 # Auxiliary Functions
 # =====================================================================
-def input_block(input_tensor, embedding_dim, num_group_norm):
+def input_block(input_tensor, embedding_dim):
     """
     Process the time steps or label input tensor
 
     Args:
         input_tensor: The input tensor
         embedding_dim: The embedding dimension
-        num_group_norm: The number of groups for group normalization
 
     Returns:
         x: The processed tensor
     """
     x = layers.Dense(embedding_dim, activation=activations.silu)(input_tensor)
-    x = layers.GroupNormalization(num_group_norm)(x)
+    x = layers.GroupNormalization(8)(x)
     x = layers.Activation(activations.silu)(x)
     return x
 
 
-def encoder_block(x, label_emb, time_emb, channels, attention=False, pooling=True, num_group_norm=16):
+def encoder_block(x, label_emb, time_emb, channels, attention=False, pooling=True):
     """The encoder block
 
     Args:
@@ -209,18 +205,17 @@ def encoder_block(x, label_emb, time_emb, channels, attention=False, pooling=Tru
         channels: The number of channels
         attention: Whether to apply attention or not
         pooling: Whether to apply pooling or not
-        num_group_norm: The number of groups for group normalization
 
     Returns:
         x: The processed tensor
         x: The skipped tensor
     """
-    x = skip = process_block(x, label_emb, time_emb, channels, attention, num_group_norm)
+    x = skip = process_block(x, label_emb, time_emb, channels, attention)
     x = layers.MaxPooling2D(pool_size=(2, 2))(x) if pooling else x
     return x, skip
 
 
-def bottleneck_block(x, label_emb, time_emb, channels, num_group_norm):
+def bottleneck_block(x, label_emb, time_emb, channels):
     """The bottleneck block
 
     Args:
@@ -228,13 +223,12 @@ def bottleneck_block(x, label_emb, time_emb, channels, num_group_norm):
         label_emb: The label tensor
         time_emb: The time steps tensor
         channels: The number of channels
-        num_group_norm: The number of groups for group normalization
 
     Returns:
         x: The processed tensor
     """
-    x = process_block(x, label_emb, time_emb, channels, attention=True, num_group_norm=num_group_norm)
-    x = process_block(x, label_emb, time_emb, channels, num_group_norm)
+    x = process_block(x, label_emb, time_emb, channels, attention=True)
+    x = process_block(x, label_emb, time_emb, channels)
     return x
 
 
@@ -246,7 +240,6 @@ def decoder_block(
     channels,
     attention=False,
     upsampling=True,
-    num_group_norm=16,
 ):
     """The decoder block
 
@@ -258,18 +251,17 @@ def decoder_block(
         channels: The number of channels
         attention: Whether to apply attention or not
         upsampling: Whether to apply upsampling or not
-        num_group_norm: The number of groups for group normalization
 
     Returns:
         x: The processed tensor
     """
     x = layers.Concatenate()([x, skip])
-    x = process_block(x, time_emb, label_emb, channels, attention, num_group_norm)
+    x = process_block(x, time_emb, label_emb, channels, attention)
     x = layers.UpSampling2D(size=(2, 2))(x) if upsampling else x
     return x
 
 
-def process_block(x_img, label_emb, time_emb, channels, attention=False, num_group_norm=16):
+def process_block(x_img, label_emb, time_emb, channels, attention=False):
     """The process block of the diffusion model
 
     Args:
@@ -278,13 +270,12 @@ def process_block(x_img, label_emb, time_emb, channels, attention=False, num_gro
         time_emb: The time steps tensor
         channels: The number of channels
         attention: Whether to apply attention or not
-        num_group_norm: The number of groups for group normalization
 
     Returns:
         x_out: The processed tensor
     """
     x_parameter = layers.Conv2D(channels, 3, padding="same")(x_img)
-    x_parameter = layers.GroupNormalization(num_group_norm)(x_parameter)
+    x_parameter = layers.GroupNormalization(8)(x_parameter)
     x_parameter = layers.Activation(activations.silu)(x_parameter)
 
     label_parameter = layers.Dense(channels)(label_emb)
@@ -301,9 +292,9 @@ def process_block(x_img, label_emb, time_emb, channels, attention=False, num_gro
     x_out += x_parameter
 
     if attention:
-        x_out = SelfAttentionLayer(channels, num_group_norm)(x_out)
+        x_out = SelfAttentionLayer(channels)(x_out)
 
-    x_out = layers.GroupNormalization(num_group_norm)(x_out)
+    x_out = layers.GroupNormalization(8)(x_out)
     x_out = layers.Activation(activations.silu)(x_out)
 
     return x_out

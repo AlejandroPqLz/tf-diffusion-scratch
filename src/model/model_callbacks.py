@@ -70,9 +70,6 @@ class DiffusionCallback(tf.keras.callbacks.Callback):
                 start_noise=SAME_NOISE,
                 plot_interim=True,
             )
-        
-        # # Wait 2 seconds
-        # time.sleep(2)
 
         # Save interim model weights
         if (epoch + 1) % 100 == 0:
