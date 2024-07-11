@@ -23,7 +23,7 @@ import numpy as np
 def build_unet(
     img_size: int,
     num_classes: int,
-    initial_channels: int = 32,
+    initial_channels: int = 64,
     channel_multiplier: list = None,
     has_attention: list = None,
 ):
@@ -41,7 +41,7 @@ def build_unet(
     """
     # Defeault values (4 blocks if img_size > 64, 3 blocks if img_size <= 64)
     if channel_multiplier is None:
-        channel_multiplier = [1, 2, 4, 8] if img_size >= 64 else [1, 2, 4]
+        channel_multiplier = [1, 2, 4, 4] if img_size >= 64 else [1, 2, 4]
     if has_attention is None:
         has_attention = [False, False, True, True] if img_size >= 64 else [False, True, True]
 
