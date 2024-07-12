@@ -26,7 +26,8 @@ def build_unet(
     initial_channels: int = 64,
     channel_multiplier: list = None,
     has_attention: list = None,
-    num_group_norm: int = 16
+    num_group_norm: int = 16,
+    dropout_rate: float = 0.0
 ):
     """Build the U-Net like architecture with diffusion blocks
 
@@ -37,6 +38,7 @@ def build_unet(
         channel_multiplier (list): The channel multiplier for each block. Defaults to None.
         has_attention (list): Whether to apply attention in each block. Defaults to None.
         num_group_norm (int): The number of groups for group normalization. Defaults to 16.
+        dropout_rate (float): The rate of dropout. Defaults to 0.0, no dropout.
 
     Returns:
         model: The custom U-Net model
@@ -70,17 +72,17 @@ def build_unet(
     channels = [initial_channels * m for m in channel_multiplier]
     for i, (ch, attn) in enumerate(zip(channels, has_attention)):
         pooling = True if i < len(channels) - 1 else False
-        x, skip = encoder_block(x, label_emb, time_emb, ch, attn, pooling, num_group_norm)
+        x, skip = encoder_block(x, label_emb, time_emb, ch, attn, pooling, num_group_norm, dropout_rate)
         skips.append(skip)
 
     # ----- Bottleneck -----
-    x = bottleneck_block(x, label_emb, time_emb, channels[-1], num_group_norm)
+    x = bottleneck_block(x, label_emb, time_emb, channels[-1], num_group_norm, dropout_rate)
 
     # ----- Decoder -----
     skips.reverse()
     for i, (ch, attn) in enumerate(zip(channels[::-1], has_attention[::-1])):
         upsampling = True if i < len(channels) - 1 else False
-        x = decoder_block(x, skips[i], label_emb, time_emb, ch, attn, upsampling, num_group_norm)
+        x = decoder_block(x, skips[i], label_emb, time_emb, ch, attn, upsampling, num_group_norm, dropout_rate)
 
     # ----- Output -----
     x = layers.GroupNormalization(num_group_norm)(x)
@@ -199,7 +201,7 @@ def input_block(input_tensor, embedding_dim, num_group_norm):
     return x
 
 
-def encoder_block(x, label_emb, time_emb, channels, attention=False, pooling=True, num_group_norm=16):
+def encoder_block(x, label_emb, time_emb, channels, attention=False, pooling=True, num_group_norm=16, dropout_rate=0.5):
     """The encoder block
 
     Args:
@@ -210,17 +212,18 @@ def encoder_block(x, label_emb, time_emb, channels, attention=False, pooling=Tru
         attention: Whether to apply attention or not
         pooling: Whether to apply pooling or not
         num_group_norm: The number of groups for group normalization
+        dropout_rate: The rate of dropout
 
     Returns:
         x: The processed tensor
         x: The skipped tensor
     """
-    x = skip = process_block(x, label_emb, time_emb, channels, attention, num_group_norm)
+    x = skip = process_block(x, label_emb, time_emb, channels, attention, num_group_norm, dropout_rate)
     x = layers.MaxPooling2D(pool_size=(2, 2))(x) if pooling else x
     return x, skip
 
 
-def bottleneck_block(x, label_emb, time_emb, channels, num_group_norm):
+def bottleneck_block(x, label_emb, time_emb, channels, num_group_norm, dropout_rate):
     """The bottleneck block
 
     Args:
@@ -229,12 +232,13 @@ def bottleneck_block(x, label_emb, time_emb, channels, num_group_norm):
         time_emb: The time steps tensor
         channels: The number of channels
         num_group_norm: The number of groups for group normalization
+        dropout_rate: The rate of dropout
 
     Returns:
         x: The processed tensor
     """
-    x = process_block(x, label_emb, time_emb, channels, attention=True, num_group_norm=num_group_norm)
-    x = process_block(x, label_emb, time_emb, channels, num_group_norm)
+    x = process_block(x, label_emb, time_emb, channels, attention=True, num_group_norm=num_group_norm, dropout_rate=dropout_rate)
+    x = process_block(x, label_emb, time_emb, channels, num_group_norm=num_group_norm, dropout_rate=dropout_rate)
     return x
 
 
@@ -247,6 +251,7 @@ def decoder_block(
     attention=False,
     upsampling=True,
     num_group_norm=16,
+    dropout_rate=0.5
 ):
     """The decoder block
 
@@ -259,17 +264,18 @@ def decoder_block(
         attention: Whether to apply attention or not
         upsampling: Whether to apply upsampling or not
         num_group_norm: The number of groups for group normalization
+        dropout_rate: The rate of dropout
 
     Returns:
         x: The processed tensor
     """
     x = layers.Concatenate()([x, skip])
-    x = process_block(x, time_emb, label_emb, channels, attention, num_group_norm)
+    x = process_block(x, label_emb, time_emb, channels, attention, num_group_norm, dropout_rate)
     x = layers.UpSampling2D(size=(2, 2))(x) if upsampling else x
     return x
 
 
-def process_block(x_img, label_emb, time_emb, channels, attention=False, num_group_norm=16):
+def process_block(x_img, label_emb, time_emb, channels, attention=False, num_group_norm=16, dropout_rate=0.5):
     """The process block of the diffusion model
 
     Args:
@@ -279,6 +285,7 @@ def process_block(x_img, label_emb, time_emb, channels, attention=False, num_gro
         channels: The number of channels
         attention: Whether to apply attention or not
         num_group_norm: The number of groups for group normalization
+        dropout_rate: The rate of dropout
 
     Returns:
         x_out: The processed tensor
@@ -305,5 +312,6 @@ def process_block(x_img, label_emb, time_emb, channels, attention=False, num_gro
 
     x_out = layers.GroupNormalization(num_group_norm)(x_out)
     x_out = layers.Activation(activations.silu)(x_out)
+    x_out = layers.SpatialDropout2D(dropout_rate)(x_out)
 
     return x_out
