@@ -287,7 +287,7 @@ class DiffusionModel(tf.keras.Model):
 
             # 3: z ~ N(0, I) if t > 1, else z = 0:
             # Sample noise, except for last image (t=1, x_t-1 = x_0)
-            z = tf.random.normal(shape=shape_x_t) if t > 1 else tf.zeros_like(x_t)
+            z = tf.random.normal(shape=shape_x_t) if t_ > 1 else tf.zeros_like(x_t)
 
             # 4: x_{t-1} = (x_t - (1 - α_t) / sqrt(1 - α_cumprod_t) * ε_θ) / sqrt(α_t) + σ_t * z
             predicted_noise = self.ema_model([x_t, y_t, t], training=False)

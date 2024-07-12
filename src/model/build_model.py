@@ -72,7 +72,10 @@ def build_unet(
     channels = [initial_channels * m for m in channel_multiplier]
     for i, (ch, attn) in enumerate(zip(channels, has_attention)):
         pooling = True if i < len(channels) - 1 else False
-        x, skip = encoder_block(x, label_emb, time_emb, ch, attn, pooling, num_group_norm, dropout_rate)
+        if i >= 2: # apply dropout in the last few blocks
+            x, skip = encoder_block(x, label_emb, time_emb, ch, attn, pooling, num_group_norm, dropout_rate)
+        else:
+            x, skip = encoder_block(x, label_emb, time_emb, ch, attn, pooling, num_group_norm, 0.0)
         skips.append(skip)
 
     # ----- Bottleneck -----
@@ -82,7 +85,10 @@ def build_unet(
     skips.reverse()
     for i, (ch, attn) in enumerate(zip(channels[::-1], has_attention[::-1])):
         upsampling = True if i < len(channels) - 1 else False
-        x = decoder_block(x, skips[i], label_emb, time_emb, ch, attn, upsampling, num_group_norm, dropout_rate)
+        if i <= 2: # apply dropout in the first few blocks
+            x = decoder_block(x, skips[i], label_emb, time_emb, ch, attn, upsampling, num_group_norm, dropout_rate)
+        else:
+            x = decoder_block(x, skips[i], label_emb, time_emb, ch, attn, upsampling, num_group_norm, 0.0)
 
     # ----- Output -----
     x = layers.GroupNormalization(num_group_norm)(x)
@@ -183,14 +189,14 @@ class SelfAttentionLayer(layers.Layer):
 
 # Auxiliary Functions
 # =====================================================================
-def input_block(input_tensor, embedding_dim, num_group_norm):
+def input_block(input_tensor: tf.Tensor, embedding_dim: int, num_group_norm: int):
     """
     Process the time steps or label input tensor
 
     Args:
-        input_tensor: The input tensor
-        embedding_dim: The embedding dimension
-        num_group_norm: The number of groups for group normalization
+        input_tensor (tf.Tensor): The input tensor
+        embedding_dim (int): The embedding dimension
+        num_group_norm (int): The number of groups for group normalization
 
     Returns:
         x: The processed tensor
@@ -201,11 +207,20 @@ def input_block(input_tensor, embedding_dim, num_group_norm):
     return x
 
 
-def encoder_block(x, label_emb, time_emb, channels, attention=False, pooling=True, num_group_norm=16, dropout_rate=0.5):
+def encoder_block(
+    x: tf.Tensor,
+    label_emb: tf.Tensor,
+    time_emb: tf.Tensor,
+    channels: int,
+    attention: bool = False,
+    pooling: bool = True,
+    num_group_norm: int = 16,
+    dropout_rate: float = 0.0
+):
     """The encoder block
 
     Args:
-        x: The image tensor
+        x (tf.Tensor): The image tensor
         label_emb: The label tensor
         time_emb: The time steps tensor
         channels: The number of channels
@@ -242,17 +257,7 @@ def bottleneck_block(x, label_emb, time_emb, channels, num_group_norm, dropout_r
     return x
 
 
-def decoder_block(
-    x,
-    skip,
-    label_emb,
-    time_emb,
-    channels,
-    attention=False,
-    upsampling=True,
-    num_group_norm=16,
-    dropout_rate=0.5
-):
+def decoder_block(x, skip, label_emb, time_emb, channels, attention=False, upsampling=True, num_group_norm=16, dropout_rate=0.0):
     """The decoder block
 
     Args:
@@ -275,7 +280,7 @@ def decoder_block(
     return x
 
 
-def process_block(x_img, label_emb, time_emb, channels, attention=False, num_group_norm=16, dropout_rate=0.5):
+def process_block(x_img, label_emb, time_emb, channels, attention=False, num_group_norm=16, dropout_rate=0.2):
     """The process block of the diffusion model
 
     Args:
