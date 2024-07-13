@@ -50,7 +50,6 @@ with st.sidebar:
         1,
         help="Select the number of Pokémon to generate, if you select to generate only one Pokémon, you can choose to show the intermediate steps.",
     )
-    size_selection = st.selectbox("Size of the Pokémon to generate", ["32x32", "64x64"])
 
     show_steps = False
     if num_samples == 1:
@@ -105,7 +104,7 @@ with image_box:
 # =====================================================================
 if st.button("Generate Pokémon"):
     try:
-        ddpm_model = app_ddpm_model(int(size_selection.split("x")[0]))
+        ddpm_model = app_ddpm_model()
 
         with image_box.container():
             st.markdown(

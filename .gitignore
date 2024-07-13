@@ -1,6 +1,3 @@
-# data files
-Diffsuion study.pdf
-
 # dataset tf
 *.snapshot
 *.pb
@@ -16,5 +13,4 @@ __pycache__
 *_dag_params.py
 
 # others
-temp
 pokemon_tf_dataset

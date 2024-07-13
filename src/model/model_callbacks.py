@@ -37,6 +37,7 @@ class DiffusionCallback(tf.keras.callbacks.Callback):
         diffusion_model (DiffusionModel): The diffusion model to generate samples from.
         frequency (int): The frequency at which to generate samples. Defaults to 20.
         poke_type (str): The type of Pokemon to generate samples for. Defaults to None.
+        save_interim (bool): Whether to save interim model weights. Defaults to True.
 
     Methods:
         on_epoch_end(epoch, logs): The method that is called at the end of each epoch.
@@ -47,6 +48,7 @@ class DiffusionCallback(tf.keras.callbacks.Callback):
         diffusion_model: DiffusionModel,
         frequency: int = 20,
         poke_type: str = None,
+        save_interim: bool = True,
     ):
         super(DiffusionCallback, self).__init__()
         self.diffusion_model = diffusion_model
@@ -72,7 +74,7 @@ class DiffusionCallback(tf.keras.callbacks.Callback):
             )
 
         # Save interim model weights
-        if (epoch + 1) % 100 == 0:
+        if save_interim and (epoch + 1) % 100 == 0:
             self.diffusion_model.save_weights(
                 f"{MODELS_PATH}/interim/diffusion_{IMG_SIZE}x{IMG_SIZE}_batch{BATCH_SIZE}_epochs{epoch+1}.weights.h5"
             )

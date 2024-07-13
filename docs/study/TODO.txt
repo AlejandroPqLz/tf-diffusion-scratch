@@ -1,2 +1,0 @@
-https://medium.com/@ml.swlee/paper-review-denoising-diffusion-probabilistic-models-29dbcee90db8
-https://learnopencv.com/denoising-diffusion-probabilistic-models/
