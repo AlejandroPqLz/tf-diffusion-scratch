@@ -54,6 +54,7 @@ class DiffusionCallback(tf.keras.callbacks.Callback):
         self.diffusion_model = diffusion_model
         self.frequency = frequency
         self.poke_type = poke_type
+        self.save_interim = save_interim
 
     def on_epoch_end(self, epoch, logs=None):
         """
@@ -74,7 +75,7 @@ class DiffusionCallback(tf.keras.callbacks.Callback):
             )
 
         # Save interim model weights
-        if save_interim and (epoch + 1) % 100 == 0:
+        if self.save_interim and (epoch + 1) % 100 == 0:
             self.diffusion_model.save_weights(
                 f"{MODELS_PATH}/interim/diffusion_{IMG_SIZE}x{IMG_SIZE}_batch{BATCH_SIZE}_epochs{epoch+1}.weights.h5"
             )

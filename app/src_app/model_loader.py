@@ -1,5 +1,5 @@
 """
-load_diffusion_model.py
+model_loader.py
 
 Functionality: Load the Denoised Diffusion Probabilistic Model (DDPM) for the Pokémon generator app.
 """

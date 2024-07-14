@@ -1,5 +1,5 @@
 """
-git_icon.py
+icon_loader.py
 
 Functionality: This script contains a function to add a GitHub icon and link to the Streamlit app.
 """
