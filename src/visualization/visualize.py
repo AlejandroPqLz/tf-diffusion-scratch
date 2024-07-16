@@ -37,6 +37,7 @@ tf.config.experimental.set_memory_growth(gpu, True)
 
 # Create the architecture of the model
 u_net = build_unet(IMG_SIZE, NUM_CLASSES)
+ema_u_net = build_unet(IMG_SIZE, NUM_CLASSES)
 
 # Load the pokemon data
 poke_df = pd.read_csv(f"{DATA_PATH}/raw/pokedex.csv")
@@ -125,10 +126,26 @@ def plot_noise_levels(timesteps: int, beta_start: float, beta_end: float, s: flo
 
     # Create the models for plotting noise levels
     linear_model = DiffusionModel(
-        u_net, IMG_SIZE, NUM_CLASSES, timesteps, beta_start, beta_end, s, "linear"
+        u_net,
+        ema_u_net,
+        IMG_SIZE,
+        NUM_CLASSES,
+        timesteps,
+        beta_start,
+        beta_end,
+        s,
+        "linear",
     )
     cosine_model = DiffusionModel(
-        u_net, IMG_SIZE, NUM_CLASSES, timesteps, beta_start, beta_end, s, "cosine"
+        u_net,
+        ema_u_net,
+        IMG_SIZE,
+        NUM_CLASSES,
+        timesteps,
+        beta_start,
+        beta_end,
+        s,
+        "cosine",
     )
 
     # Variance scheduler for noise level
@@ -178,7 +195,15 @@ def plot_forward_diffusion(
     plt.figure(figsize=(20, 7))
     n_timesteps = np.linspace(0, timesteps - 1, n, dtype=np.int32)
     model = DiffusionModel(
-        u_net, IMG_SIZE, NUM_CLASSES, timesteps, beta_start, beta_end, s, scheduler
+        u_net,
+        ema_u_net,
+        IMG_SIZE,
+        NUM_CLASSES,
+        timesteps,
+        beta_start,
+        beta_end,
+        s,
+        scheduler,
     )
 
     for i, t in enumerate(n_timesteps):
