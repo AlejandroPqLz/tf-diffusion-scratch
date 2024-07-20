@@ -27,7 +27,7 @@ def build_unet(
     channel_multiplier: list = None,
     has_attention: list = None,
     num_group_norm: int = 16,
-    dropout_rate: float = 0.0
+    dropout_rate: float = 0.0,
 ):
     """Build the U-Net like architecture with diffusion blocks
 
@@ -72,23 +72,49 @@ def build_unet(
     channels = [initial_channels * m for m in channel_multiplier]
     for i, (ch, attn) in enumerate(zip(channels, has_attention)):
         pooling = True if i < len(channels) - 1 else False
-        if i >= 2: # apply dropout in the last few blocks
-            x, skip = encoder_block(x, label_emb, time_emb, ch, attn, pooling, num_group_norm, dropout_rate)
+        if i >= 2:  # apply dropout in the last few blocks
+            x, skip = encoder_block(
+                x, label_emb, time_emb, ch, attn, pooling, num_group_norm, dropout_rate
+            )
         else:
-            x, skip = encoder_block(x, label_emb, time_emb, ch, attn, pooling, num_group_norm, 0.0)
+            x, skip = encoder_block(
+                x, label_emb, time_emb, ch, attn, pooling, num_group_norm, 0.0
+            )
         skips.append(skip)
 
     # ----- Bottleneck -----
-    x = bottleneck_block(x, label_emb, time_emb, channels[-1], num_group_norm, dropout_rate)
+    x = bottleneck_block(
+        x, label_emb, time_emb, channels[-1], num_group_norm, dropout_rate
+    )
 
     # ----- Decoder -----
     skips.reverse()
     for i, (ch, attn) in enumerate(zip(channels[::-1], has_attention[::-1])):
         upsampling = True if i < len(channels) - 1 else False
-        if i <= 2: # apply dropout in the first few blocks
-            x = decoder_block(x, skips[i], label_emb, time_emb, ch, attn, upsampling, num_group_norm, dropout_rate)
+        if i <= 2:  # apply dropout in the first few blocks
+            x = decoder_block(
+                x,
+                skips[i],
+                label_emb,
+                time_emb,
+                ch,
+                attn,
+                upsampling,
+                num_group_norm,
+                dropout_rate,
+            )
         else:
-            x = decoder_block(x, skips[i], label_emb, time_emb, ch, attn, upsampling, num_group_norm, 0.0)
+            x = decoder_block(
+                x,
+                skips[i],
+                label_emb,
+                time_emb,
+                ch,
+                attn,
+                upsampling,
+                num_group_norm,
+                0.0,
+            )
 
     # ----- Output -----
     x = layers.GroupNormalization(num_group_norm)(x)
@@ -215,7 +241,7 @@ def encoder_block(
     attention: bool = False,
     pooling: bool = True,
     num_group_norm: int = 16,
-    dropout_rate: float = 0.0
+    dropout_rate: float = 0.0,
 ):
     """The encoder block
 
@@ -233,7 +259,9 @@ def encoder_block(
         x: The processed tensor
         x: The skipped tensor
     """
-    x = skip = process_block(x, label_emb, time_emb, channels, attention, num_group_norm, dropout_rate)
+    x = skip = process_block(
+        x, label_emb, time_emb, channels, attention, num_group_norm, dropout_rate
+    )
     x = layers.MaxPooling2D(pool_size=(2, 2))(x) if pooling else x
     return x, skip
 
@@ -252,12 +280,37 @@ def bottleneck_block(x, label_emb, time_emb, channels, num_group_norm, dropout_r
     Returns:
         x: The processed tensor
     """
-    x = process_block(x, label_emb, time_emb, channels, attention=True, num_group_norm=num_group_norm, dropout_rate=dropout_rate)
-    x = process_block(x, label_emb, time_emb, channels, num_group_norm=num_group_norm, dropout_rate=dropout_rate)
+    x = process_block(
+        x,
+        label_emb,
+        time_emb,
+        channels,
+        attention=True,
+        num_group_norm=num_group_norm,
+        dropout_rate=dropout_rate,
+    )
+    x = process_block(
+        x,
+        label_emb,
+        time_emb,
+        channels,
+        num_group_norm=num_group_norm,
+        dropout_rate=dropout_rate,
+    )
     return x
 
 
-def decoder_block(x, skip, label_emb, time_emb, channels, attention=False, upsampling=True, num_group_norm=16, dropout_rate=0.0):
+def decoder_block(
+    x,
+    skip,
+    label_emb,
+    time_emb,
+    channels,
+    attention=False,
+    upsampling=True,
+    num_group_norm=16,
+    dropout_rate=0.0,
+):
     """The decoder block
 
     Args:
@@ -275,12 +328,22 @@ def decoder_block(x, skip, label_emb, time_emb, channels, attention=False, upsam
         x: The processed tensor
     """
     x = layers.Concatenate()([x, skip])
-    x = process_block(x, label_emb, time_emb, channels, attention, num_group_norm, dropout_rate)
+    x = process_block(
+        x, label_emb, time_emb, channels, attention, num_group_norm, dropout_rate
+    )
     x = layers.UpSampling2D(size=(2, 2))(x) if upsampling else x
     return x
 
 
-def process_block(x_img, label_emb, time_emb, channels, attention=False, num_group_norm=16, dropout_rate=0.2):
+def process_block(
+    x_img,
+    label_emb,
+    time_emb,
+    channels,
+    attention=False,
+    num_group_norm=16,
+    dropout_rate=0.2,
+):
     """The process block of the diffusion model
 
     Args:

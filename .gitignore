@@ -3,7 +3,7 @@
 *.pb
 *.metadata
 
-#python files
+# python files
 *.egg-info
 __pycache__
 *.keras

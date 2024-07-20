@@ -346,15 +346,15 @@ class DiffusionModel(tf.keras.Model):
                     shape=(1, self.img_size, self.img_size, 3)
                 )
 
-            else:
-                if start_noise.shape != (1, self.img_size, self.img_size, 3):
-                    raise ValueError(
-                        f"start_noise should have shape (1, {self.img_size}, {self.img_size}, 3)"
-                    )
+            elif start_noise.shape != (1, self.img_size, self.img_size, 3):
+                raise ValueError(
+                    f"start_noise should have shape (1, {self.img_size}, {self.img_size}, 3)"
+                )
 
             # Set the label for the sample(s)
             if poke_type is not None:
                 y_label = string_to_onehot(poke_type)
+
             else:
                 index = tf.random.uniform(
                     shape=[], maxval=self.num_classes, dtype=tf.int32
