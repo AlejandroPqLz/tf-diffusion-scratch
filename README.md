@@ -76,12 +76,7 @@ The **structure** of the repository is as follows:
  ┃ ┣ 📂app_figures
  ┃ ┣ 📂notebook_figures
  ┃ ┣ 📂readme_figures
- ┃ ┃ ┣ 📜container_vscode.png
- ┃ ┃ ┣ 📜install_ipykernel_package_ubuntu.png
- ┃ ┃ ┣ 📜poke_red_diffusion_portada.webp
- ┃ ┃ ┣ 📜reopen_in_container_command_palette.png
- ┃ ┃ ┗ 📜reopen_in_container_vscode.png
- ┃ ┗ 📂sampling_model_figures
+ ┃ ┗ 📂sampling_model_figures # RESULT IMAGES
  ┣ 📂model_weights
  ┃ ┣ 📂interim
  ┃ ┣ 📂overfitting
