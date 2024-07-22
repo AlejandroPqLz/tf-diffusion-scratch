@@ -116,14 +116,14 @@ It is **recommended** to use a **`Linux (Ubuntu)`** distribution for this projec
 
 Not only that, but also because it is the simplest way to configure and maintain the project code overtime since we will be using a Docker container, avoiding any compatibility issues with the OS and if the is any issue update or upgrade, it can be easily resolved by just rebuilding the container.
 
-However, you can also use `Windows` with `WSL2` or `MacOS`. The requirements for each OS are as follows:
+However, you can also use `Windows` with `WSL2` or `macOS`. The requirements for each OS are as follows:
 
 <table>
     <thead>
         <tr>
             <th>Windows</th>
             <th><span style="background-color: #e68a00">Linux (Ubuntu) recommended</span></th>
-            <th><a href="https://developer.apple.com/metal/tensorflow-plugin/">MacOS</a></th>
+            <th><a href="https://developer.apple.com/metal/tensorflow-plugin/">macOS</a></th>
         </tr>
     </thead>
     <tbody>
@@ -164,7 +164,7 @@ However, you can also use `Windows` with `WSL2` or `MacOS`. The requirements for
                     <hr>
                     <li>Follow the configuration steps: </br>
                         <ul>
-                            <li><a href="#4-macos-configuration">MacOS Configuration</a></li>
+                            <li><a href="#4-macos-configuration">macOS Configuration</a></li>
                         </ul>
                 </ul>
             </td>
@@ -288,7 +288,7 @@ We will use conda to manage the python environment. You can install it following
 
 #### 2.2  CUDA and cuDNN compatible versions
 
-Since the model is implemented in TensorFlow, you need to install the versions of CUDA and cuDNN that are compatible with the version of TensorFlow you are using. For more information, visit the [TensorFlow versions compatibility](https://www.tensorflow.org/install/source?hl=es#gpu). For this project, since we are using TensorFlow 2.16.1, we need to install CUDA 12.3 and cuDNN 8.9, to do do so, just execute the following commands:
+Since the model is implemented in TensorFlow, you need to install the versions of CUDA and cuDNN that are compatible with the version of TensorFlow you are using. For more information, visit the [TensorFlow versions compatibility](https://www.tensorflow.org/install/source?hl=es#gpu). For this project, since we are using TensorFlow 2.16.1, we need to install CUDA 12.3 and cuDNN 8.9, to do so, just execute the following commands:
 
 ```bash
     # Install CUDA 12.3
@@ -400,10 +400,10 @@ And voilà! You have a container with all the dependencies installed and ready t
 
 After that, if any issue or problem arises, just rebuild the container using the command palette and selecting the `Rebuild Container` option.
 
-### 4. MacOS Configuration
+### 4. macOS Configuration
 ---
 
-Finally, if you are going to develop the project on MacOS, you can follow the next steps based on [TensorFlow Metal](https://developer.apple.com/metal/tensorflow-plugin/) but adapting it to the project dependencies:
+Finally, if you are going to develop the project on macOS, you can follow the next steps based on [TensorFlow Metal](https://developer.apple.com/metal/tensorflow-plugin/) but adapting it to the project dependencies:
 
 #### 4.1 Conda Environment
 
@@ -420,9 +420,9 @@ We will follow the same first steps as in the [Windows Subsystem for Linux (WSL2
     pip install -e .
 ```
 
-#### 4.2 TensorFlow for MacOS
+#### 4.2 TensorFlow for macOS
 
-TensorFlow does not support GPU acceleration on MacOS with CUDA and cuDNN, so you need to install the specific version for MacOS. To do so, just run the following command:
+TensorFlow does not support GPU acceleration on macOS with CUDA and cuDNN, so you need to install the specific version for macOS. To do so, just run the following command:
 
 ```bash
     pip install tensorflow-metal
@@ -440,7 +440,7 @@ The dataset contains +10,000 Pokémon sprites in PNG format (half of them are sh
 
 After following the steps described in the [Prerequisites](https://github.com/AlejandroPqLz/DiffusionScratch#rocket-prerequisites) section, you can start using the project by running the notebooks in the [notebooks](./notebooks) folder. Which contain the whole process of the project from the dataset creation to the model training.
 
-Before diving into the notebooks, take a look at the [config.ini](./config.ini) file in the root of the project and adapt it to your needs. This file will contain all the hyperparameters for the model training. Once done that, you can run the notebooks in the pre-established order where:
+Before diving into the notebooks, have a look at the [config.ini](./config.ini) file in the root of the project and adapt it to your needs. This file will contain all the hyperparameters for the model training. Once done that, you can run the notebooks in the pre-established order where:
 
 - [00-Intro-and-Analysis.ipynb](./notebooks/00-Intro-and-Analysis.ipynb): Introduces the project and analyses the Pokémon sprites dataset and `pokedex.csv` file.
 
