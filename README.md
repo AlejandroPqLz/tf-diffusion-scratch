@@ -56,55 +56,70 @@ This project has been developed for my **Bachelor's Thesis** in **Data Science a
 The **structure** of the repository is as follows:
 
 ```tree
-📦DiffusionScratch
+📦tf-diffusion-scratch
  ┣ 📂.devcontainer
+ ┣ 📂app
+ ┃ ┣ 📂src_app
+ ┃ ┃ ┣ 📜__init__.py
+ ┃ ┃ ┣ 📜icon_loader.py
+ ┃ ┃ ┗ 📜model_loader.py
+ ┃ ┗ 📜diffusion_app.py
  ┣ 📂data
  ┃ ┣ 📂interim
- ┃ ┃ ┣ 📜image_paths.json
- ┃ ┃ ┗ 📜pokemon_dict_dataset.json
  ┃ ┣ 📂processed
- ┃ ┃ ┣ 📂pokemon_tf_dataset
- ┃ ┃ ┗ 📜pokedex_cleaned.csv
  ┃ ┗ 📂raw
- ┃ ┃ ┣ 📂sprites
- ┃ ┃ ┗ 📜pokedex.csv
  ┣ 📂docs
+ ┃ ┣ 📂bachelor_thesis
  ┃ ┣ 📂papers
  ┃ ┗ 📂study
  ┣ 📂figures
- ┃ ┣ 📂model_results_figures
+ ┃ ┣ 📂app_figures
  ┃ ┣ 📂notebook_figures
- ┃ ┗ 📂readme_figures
- ┣ 📂models
- ┃ ┗ 📜.gitkeep
+ ┃ ┣ 📂readme_figures
+ ┃ ┃ ┣ 📜container_vscode.png
+ ┃ ┃ ┣ 📜install_ipykernel_package_ubuntu.png
+ ┃ ┃ ┣ 📜poke_red_diffusion_portada.webp
+ ┃ ┃ ┣ 📜reopen_in_container_command_palette.png
+ ┃ ┃ ┗ 📜reopen_in_container_vscode.png
+ ┃ ┗ 📂sampling_model_figures
+ ┣ 📂model_weights
+ ┃ ┣ 📂interim
+ ┃ ┣ 📂overfitting
+ ┃ ┃ ┗ 📜overfitting_diffusion_32x32_batch128_epochs200.weights.h5
+ ┃ ┣ 📂test_upload
+ ┃ ┗ 📜final_diffusion_model.weights.h5
  ┣ 📂notebooks
+ ┃ ┣ 📂test
  ┃ ┣ 📜00-Intro-and-Analysis.ipynb
  ┃ ┣ 📜01-Dataset-Creation.ipynb
  ┃ ┣ 📜02-Diffusion-Model-Architecture.ipynb
  ┃ ┣ 📜03-Diffusion-Process.ipynb
- ┃ ┗ 📜04-Training-Diffusion-Model.ipynb
+ ┃ ┣ 📜04-Training-Diffusion-Model.ipynb
+ ┃ ┗ 📜05-DDPM-final-model.ipynb
  ┣ 📂src
  ┃ ┣ 📂data
+ ┃ ┃ ┣ 📜__init__.py
  ┃ ┃ ┣ 📜create_dataset.py
  ┃ ┃ ┣ 📜path_loader.py
- ┃ ┃ ┣ 📜preprocess.py
- ┃ ┃ ┗ 📜__init__.py
+ ┃ ┃ ┗ 📜preprocess.py
  ┃ ┣ 📂model
- ┃ ┃ ┣ 📜build_unet.py
- ┃ ┃ ┣ 📜diffusion.py
- ┃ ┃ ┗ 📜__init__.py
+ ┃ ┃ ┣ 📜__init__.py
+ ┃ ┃ ┣ 📜build_model.py
+ ┃ ┃ ┣ 📜diffusion_funcionality.py
+ ┃ ┃ ┗ 📜model_callbacks.py
  ┃ ┣ 📂utils
- ┃ ┃ ┣ 📜utils.py
- ┃ ┃ ┗ 📜__init__.py
+ ┃ ┃ ┣ 📜__init__.py
+ ┃ ┃ ┣ 📜config.py
+ ┃ ┃ ┗ 📜utils.py
  ┃ ┣ 📂visualization
- ┃ ┃ ┣ 📜visualize.py
- ┃ ┃ ┗ 📜__init__.py
+ ┃ ┃ ┣ 📜__init__.py
+ ┃ ┃ ┗ 📜visualize.py
  ┃ ┗ 📜__init__.py
  ┣ 📜.gitattributes
  ┣ 📜.gitignore
- ┣ 📜config.ini
  ┣ 📜LICENSE
  ┣ 📜README.md
+ ┣ 📜config.ini
  ┗ 📜setup.py
 ```
 
@@ -452,7 +467,28 @@ Before diving into the notebooks, have a look at the [config.ini](./config.ini) 
 
 - [04-Training-Diffusion-Model.ipynb](./notebooks/04-Training-Diffusion-Model.ipynb): Defines and explains the training diffusion process and trains the model with the dataset created in the `01-Dataset-Creation.ipynb` notebook.
 
-- [`05-Evaluate-Diffusion-Samples.ipynb`]():  
+- [05-Evaluate-Diffusion-Samples.ipynb](./notebooks/05-DDPM-final-model.ipynb): Generates samples from the trained model.
+
+## :art: Streamlit App
+
+The project also contains a Streamlit app to generate Pokémon sprites using the trained model. The app is located in the [app](./app) folder.
+
+> <span style="color: red; font-size: 1.5em;">&#9888;</span>
+> **WARNING:** Before running the app, make sure you have decompressed the `final_diffusion_model.weights.h5` file in the `model_weights` folder. To do so, just run the following command in the root of the project:
+>
+> ```bash
+> cd model_weights
+> 7z x final_diffusion_model.7z.001
+> ```
+
+To run the app, just execute the following command in the root of the project:
+
+```bash
+streamlit run app/diffusion_app.py
+```
+
+This will open a new tab in your default browser with the app running. You can select the Pokémon type and the number of samples to generate and click on the `Generate` button to see the results. After that you can download the generated sprites by clicking on the `Download` button.
+
 
 ## :books: Resources
 
