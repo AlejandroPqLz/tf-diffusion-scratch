@@ -487,12 +487,15 @@ To run the app, just execute the following command in the root of the project:
 streamlit run app/diffusion_app.py
 ```
 
-This will open a new tab in your default browser with the app running. You can select the Pokémon type and the number of samples to generate and click on the `Generate` button to see the results. After that you can download the generated sprites by clicking on the `Download` button.
+This will open a new tab in your default browser with the app running. You can select the Pokémon type and the number of samples to generate and click on the `Generate` button to see the results. After that you can download the generated sprites by clicking on the `Download` button as shown in the following screenshot:
 
+<p align="center">
+<img src='./figures/readme_figures/app_screenshot.png' style="width: 80%;" />
+</p>
 
 ## :books: Resources
 
-- Resources and tutorials that have been found useful for this project are located in the [/docs](./docs) folder.
+- Thesis report, resources and tutorials that have been found useful for this project are located in the [/docs](./docs) folder.
 - Conda environment installation and management: [Conda documentation](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html).
 - Docker installation and management: [Docker documentation](https://docs.docker.com/get-docker/).
 - NVIDIA GPU configuration: [NVIDIA documentation](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html), [CUDA installation guide](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html), [cuDNN installation guide](https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html).
